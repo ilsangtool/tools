@@ -1,0 +1,34 @@
+  <section class="card">
+    <label class="drop" id="drop" tabindex="0">
+      <input type="file" id="file" accept="image/*,.heic,.heif" multiple>
+      <b>사진을 여기로 끌어 놓거나 눌러서 고르세요</b>
+      <span>JPG · PNG · WebP · HEIC · 여러 장 가능</span>
+    </label>
+  </section>
+
+  <section class="card">
+    <h2>설정</h2>
+    <div class="row3">
+      <div><label class="f" for="maxW">긴 변 최대 크기</label>
+        <select id="maxW"><option value="0">원본 유지</option><option value="3000">3000px</option><option value="1920" selected>1920px (일반)</option><option value="1280">1280px</option><option value="1080">1080px (SNS)</option><option value="800">800px</option><option value="640">640px</option></select></div>
+      <div><label class="f" for="fmt">저장 형식</label>
+        <select id="fmt"><option value="jpeg" selected>JPG</option><option value="webp">WebP</option><option value="png">PNG (용량 큼)</option></select></div>
+      <div><label class="f" for="target">목표 용량 <span class="opt">선택</span></label>
+        <select id="target"><option value="0">지정 안 함</option><option value="100">100KB 이하</option><option value="200">200KB 이하</option><option value="300">300KB 이하</option><option value="500">500KB 이하</option><option value="1000">1MB 이하</option><option value="2000">2MB 이하</option><option value="5000">5MB 이하</option></select></div>
+    </div>
+    <div id="qWrap">
+      <label class="f" for="q">화질 <b id="qv">80</b>%</label>
+      <input type="range" id="q" min="30" max="100" value="80">
+    </div>
+    <div class="actions">
+      <button type="button" id="run" disabled>변환하기</button>
+      <button type="button" id="zip" class="ghost" disabled>모두 ZIP으로 저장</button>
+      <button type="button" id="clear" class="ghost" disabled>목록 비우기</button>
+    </div>
+    <div id="sum" class="hint"></div>
+  </section>
+
+  <section class="card hidden" id="listCard">
+    <h2>사진 목록</h2>
+    <ul class="files" id="list"></ul>
+  </section>

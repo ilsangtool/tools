@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>예약·노쇼 규정 문구 생성기 (무료) - 예약금·위약금 안내 문자</title>
-<meta name="description" content="식당·오마카세·미용실 노쇼 위약금 안내 문구 무료 생성기. 2025년 12월 개정 소비자분쟁해결기준(일반음식점 20%, 예약기반음식점 40%)에 맞춰 예약금·취소 환불 기준 문자와 공지문을 만듭니다.">
+<meta name="description" content="식당·오마카세·미용실 노쇼 위약금 안내 문구 무료 생성기. 최신 소비자분쟁해결기준(일반음식점 20%, 예약기반음식점 40%)에 맞춰 예약금·취소 환불 기준 문자와 공지문을 만듭니다.">
 <meta name="keywords" content="노쇼 위약금, 예약금 안내 문자, 노쇼 규정, 예약 취소 규정, 오마카세 예약금, 미용실 예약금, 소비자분쟁해결기준 노쇼">
 <link rel="canonical" href="https://ilsangtool.github.io/tools/noshow-policy/">
 <meta property="og:type" content="website">
@@ -96,7 +96,7 @@
 <header>
   <div class="wrap">
     <a class="back" href="../">← 생활·업무 도구 모음</a><br>
-    <span class="tag">2025.12 개정 소비자분쟁해결기준 반영</span>
+    <span class="tag">2025.12 개정 소비자분쟁해결기준 반영 · 자동 갱신</span>
     <h1>예약·노쇼 규정 문구 생성기</h1>
     <p>업종과 예약금, 취소 기한을 정하면 예약 확정 문자·매장 공지·네이버 예약 유의사항 문구를 한 번에 만들어 드립니다.</p>
   </div>
@@ -175,6 +175,7 @@
 <nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
   <footer>
     근거: 소비자분쟁해결기준(공정거래위원회 고시, 2025.12.18 개정 시행) 외식업 예약부도 기준. 이 기준은 분쟁 조정 때 쓰는 권고 기준이며, 이 도구는 참고용으로 법률 자문이 아닙니다.<br>
+    <span id="rulesInfo"></span><br>
     입력한 내용은 서버로 전송되지 않습니다.
   </footer>
 </main>
@@ -231,12 +232,33 @@ function armReset(btn, fn){
     armed = false; btn.textContent = label; fn();
   });
 }
+/* ---- 법령 값: data/rules.json (매주 자동 점검) ---- */
+let RULES = {"checkedAt": "2026-11-14", "minWage": [{"from": "2025-01-01", "hourly": 10030, "source": "최저임금위원회 결정(2025년 적용)"}, {"from": "2026-01-01", "hourly": 10320, "source": "최저임금위원회 결정(2026년 적용)"}, {"from": "2027-01-01", "hourly": 10700, "source": "최저임금위원회 결정(2026.7.14), 고용노동부 고시"}], "insurance": [{"from": "2026-01-01", "np": 0.0475, "hi": 0.03595, "ltcRatio": 0.1314, "ei": 0.009, "source": "국민연금법 개정(2025), 국민건강보험법 시행령, 장기요양보험료율 0.9448%"}, {"from": "2027-01-01", "np": 0.05, "hi": 0.03595, "source": "국민연금 보험료율 10%, 건강보험료율 7.19% 동결(2026.9.8 건정심)"}, {"from": "2028-01-01", "np": 0.0525, "source": "국민연금법 단계 인상 10.5%"}, {"from": "2029-01-01", "np": 0.055, "source": "국민연금법 단계 인상 11%"}, {"from": "2030-01-01", "np": 0.0575, "source": "국민연금법 단계 인상 11.5%"}, {"from": "2031-01-01", "np": 0.06, "source": "국민연금법 단계 인상 12%"}, {"from": "2032-01-01", "np": 0.0625, "source": "국민연금법 단계 인상 12.5%"}, {"from": "2033-01-01", "np": 0.065, "source": "국민연금법 단계 인상 13%"}], "weeklyHoliday": {"minHours": 15, "fullHours": 40, "paidHours": 8, "source": "근로기준법 제55조, 시행령 제30조"}, "noshow": [{"from": "2025-12-18", "general": 20, "reserve": 40, "group": 40, "source": "소비자분쟁해결기준(공정거래위원회 고시) 외식업 예약부도"}], "ecommerce": [{"from": "2016-09-30", "withdrawDays": 7, "mismatchMonths": 3, "mismatchKnownDays": 30, "refundBizDays": 3, "source": "전자상거래법 제17조·제18조"}], "military": [{"from": "2020-06-15", "army": 18, "marine": 18, "navy": 20, "air": 21, "social": 21, "industrySupp": 23, "industryActive": 34, "research": 36, "source": "병역법 시행령, 병무청 복무기간"}]};
+// from(시행일)이 date 이하인 항목을 차례로 덮어써서 그 날짜에 유효한 값을 만듦
+function ruleAt(list, date){
+  const d = typeof date === 'string' ? date : ymd(date || today());
+  const out = {};
+  (list || []).filter(x => x.from <= d).sort((a, b) => a.from < b.from ? -1 : 1).forEach(x => Object.assign(out, x));
+  return out;
+}
+function onRulesLoaded(fn){
+  const show = () => { const el = $('#rulesInfo'); if (el && RULES.checkedAt) el.textContent = `법령 기준값은 매주 자동 점검합니다 (마지막 점검 ${RULES.checkedAt.replace(/-/g, '.')}).`; };
+  show();
+  const ctl = 'AbortController' in window ? new AbortController() : null;
+  if (ctl) setTimeout(() => ctl.abort(), 4000);
+  fetch('../data/rules.json', { cache: 'no-cache', signal: ctl && ctl.signal })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && JSON.stringify(j) !== JSON.stringify(RULES)) { RULES = j; show(); fn(); } else show(); })
+    .catch(() => {});
+}
 
 const KEY = 'ilsang_noshow_v1';
+// 위약금 상한은 RULES.noshow(소비자분쟁해결기준)에서 읽음
+const NS = () => ruleAt(RULES.noshow);
 const BIZ = {
-  general: { cap:20, food:true, hint:'일반음식점은 노쇼 위약금이 총 이용금액의 20% 이하일 때 분쟁 조정에서 인정됩니다.', late:'15' },
-  reserve: { cap:40, food:true, hint:'예약에 맞춰 재료를 미리 준비하는 예약기반음식점은 40% 이하까지 인정됩니다. 단, 예약기반음식점이라는 점과 위약금 기준을 미리 알려야 합니다.', late:'15' },
-  group:   { cap:40, food:true, hint:'일반음식점도 대량 주문·단체 예약은 미리 알린 경우 40% 이하 기준을 쓸 수 있습니다.', late:'20' },
+  general: { get cap(){ return NS().general; }, food:true, get hint(){ return `일반음식점은 노쇼 위약금이 총 이용금액의 ${NS().general}% 이하일 때 분쟁 조정에서 인정됩니다.`; }, late:'15' },
+  reserve: { get cap(){ return NS().reserve; }, food:true, get hint(){ return `예약에 맞춰 재료를 미리 준비하는 예약기반음식점은 ${NS().reserve}% 이하까지 인정됩니다. 단, 예약기반음식점이라는 점과 위약금 기준을 미리 알려야 합니다.`; }, late:'15' },
+  group:   { get cap(){ return NS().group; }, food:true, get hint(){ return `일반음식점도 대량 주문·단체 예약은 미리 알린 경우 ${NS().group}% 이하 기준을 쓸 수 있습니다.`; }, late:'20' },
   beauty:  { cap:0, food:false, hint:'미용·서비스업은 별도 상한이 없지만, 예약금이 과도하면 분쟁에서 불리합니다. 서비스 금액의 일부 수준으로 정하고 미리 알리세요.', late:'10' },
   studio:  { cap:0, food:false, hint:'공방·클래스는 재료 준비 비용을 근거로 예약금을 정하고, 취소 기한을 넉넉히 두면 분쟁이 줄어듭니다.', late:'10' }
 };
@@ -332,6 +354,7 @@ $('#f').addEventListener('change', build);
 $('#copyBtn').addEventListener('click', () => copy(build.out[cur]));
 armReset($('#resetBtn'), () => { store.del(KEY); $('#f').reset(); build(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 load(); build();
+onRulesLoaded(build);
 
 })();
 </script>

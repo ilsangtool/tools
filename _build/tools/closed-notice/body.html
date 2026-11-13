@@ -1,0 +1,69 @@
+  <div class="layout">
+  <form id="f" autocomplete="off">
+  <section class="card">
+    <h2><span class="num">1</span>안내 종류</h2>
+    <select id="type" aria-label="안내 종류">
+      <option value="temp">임시휴무</option>
+      <option value="vacation">휴가</option>
+      <option value="holiday">명절·연휴 휴무</option>
+      <option value="construction">내부 공사·리모델링</option>
+      <option value="hours">영업시간 변경</option>
+      <option value="move">매장 이전</option>
+      <option value="closing">영업 종료(폐업)</option>
+    </select>
+    <label class="f" for="shop">상호</label>
+    <input type="text" id="shop" placeholder="예: 구리분식">
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span>날짜</h2>
+    <div class="row">
+      <div><label class="f" for="start" id="startLbl">시작일</label><input type="date" id="start"></div>
+      <div id="endWrap"><label class="f" for="end">마지막 날</label><input type="date" id="end"></div>
+    </div>
+    <label class="chk" id="reopenWrap"><input type="checkbox" id="reopen" checked><span id="reopenTxt">다음 날부터 정상 영업 문구 넣기</span></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>문구</h2>
+    <p class="hint">종류를 고르면 기본 문구가 채워집니다. 자유롭게 고치세요.</p>
+    <label class="f" for="title">제목</label>
+    <input type="text" id="title">
+    <label class="f" for="body">본문</label>
+    <textarea id="body" rows="3"></textarea>
+    <label class="f" for="note">추가 안내 <span class="opt">선택</span></label>
+    <input type="text" id="note" placeholder="예: 배달앱 주문은 정상 운영합니다">
+    <label class="f" for="contact">연락처 <span class="opt">선택</span></label>
+    <input type="text" id="contact" placeholder="예: 010-0000-0000">
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span>모양</h2>
+    <label class="f">크기</label>
+    <div class="radio-group">
+      <label><input type="radio" name="size" value="a4" checked><span>A4 세로 (문에 붙이기)</span></label>
+      <label><input type="radio" name="size" value="sq"><span>정사각 (인스타·카톡)</span></label>
+      <label><input type="radio" name="size" value="a4l"><span>A4 가로</span></label>
+    </div>
+    <label class="f">색상</label>
+    <div class="radio-group">
+      <label><input type="radio" name="theme" value="plain" checked><span>단정한 흰색</span></label>
+      <label><input type="radio" name="theme" value="dark"><span>눈에 띄는 검정</span></label>
+      <label><input type="radio" name="theme" value="warm"><span>따뜻한 크림</span></label>
+    </div>
+  </section>
+  </form>
+
+  <div class="side">
+    <section class="card">
+      <h2>미리보기</h2>
+      <canvas id="cv" aria-label="안내문 미리보기"></canvas>
+      <div class="actions">
+        <button type="button" id="printBtn">인쇄하기</button>
+        <button type="button" id="pngBtn" class="ghost">이미지 저장</button>
+        <button type="button" id="txtBtn" class="ghost">공지 문구 복사</button>
+      </div>
+      <p class="hint" style="margin:0">공지 문구는 네이버 플레이스 '소식', 카카오톡 채널 공지, 배달앱 가게 공지에 그대로 붙이면 됩니다.</p>
+    </section>
+  </div>
+  </div>

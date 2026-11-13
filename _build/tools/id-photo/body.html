@@ -1,0 +1,57 @@
+  <div class="layout">
+    <div class="colA">
+      <section class="card">
+        <h2><span class="num">1</span>사진 고르기</h2>
+        <label class="pick"><input type="file" id="file" accept="image/*"><span>사진 선택</span></label>
+        <p class="hint" style="margin:8px 0 0">밝은 흰 벽 앞에서 정면으로 찍은 사진이 가장 좋습니다. 휴대폰은 얼굴에서 1m 이상 떨어져 찍어야 얼굴이 덜 왜곡됩니다.</p>
+      </section>
+      <section class="card">
+        <h2><span class="num">2</span>규격</h2>
+        <select id="spec" aria-label="사진 규격">
+          <option value="35x45x32x36">여권 (3.5×4.5cm)</option>
+          <option value="35x45x30x36">주민등록증·운전면허 (3.5×4.5cm)</option>
+          <option value="30x40x0x0">반명함·이력서 (3×4cm)</option>
+          <option value="25x30x0x0">3×2.5cm (일부 자격증)</option>
+          <option value="50x70x0x0">명함판 (5×7cm)</option>
+          <option value="51x51x25x35">미국 비자 (5.1×5.1cm)</option>
+          <option value="33x48x28x33">중국 비자 (3.3×4.8cm)</option>
+          <option value="45x45x0x0">일본 비자 (4.5×4.5cm)</option>
+          <option value="custom">직접 입력</option>
+        </select>
+        <div class="row hidden" id="customRow">
+          <div><label class="f" for="cw">가로 (mm)</label><input type="number" id="cw" value="30" min="10" max="120"></div>
+          <div><label class="f" for="ch">세로 (mm)</label><input type="number" id="ch" value="40" min="10" max="120"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card stagecard">
+      <h2>위치 맞추기</h2>
+      <p class="hint">사진을 끌어서 옮기고, 아래 막대나 두 손가락으로 크기를 조절하세요. 정수리를 위 점선, 턱을 아래 점선에 맞춥니다.</p>
+      <div class="stage" id="stageWrap">
+        <canvas id="stage" aria-label="자르기 화면"></canvas>
+        <div class="empty" id="empty">사진을 먼저 골라 주세요</div>
+      </div>
+      <label class="f" for="zoom">크기</label>
+      <input type="range" id="zoom" min="0.2" max="4" step="0.01" value="1" disabled>
+      <div class="actions">
+        <button type="button" class="ghost sm" id="rot" disabled>90° 회전</button>
+        <button type="button" class="ghost sm" id="fit" disabled>처음 위치로</button>
+        <label class="chk" style="border:0;padding:4px 0"><input type="checkbox" id="guide" checked><span>얼굴 가이드 보기</span></label>
+      </div>
+      <label class="f" for="bright">밝기</label>
+      <input type="range" id="bright" min="80" max="130" value="100" disabled>
+    </section>
+
+    <div class="colC">
+      <section class="card">
+        <h2><span class="num">3</span>저장</h2>
+        <div class="actions" style="margin-top:4px">
+          <button type="button" id="saveOne" disabled>사진 1장 저장 (300dpi)</button>
+          <button type="button" id="saveSheet" class="ghost" disabled>4×6 인화용 판 저장</button>
+        </div>
+        <p class="hint" id="sheetInfo" style="margin:0"></p>
+        <canvas id="sheetPrev" class="hidden" aria-label="인화용 판 미리보기"></canvas>
+      </section>
+    </div>
+  </div>

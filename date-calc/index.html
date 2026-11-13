@@ -157,14 +157,14 @@
         <div><label class="f" for="arIn">입대일</label><input type="date" id="arIn"></div>
         <div><label class="f" for="arType">복무 형태</label>
           <select id="arType">
-            <option value="18">육군 (18개월)</option>
-            <option value="18">해병대 (18개월)</option>
-            <option value="20">해군 (20개월)</option>
-            <option value="21">공군 (21개월)</option>
-            <option value="21">사회복무요원 (21개월)</option>
-            <option value="23">산업기능요원·보충역 (23개월)</option>
-            <option value="34">산업기능요원·현역 (34개월)</option>
-            <option value="36">전문연구요원 (36개월)</option>
+            <option data-k="army" value="18">육군 (18개월)</option>
+            <option data-k="marine" value="18">해병대 (18개월)</option>
+            <option data-k="navy" value="20">해군 (20개월)</option>
+            <option data-k="air" value="21">공군 (21개월)</option>
+            <option data-k="social" value="21">사회복무요원 (21개월)</option>
+            <option data-k="industrySupp" value="23">산업기능요원·보충역 (23개월)</option>
+            <option data-k="industryActive" value="34">산업기능요원·현역 (34개월)</option>
+            <option data-k="research" value="36">전문연구요원 (36개월)</option>
           </select></div>
       </div>
       <div class="big" id="arOut"></div>
@@ -187,7 +187,8 @@
 <section class="card faq"><h2>자주 묻는 질문</h2><details><summary>100일은 시작일을 1일로 세나요?</summary><p>연애·아기 100일은 보통 시작일(태어난 날)을 1일로 셉니다. 그래서 100일째는 시작일부터 99일 뒤입니다. &#x27;시작일을 1일로&#x27; 옵션을 끄면 시작일 다음 날을 1일로 셉니다.</p></details><details><summary>전역일은 어떻게 계산하나요?</summary><p>입대일에 복무 개월 수를 더한 날의 전날입니다. 예를 들어 2026년 3월 2일 육군 입대(18개월)면 2027년 9월 1일 전역입니다.</p></details><details><summary>만 나이는 어떻게 세나요?</summary><p>태어난 날을 0살로 하고 생일이 지날 때마다 한 살씩 더합니다. 올해 생일이 아직 안 지났으면 (올해 − 출생연도 − 1)살입니다.</p></details></section>
 <nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
   <footer>
-    복무기간: 육군·해병대 18개월, 해군 20개월, 공군 21개월, 사회복무요원 21개월 등 병무청 공시 기준. 휴가·조기전역은 반영하지 않습니다. 만 나이는 '행정기본법' 나이 계산 기준(2023.6.28 시행)을 따릅니다.<br>
+    복무기간: 육군·해병대 18개월, 해군 20개월, 공군 21개월, 사회복무요원 21개월 등 병무청 공시 기준. 휴가·조기전역은 반영하지 않습니다. 만 나이는 행정기본법 나이 계산 기준(2023.6.28 시행)을 따릅니다.<br>
+    <span id="rulesInfo"></span><br>
     입력한 내용은 서버로 전송되지 않습니다.
   </footer>
 </main>
@@ -243,6 +244,25 @@ function armReset(btn, fn){
     if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
     armed = false; btn.textContent = label; fn();
   });
+}
+/* ---- 법령 값: data/rules.json (매주 자동 점검) ---- */
+let RULES = {"checkedAt": "2026-11-14", "minWage": [{"from": "2025-01-01", "hourly": 10030, "source": "최저임금위원회 결정(2025년 적용)"}, {"from": "2026-01-01", "hourly": 10320, "source": "최저임금위원회 결정(2026년 적용)"}, {"from": "2027-01-01", "hourly": 10700, "source": "최저임금위원회 결정(2026.7.14), 고용노동부 고시"}], "insurance": [{"from": "2026-01-01", "np": 0.0475, "hi": 0.03595, "ltcRatio": 0.1314, "ei": 0.009, "source": "국민연금법 개정(2025), 국민건강보험법 시행령, 장기요양보험료율 0.9448%"}, {"from": "2027-01-01", "np": 0.05, "hi": 0.03595, "source": "국민연금 보험료율 10%, 건강보험료율 7.19% 동결(2026.9.8 건정심)"}, {"from": "2028-01-01", "np": 0.0525, "source": "국민연금법 단계 인상 10.5%"}, {"from": "2029-01-01", "np": 0.055, "source": "국민연금법 단계 인상 11%"}, {"from": "2030-01-01", "np": 0.0575, "source": "국민연금법 단계 인상 11.5%"}, {"from": "2031-01-01", "np": 0.06, "source": "국민연금법 단계 인상 12%"}, {"from": "2032-01-01", "np": 0.0625, "source": "국민연금법 단계 인상 12.5%"}, {"from": "2033-01-01", "np": 0.065, "source": "국민연금법 단계 인상 13%"}], "weeklyHoliday": {"minHours": 15, "fullHours": 40, "paidHours": 8, "source": "근로기준법 제55조, 시행령 제30조"}, "noshow": [{"from": "2025-12-18", "general": 20, "reserve": 40, "group": 40, "source": "소비자분쟁해결기준(공정거래위원회 고시) 외식업 예약부도"}], "ecommerce": [{"from": "2016-09-30", "withdrawDays": 7, "mismatchMonths": 3, "mismatchKnownDays": 30, "refundBizDays": 3, "source": "전자상거래법 제17조·제18조"}], "military": [{"from": "2020-06-15", "army": 18, "marine": 18, "navy": 20, "air": 21, "social": 21, "industrySupp": 23, "industryActive": 34, "research": 36, "source": "병역법 시행령, 병무청 복무기간"}]};
+// from(시행일)이 date 이하인 항목을 차례로 덮어써서 그 날짜에 유효한 값을 만듦
+function ruleAt(list, date){
+  const d = typeof date === 'string' ? date : ymd(date || today());
+  const out = {};
+  (list || []).filter(x => x.from <= d).sort((a, b) => a.from < b.from ? -1 : 1).forEach(x => Object.assign(out, x));
+  return out;
+}
+function onRulesLoaded(fn){
+  const show = () => { const el = $('#rulesInfo'); if (el && RULES.checkedAt) el.textContent = `법령 기준값은 매주 자동 점검합니다 (마지막 점검 ${RULES.checkedAt.replace(/-/g, '.')}).`; };
+  show();
+  const ctl = 'AbortController' in window ? new AbortController() : null;
+  if (ctl) setTimeout(() => ctl.abort(), 4000);
+  fetch('../data/rules.json', { cache: 'no-cache', signal: ctl && ctl.signal })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && JSON.stringify(j) !== JSON.stringify(RULES)) { RULES = j; show(); fn(); } else show(); })
+    .catch(() => {});
 }
 
 const KEY = 'ilsang_datecalc_v1';
@@ -344,7 +364,12 @@ $('#mainTabs').onTab = t => { cur = t; save(); };
 document.addEventListener('input', all);
 document.addEventListener('change', all);
 $('#copyBtn').addEventListener('click', () => copy((out[cur] || '') + '\n' + location.href));
-load(); all();
+function milOptions(){
+  const M = ruleAt(RULES.military);
+  $$('#arType option').forEach(o => { const n = M[o.dataset.k]; if (n) { o.value = n; o.textContent = o.textContent.replace(/\(\d+개월\)/, `(${n}개월)`); } });
+}
+milOptions(); load(); all();
+onRulesLoaded(() => { milOptions(); all(); });
 
 })();
 </script>

@@ -1,0 +1,67 @@
+  <div class="notice">
+    노쇼 위약금은 <b>예약할 때 문자 등으로 미리 알린 경우에만</b> 인정받기 쉽습니다. 여기서 만든 '예약 확정 문자'를 예약마다 보내 두세요.
+  </div>
+
+  <form id="f" autocomplete="off">
+  <section class="card">
+    <h2><span class="num">1</span>업종</h2>
+    <div class="radio-group">
+      <label><input type="radio" name="biz" value="general" checked><span>일반음식점</span></label>
+      <label><input type="radio" name="biz" value="reserve"><span>예약기반음식점 (오마카세·파인다이닝)</span></label>
+      <label><input type="radio" name="biz" value="group"><span>단체 예약·대량 주문</span></label>
+      <label><input type="radio" name="biz" value="beauty"><span>미용실·네일·피부관리</span></label>
+      <label><input type="radio" name="biz" value="studio"><span>공방·스튜디오·클래스</span></label>
+    </div>
+    <p class="hint" id="bizHint" style="margin-top:8px"></p>
+    <div class="row">
+      <div><label class="f" for="shop">상호</label><input type="text" id="shop" placeholder="예: 스시 구리"></div>
+      <div><label class="f" for="contact">취소·변경 연락처</label><input type="text" id="contact" placeholder="예: 031-000-0000"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span>예약금</h2>
+    <div class="radio-group">
+      <label><input type="radio" name="dep" value="person" checked><span>1인당 금액</span></label>
+      <label><input type="radio" name="dep" value="total"><span>예약 1건당 금액</span></label>
+      <label><input type="radio" name="dep" value="none"><span>받지 않음</span></label>
+    </div>
+    <div class="row" id="depRow">
+      <div><label class="f" for="depAmt" id="depLbl">1인 예약금</label><input type="number" id="depAmt" value="30000" step="1000" inputmode="numeric"></div>
+      <div><label class="f" for="price" id="priceLbl">1인 예상 이용금액</label><input type="number" id="price" value="150000" step="1000" inputmode="numeric"></div>
+    </div>
+    <div id="capBox"></div>
+    <label class="f" for="account">예약금 입금·결제 방법 <span class="opt">선택</span></label>
+    <input type="text" id="account" placeholder="예: 네이버 예약 시 자동 결제 / ○○은행 000-000 (예금주)">
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>취소·변경 기준</h2>
+    <div class="row">
+      <div><label class="f" for="d1">전액 환불: 이용 며칠 전까지 취소</label><select id="d1"><option value="1">1일 전(전날)까지</option><option value="2">2일 전까지</option><option value="3">3일 전까지</option><option value="7">7일 전까지</option></select></div>
+      <div><label class="f" for="late">연락 없이 몇 분 늦으면 노쇼 처리</label><select id="late"><option>10</option><option selected>15</option><option>20</option><option>30</option></select></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="mid" checked><span>중간 단계 두기: 전액 환불 기한이 지난 뒤에도 일정 시간 전까지는 일부 환불</span></label>
+    <div class="row" id="midRow">
+      <div><label class="f" for="h2">이용 몇 시간 전까지</label><select id="h2"><option value="2">2시간 전까지</option><option value="3" selected>3시간 전까지</option><option value="6">6시간 전까지</option><option value="12">12시간 전까지</option></select></div>
+      <div><label class="f" for="p2">예약금 몇 % 환불</label><select id="p2"><option>70</option><option selected>50</option><option>30</option></select></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="change" checked><span>전액 환불 기한 안에는 날짜·시간 변경 1회 무료</span></label>
+  </section>
+  </form>
+
+  <section class="card" id="out">
+    <h2>결과물</h2>
+    <div class="tabs">
+      <button type="button" class="on" data-tab="sms">예약 확정 문자</button>
+      <button type="button" data-tab="notice">매장·SNS 공지</button>
+      <button type="button" data-tab="short">예약 유의사항 (짧게)</button>
+    </div>
+    <div data-pane="sms"><pre id="smsOut"></pre><p class="hint" style="margin:6px 0 0">○ 표시 부분은 예약마다 바꿔 보내세요. 카카오톡·문자 단축 문구에 저장해 두면 편합니다.</p></div>
+    <div data-pane="notice" class="hidden"><pre id="noticeOut"></pre></div>
+    <div data-pane="short" class="hidden"><pre id="shortOut"></pre><p class="hint" style="margin:6px 0 0">네이버 예약·캐치테이블의 '예약 시 유의사항' 칸에 맞춘 짧은 버전입니다.</p></div>
+    <div class="actions">
+      <button type="button" id="copyBtn">지금 탭 문구 복사</button>
+      <button type="button" id="resetBtn" class="ghost">처음부터 다시</button>
+    </div>
+  </section>

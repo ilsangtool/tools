@@ -1,0 +1,13 @@
+  .exi.illegal span b{color:var(--bad);font-weight:500;font-size:12px}
+  #printArea{display:none}
+  .pol h3{font-size:15px;margin:14px 0 4px}
+  .pol h3:first-child{margin-top:0}
+  .pol ul{margin:0;padding-left:20px}
+  .pol li{margin:2px 0}
+  .pol .ttl{font-size:18px;font-weight:700;margin-bottom:8px}
+  @media print{
+    body>*:not(#printWrap){display:none!important}
+    @page{size:A4;margin:18mm}
+  }
+  #printWrap{display:none}
+  @media print{#printWrap{display:block!important;font-size:15pt;line-height:1.7}#printWrap .ttl{font-size:24pt;text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px}#printWrap h3{font-size:16pt;margin-top:16px}}

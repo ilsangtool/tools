@@ -1,0 +1,43 @@
+  <form id="f" autocomplete="off">
+  <section class="card">
+    <h2><span class="num">1</span>시급</h2>
+    <div class="radio-group" id="years"></div>
+    <label class="f" for="wage">내 시급 (원)</label>
+    <input type="number" id="wage" inputmode="numeric" step="10">
+    <div id="wageWarn" class="warn-line hidden"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span>근무시간 (휴게시간 빼고)</h2>
+    <p class="hint">요일마다 실제 일하는 시간을 넣으세요. 4시간 근무에 30분, 8시간 근무에 1시간 휴게가 법정 기준입니다.</p>
+    <div class="quick">
+      <span>빠른 입력:</span>
+      <input type="number" id="qHours" value="5" step="0.5" min="0" max="24" aria-label="하루 근무시간"> 시간씩
+      <button type="button" class="ghost sm" data-q="12345">평일 5일</button>
+      <button type="button" class="ghost sm" data-q="60">주말 2일</button>
+      <button type="button" class="ghost sm" data-q="135">월수금</button>
+      <button type="button" class="ghost sm" data-q="">모두 지우기</button>
+    </div>
+    <div class="days" id="days"></div>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" id="five"><span>상시 5인 이상 사업장 (하루 8시간·주 40시간 넘는 연장근로 1.5배)</span></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>공제</h2>
+    <div class="radio-group">
+      <label><input type="radio" name="tax" value="none" checked><span>공제 없음</span></label>
+      <label><input type="radio" name="tax" value="biz"><span>3.3% (사업소득)</span></label>
+      <label><input type="radio" name="tax" value="ins"><span>4대보험</span></label>
+    </div>
+  </section>
+  </form>
+
+  <section class="card" id="out">
+    <h2>계산 결과</h2>
+    <div id="jh" class="notice" style="margin:8px 0 10px"></div>
+    <div class="stat" id="stat"></div>
+    <table class="t" id="detail"></table>
+    <div class="actions">
+      <button type="button" id="copyBtn">결과 복사</button>
+    </div>
+  </section>

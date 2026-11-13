@@ -1,0 +1,72 @@
+  <div class="tabwrap">
+    <div class="tabs" id="mainTabs">
+      <button type="button" class="on" data-tab="dday">D-day</button>
+      <button type="button" data-tab="anniv">기념일·100일</button>
+      <button type="button" data-tab="add">날짜 더하기</button>
+      <button type="button" data-tab="army">전역일</button>
+      <button type="button" data-tab="age">만 나이</button>
+    </div>
+
+    <section class="card" data-pane="dday">
+      <h2>D-day 계산</h2>
+      <div class="row">
+        <div><label class="f" for="ddTarget">목표 날짜</label><input type="date" id="ddTarget"></div>
+        <div><label class="f" for="ddBase">기준 날짜 (기본: 오늘)</label><input type="date" id="ddBase"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="ddBoth"><span>시작일과 끝날 모두 포함해 기간 세기 (양편 넣기, 예: 숙박·근무일수)</span></label>
+      <div class="big" id="ddOut"></div>
+      <div class="stat" id="ddStat"></div>
+    </section>
+
+    <section class="card hidden" data-pane="anniv">
+      <h2>기념일 계산</h2>
+      <div class="row">
+        <div><label class="f" for="anStart">시작일 (사귄 날·태어난 날)</label><input type="date" id="anStart"></div>
+        <div><label class="f">&nbsp;</label><label class="chk" style="border:0"><input type="checkbox" id="anOne" checked><span>시작일을 1일로 세기</span></label></div>
+      </div>
+      <div class="big" id="anOut"></div>
+      <table class="t" id="anTable"></table>
+    </section>
+
+    <section class="card hidden" data-pane="add">
+      <h2>날짜 더하기·빼기</h2>
+      <div class="row3">
+        <div><label class="f" for="adBase">기준 날짜</label><input type="date" id="adBase"></div>
+        <div><label class="f" for="adN">더할 값 (빼려면 −)</label><input type="number" id="adN" value="30" inputmode="numeric"></div>
+        <div><label class="f" for="adUnit">단위</label><select id="adUnit"><option value="d">일</option><option value="w">주</option><option value="m">개월</option><option value="y">년</option></select></div>
+      </div>
+      <div class="big" id="adOut"></div>
+    </section>
+
+    <section class="card hidden" data-pane="army">
+      <h2>전역일 계산</h2>
+      <div class="row">
+        <div><label class="f" for="arIn">입대일</label><input type="date" id="arIn"></div>
+        <div><label class="f" for="arType">복무 형태</label>
+          <select id="arType">
+            <option data-k="army" value="{{mil.army}}">육군 ({{mil.army}}개월)</option>
+            <option data-k="marine" value="{{mil.marine}}">해병대 ({{mil.marine}}개월)</option>
+            <option data-k="navy" value="{{mil.navy}}">해군 ({{mil.navy}}개월)</option>
+            <option data-k="air" value="{{mil.air}}">공군 ({{mil.air}}개월)</option>
+            <option data-k="social" value="{{mil.social}}">사회복무요원 ({{mil.social}}개월)</option>
+            <option data-k="industrySupp" value="{{mil.industrySupp}}">산업기능요원·보충역 ({{mil.industrySupp}}개월)</option>
+            <option data-k="industryActive" value="{{mil.industryActive}}">산업기능요원·현역 ({{mil.industryActive}}개월)</option>
+            <option data-k="research" value="{{mil.research}}">전문연구요원 ({{mil.research}}개월)</option>
+          </select></div>
+      </div>
+      <div class="big" id="arOut"></div>
+      <div class="bar" aria-hidden="true"><div id="arBar"></div></div>
+      <div class="stat" id="arStat"></div>
+    </section>
+
+    <section class="card hidden" data-pane="age">
+      <h2>만 나이 계산</h2>
+      <div class="row">
+        <div><label class="f" for="agBirth">생년월일</label><input type="date" id="agBirth" min="1900-01-01"></div>
+        <div><label class="f" for="agBase">기준 날짜 (기본: 오늘)</label><input type="date" id="agBase"></div>
+      </div>
+      <div class="big" id="agOut"></div>
+      <div class="stat" id="agStat"></div>
+    </section>
+  </div>
+  <div class="actions"><button type="button" id="copyBtn">결과 복사</button></div>

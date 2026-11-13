@@ -1,0 +1,7 @@
+  .quick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px;color:var(--sub);margin-bottom:10px}
+  .quick input{width:70px;padding:5px 8px;font-size:15px}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .days label{display:block;text-align:center;font-size:13px;font-weight:500;color:var(--sub)}
+  .days label.sun{color:#b42318}.days label.sat{color:#1d4ed8}
+  .days input{text-align:center;padding:8px 2px}
+  @media(max-width:560px){.days{grid-template-columns:repeat(4,1fr)}}

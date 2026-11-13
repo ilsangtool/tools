@@ -1,0 +1,11 @@
+  main{max-width:1080px}
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .side{position:sticky;top:10px}
+  #cv{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:4px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  #printWrap{display:none}
+  @media(max-width:820px){.layout{grid-template-columns:1fr}.side{position:static}}
+  @media print{
+    body>*:not(#printWrap){display:none!important}
+    #printWrap{display:block!important}
+    #printWrap img{width:100%;height:auto;display:block}
+  }

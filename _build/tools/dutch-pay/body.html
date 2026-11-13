@@ -1,0 +1,58 @@
+  <div id="sharedNote" class="notice ok hidden">공유받은 정산입니다. 내용을 고치면 이 기기에서만 바뀝니다.</div>
+  <div class="tabwrap">
+    <div class="tabs" id="modeTabs">
+      <button type="button" class="on" data-tab="simple">간단 N빵</button>
+      <button type="button" data-tab="multi">여러 차수 정산</button>
+    </div>
+
+    <div data-pane="simple">
+      <section class="card">
+        <div class="row">
+          <div><label class="f" for="sTotal">총 금액 (원)</label><input type="number" id="sTotal" inputmode="numeric" placeholder="예: 187000"></div>
+          <div><label class="f" for="sN">인원 (명)</label><input type="number" id="sN" inputmode="numeric" value="4" min="1"></div>
+        </div>
+        <label class="f">끝전 단위</label>
+        <div class="radio-group">
+          <label><input type="radio" name="unit" value="1"><span>1원</span></label>
+          <label><input type="radio" name="unit" value="10"><span>10원</span></label>
+          <label><input type="radio" name="unit" value="100" checked><span>100원</span></label>
+          <label><input type="radio" name="unit" value="1000"><span>1,000원</span></label>
+        </div>
+        <label class="f">끝전 처리</label>
+        <div class="radio-group">
+          <label><input type="radio" name="round" value="down" checked><span>내림 (낸 사람이 조금 더 부담)</span></label>
+          <label><input type="radio" name="round" value="up"><span>올림 (조금 남음)</span></label>
+        </div>
+        <div class="stat" id="sStat" style="margin-top:14px"></div>
+        <div class="actions"><button type="button" id="sCopy">카톡 공유 문구 복사</button></div>
+      </section>
+    </div>
+
+    <div data-pane="multi" class="hidden">
+      <section class="card">
+        <h2><span class="num">1</span>참석자</h2>
+        <div class="people" id="people"></div>
+        <div class="addp">
+          <input type="text" id="newP" placeholder="이름 입력 후 추가" aria-label="참석자 이름">
+          <button type="button" id="addP">추가</button>
+        </div>
+      </section>
+      <section class="card">
+        <h2><span class="num">2</span>결제 내역</h2>
+        <p class="hint">차수마다 낸 사람과 함께한 사람을 고르세요. 술을 안 마신 사람은 그 차수에서 빼면 됩니다.</p>
+        <div id="items"></div>
+        <button type="button" class="ghost" id="addItem">+ 결제 내역 추가</button>
+      </section>
+      <section class="card">
+        <h2><span class="num">3</span>정산 결과</h2>
+        <div id="mResult"></div>
+        <label class="f" for="acct">받을 계좌 <span class="opt">선택</span></label>
+        <input type="text" id="acct" placeholder="예: 카카오뱅크 3333-00-0000000 홍길동">
+        <div class="actions">
+          <button type="button" id="mCopy">카톡 공유 문구 복사</button>
+          <button type="button" id="mLink" class="ghost">정산 링크 복사</button>
+          <button type="button" id="mReset" class="ghost">처음부터 다시</button>
+        </div>
+      </section>
+    </div>
+  </div>
