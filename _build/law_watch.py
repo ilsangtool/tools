@@ -68,7 +68,8 @@ class LawAPI:
 
     def law_versions(self, name):
         """같은 이름 법령의 현행·시행예정 버전들: [{mst, eff, prom, name}]"""
-        j = self.call('lawSearch.do', target='law', query=name, display=100)
+        # eflaw = 시행일 기준 법령 목록 (현행 + 공포됐지만 아직 시행 전인 판 포함) — 건축앱과 같은 방식
+        j = self.call('lawSearch.do', target='eflaw', query=name, display=100, sort='efdes')
         if not j: return None
         rows = j.get('LawSearch', {}).get('law', [])
         rows = rows if isinstance(rows, list) else [rows]
@@ -79,8 +80,10 @@ class LawAPI:
                         'status': r.get('현행연혁코드', ''), 'name': r.get('법령명한글')})
         return out
 
-    def law_text(self, mst):
-        j = self.call('lawService.do', target='law', MST=mst)
+    def law_text(self, mst, eff=None):
+        p = {'target': 'eflaw', 'MST': mst}
+        if eff: p['efYd'] = eff.replace('-', '')
+        j = self.call('lawService.do', **p)
         return flat(j) if j else None
 
     def admrul_versions(self, query, must):
@@ -184,7 +187,7 @@ def official_check(api, R, S, notes):
         ok += 1
         for v in sorted(vers, key=lambda x: x['eff'] or ''):
             if not v['eff'] or v['eff'] < f'{TODAY.year - 1}-01-01': continue
-            t = api.law_text(v['mst'])
+            t = api.law_text(v['mst'], v['eff'])
             if not t: continue
             for key, anchor, (lo, hi_) in specs:
                 f = fraction_after(t, anchor)
@@ -275,7 +278,7 @@ def main():
         if key in seen: return
         seen.add(key); issue(title, body)
 
-    oc = os.environ.get('LAW_OC', '').strip()
+    oc = (os.environ.get('LAW_OC') or os.environ.get('LAW_API_OC') or '').strip()
     notes = []
     if oc:
         api = LawAPI(oc)

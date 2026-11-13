@@ -36,6 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LAW_OC: ${{ secrets.LAW_OC }}
+          LAW_API_OC: ${{ secrets.LAW_API_OC }}
           TZ: Asia/Seoul
         run: python _build/law_watch.py
 
