@@ -85,7 +85,7 @@ function calc(){
     ...(ded.length ? [['실수령액', won(net)]] : [])
   ];
   $('#detail').innerHTML = '<tr><th>항목</th><th style="text-align:right">금액·시간</th></tr>' + rows.map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join('') +
-    (tax === 'ins' ? `<tr><td colspan="2" class="hint" style="font-size:12.5px">소득세는 빼지 않았습니다. ${!RULES.insurance.some(x => x.from.startsWith(String(year)) && x.ltcRatio != null) && year > 2026 ? year + '년 장기요양보험료율은 발표 전이라 직전 비율로 계산했습니다. ' : ''}월 60시간 미만 근로자는 일부 보험 가입이 제외될 수 있습니다.</td></tr>` : '');
+    (tax === 'ins' ? `<tr><td colspan="2" class="hint" style="font-size:12.5px">소득세는 빼지 않았습니다. ${!RULES.insurance.some(x => x.from.startsWith(String(year)) && x.ltcRatio != null) && year > 2026 ? year + '년 장기요양보험료율은 공식 고시 전이라 직전 비율로 계산했습니다. ' : ''}월 60시간 미만 근로자는 일부 보험 가입이 제외될 수 있습니다.</td></tr>` : '');
 
   calc.text = `[주휴수당·월급 계산 결과]\n시급 ${won(wage)} / 1주 ${h(H)} 근무\n주휴수당(1주) ${won(jhPay)}\n주급 ${won(week)}\n월 예상 급여 ${won(month)}` +
     (ded.length ? `\n공제 ${won(dsum)} → 실수령 ${won(net)}` : '') + `\n\n${location.href}`;

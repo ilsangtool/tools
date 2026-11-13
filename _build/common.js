@@ -56,7 +56,8 @@ function ruleAt(list, date){
   return out;
 }
 function onRulesLoaded(fn){
-  const show = () => { const el = $('#rulesInfo'); if (el && RULES.checkedAt) el.textContent = `법령 기준값은 매주 자동 점검합니다 (마지막 점검 ${RULES.checkedAt.replace(/-/g, '.')}).`; };
+  const show = () => { const el = $('#rulesInfo'); if (!el) return; const d = s => s.replace(/-/g, '.');
+    el.textContent = RULES.officialCheckedAt ? `법령 기준값은 법제처 국가법령정보센터 원문(법령·고시)으로 자동 확인합니다 (마지막 확인 ${d(RULES.officialCheckedAt)}).` : `법령 기준값은 법령·고시 원문 기준으로 관리합니다 (마지막 점검 ${d(RULES.checkedAt || '')}).`; };
   show();
   const ctl = 'AbortController' in window ? new AbortController() : null;
   if (ctl) setTimeout(() => ctl.abort(), 4000);
