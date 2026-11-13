@@ -112,8 +112,7 @@ def ei_conv(v):   return round(v / 200, 6) if 1.4 <= v <= 2.6 else None         
 def ltc_conv_f(R, y):
     hi_total = rule_at(R['insurance'], f'{y}-01-01')['hi'] * 2
     def f(v):
-        if 0.6 <= v <= 1.6: return round(v / 100 / hi_total, 4)                  # 소득 대비 0.9448%
-        if 10 <= v <= 20:  return round(v / 100, 4)                              # 건보료 대비 13.14%
+        if 0.6 <= v <= 1.6: return round(v / 100 / hi_total, 6)                  # 소득 대비 0.9994%
         return None
     return f
 
