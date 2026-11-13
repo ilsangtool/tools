@@ -15,6 +15,6 @@
   "status": {
     "officialOk": 0,
     "officialError": "MAINTENANCE: 국가법령정보센터 시스템 점검 중",
-    "consecutiveFail": 1
+    "consecutiveFail": 2
   }
 }
