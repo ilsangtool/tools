@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>환불·교환 규정 고지문 생성기 (무료) - 쇼핑몰·매장용</title>
+<meta name="description" content="쇼핑몰·오프라인 매장 교환·환불 규정 안내문 무료 생성기. 전자상거래법 7일 청약철회, 반품 배송비, 교환·반품 불가 사유를 법 기준에 맞춰 자동 작성하고 HTML 코드·인쇄용으로 제공합니다.">
+<meta name="keywords" content="환불 규정, 교환 환불 안내문, 반품 규정, 청약철회, 쇼핑몰 환불 정책, 매장 환불 안내, 교환 반품 불가 사유">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/refund-policy/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="환불·교환 규정 고지문 생성기 (무료) - 쇼핑몰·매장용">
+<meta property="og:description" content="법에 어긋나는 &#x27;세일 상품 환불 불가&#x27; 문구, 자동으로 걸러 드립니다">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/refund-policy/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "환불·교환 규정 고지문 생성기", "url": "https://ilsangtool.github.io/tools/refund-policy/", "applicationCategory": "BusinessApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "온라인에서 '세일 상품은 환불 불가'라고 적어도 되나요?", "acceptedAnswer": {"@type": "Answer", "text": "안 됩니다. 전자상거래법상 청약철회 제한 사유에 할인 상품은 없습니다. 이런 문구를 적어도 효력이 없고, 소비자는 받은 날부터 7일 안에 반품할 수 있습니다."}}, {"@type": "Question", "name": "오프라인 매장도 7일 안에 환불해 줘야 하나요?", "acceptedAnswer": {"@type": "Answer", "text": "매장에서 직접 산 물건은 법정 청약철회권이 없어 단순 변심 환불은 매장 규정에 따릅니다. 다만 상품에 하자가 있으면 소비자분쟁해결기준에 따라 수리·교환·환불 대상이 됩니다. 규정은 계산대 등 잘 보이는 곳에 미리 알려야 분쟁이 줄어듭니다."}}, {"@type": "Question", "name": "반품 배송비는 누가 내나요?", "acceptedAnswer": {"@type": "Answer", "text": "단순 변심이면 고객이 냅니다. 상품 불량·오배송처럼 판매자 잘못이면 판매자가 냅니다."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+  .exi.illegal span b{color:var(--bad);font-weight:500;font-size:12px}
+  #printArea{display:none}
+  .pol h3{font-size:15px;margin:14px 0 4px}
+  .pol h3:first-child{margin-top:0}
+  .pol ul{margin:0;padding-left:20px}
+  .pol li{margin:2px 0}
+  .pol .ttl{font-size:18px;font-weight:700;margin-bottom:8px}
+  @media print{
+    body>*:not(#printWrap){display:none!important}
+    @page{size:A4;margin:18mm}
+  }
+  #printWrap{display:none}
+  @media print{#printWrap{display:block!important;font-size:15pt;line-height:1.7}#printWrap .ttl{font-size:24pt;text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px}#printWrap h3{font-size:16pt;margin-top:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">전자상거래법 청약철회 기준 반영</span>
+    <h1>환불·교환 규정 고지문 생성기</h1>
+    <p>판매 방식과 품목을 고르면 쇼핑몰 상세페이지·매장 계산대에 붙일 교환·환불 안내문을 만들어 드립니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="notice">
+    온라인 판매는 <b>상품을 받은 날부터 7일</b> 안에 단순 변심 반품을 받아야 합니다. "세일 상품 환불 불가", "포장 개봉 시 반품 불가" 같은 문구는 법에 어긋나 효력이 없으니 이 도구가 자동으로 걸러냅니다.
+  </div>
+
+  <form id="f" autocomplete="off">
+  <section class="card">
+    <h2><span class="num">1</span>기본 정보</h2>
+    <div class="row">
+      <div><label class="f" for="shop">상호</label><input type="text" id="shop" placeholder="예: 구리상회"></div>
+      <div><label class="f" for="contact">문의 연락처</label><input type="text" id="contact" placeholder="예: 031-000-0000 / 카카오톡 채널"></div>
+    </div>
+    <label class="f">판매 방식</label>
+    <div class="radio-group">
+      <label><input type="radio" name="ch" value="online" checked><span>온라인 쇼핑몰</span></label>
+      <label><input type="radio" name="ch" value="offline"><span>오프라인 매장</span></label>
+      <label><input type="radio" name="ch" value="both"><span>둘 다</span></label>
+    </div>
+    <label class="f" for="cat">주요 품목</label>
+    <select id="cat">
+      <option value="cloth">의류·잡화·신발</option>
+      <option value="food">식품·농산물</option>
+      <option value="beauty">화장품·생활용품</option>
+      <option value="elec">전자제품·가전</option>
+      <option value="book">도서·음반·소프트웨어</option>
+      <option value="custom">주문 제작 상품</option>
+      <option value="etc">기타</option>
+    </select>
+    <p class="hint" style="margin-top:6px">품목을 바꾸면 아래 '교환·반품이 어려운 경우'가 품목에 맞게 다시 체크됩니다.</p>
+  </section>
+
+  <section class="card" id="onlineBox">
+    <h2><span class="num">2</span>온라인 주문 교환·반품</h2>
+    <div class="row">
+      <div><label class="f" for="days">단순 변심 신청 기간 (받은 날부터)</label><input type="number" id="days" min="7" value="7" inputmode="numeric"></div>
+      <div><label class="f" for="how">신청 방법</label><input type="text" id="how" placeholder="예: 마이페이지 > 주문내역 > 반품 신청"></div>
+    </div>
+    <div id="daysWarn" class="warn-line hidden">법정 기간은 최소 7일입니다. 7일보다 짧게 적으면 효력이 없어 7일로 바꿔 넣습니다.</div>
+    <div class="row">
+      <div><label class="f" for="ship1">단순 변심 반품 배송비 (편도)</label><input type="number" id="ship1" value="3000" step="500" inputmode="numeric"></div>
+      <div><label class="f" for="ship2">단순 변심 교환 배송비 (왕복)</label><input type="number" id="ship2" value="6000" step="500" inputmode="numeric"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="freeShip" checked><span>무료배송 상품을 반품하면 처음 배송비까지 왕복으로 받습니다</span></label>
+  </section>
+
+  <section class="card" id="offlineBox">
+    <h2><span class="num">3</span>매장 구매 교환·환불</h2>
+    <p class="hint">매장 구매는 법정 청약철회권이 없어 단순 변심 규정을 직접 정할 수 있습니다. 불량품은 어떤 경우에도 교환·환불 대상입니다.</p>
+    <label class="f">단순 변심일 때</label>
+    <div class="radio-group">
+      <label><input type="radio" name="off" value="both" checked><span>교환·환불 모두 가능</span></label>
+      <label><input type="radio" name="off" value="exch"><span>교환만 가능</span></label>
+      <label><input type="radio" name="off" value="none"><span>교환·환불 불가</span></label>
+    </div>
+    <div class="row" id="offDaysRow">
+      <div><label class="f" for="offDays">구매일부터 며칠 이내</label><input type="number" id="offDays" min="1" value="7" inputmode="numeric"></div>
+      <div><label class="f">&nbsp;</label><label class="chk" style="border:0"><input type="checkbox" id="receipt" checked><span>영수증(카드 전표) 지참 필수</span></label></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span>교환·반품이 어려운 경우</h2>
+    <p class="hint">법이 인정하는 사유만 온라인 안내문에 들어갑니다. 빨간 항목은 매장 구매에만 적용됩니다.</p>
+    <div id="exList"></div>
+    <label class="f" for="extra">추가로 안내할 내용 <span class="opt">선택</span></label>
+    <textarea id="extra" placeholder="예: 교환은 같은 상품의 다른 색상·사이즈로만 가능합니다."></textarea>
+  </section>
+  </form>
+
+  <section class="card" id="out">
+    <h2>결과물</h2>
+    <div id="legalWarn"></div>
+    <div class="tabs">
+      <button type="button" class="on" data-tab="preview">미리보기</button>
+      <button type="button" data-tab="html">HTML 코드</button>
+      <button type="button" data-tab="text">텍스트</button>
+    </div>
+    <div data-pane="preview"><div class="preview-box" id="preview"></div></div>
+    <div data-pane="html" class="hidden"><pre class="code" id="htmlOut"></pre></div>
+    <div data-pane="text" class="hidden"><pre id="textOut"></pre></div>
+    <div class="actions">
+      <button type="button" id="copyText">텍스트 복사</button>
+      <button type="button" id="copyHtml" class="ghost">HTML 코드 복사</button>
+      <button type="button" id="printBtn" class="ghost">매장 게시용 인쇄</button>
+      <button type="button" id="resetBtn" class="ghost">처음부터 다시</button>
+    </div>
+    <p class="hint"><b>붙이는 곳:</b> 스마트스토어는 상품 상세 하단 또는 '반품/교환 정보'에, 카페24·아임웹은 공통 상세 정보 HTML에 붙입니다. 매장은 인쇄해서 계산대 옆에 두세요.</p>
+  </section>
+
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>온라인에서 &#x27;세일 상품은 환불 불가&#x27;라고 적어도 되나요?</summary><p>안 됩니다. 전자상거래법상 청약철회 제한 사유에 할인 상품은 없습니다. 이런 문구를 적어도 효력이 없고, 소비자는 받은 날부터 7일 안에 반품할 수 있습니다.</p></details><details><summary>오프라인 매장도 7일 안에 환불해 줘야 하나요?</summary><p>매장에서 직접 산 물건은 법정 청약철회권이 없어 단순 변심 환불은 매장 규정에 따릅니다. 다만 상품에 하자가 있으면 소비자분쟁해결기준에 따라 수리·교환·환불 대상이 됩니다. 규정은 계산대 등 잘 보이는 곳에 미리 알려야 분쟁이 줄어듭니다.</p></details><details><summary>반품 배송비는 누가 내나요?</summary><p>단순 변심이면 고객이 냅니다. 상품 불량·오배송처럼 판매자 잘못이면 판매자가 냅니다.</p></details></section>
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
+  <footer>
+    근거: 전자상거래 등에서의 소비자보호에 관한 법률 제17조(청약철회 등)·제18조(청약철회 등의 효과), 소비자분쟁해결기준(공정거래위원회 고시). 이 도구는 작성을 돕는 참고용이며 법률 자문이 아닙니다.<br>
+    입력한 내용은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+
+const KEY = 'ilsang_refund_v1';
+// ok: 온라인 청약철회 제한 사유로 인정되는지 (전자상거래법 제17조 제2항)
+const EX = [
+  { id:'used',   t:'착용·사용·세탁·수선 등으로 상품 가치가 크게 줄어든 경우', ok:true },
+  { id:'tag',    t:'상품 택(라벨)을 떼거나 훼손해 다시 판매하기 어려운 경우', ok:true },
+  { id:'lost',   t:'고객 책임으로 상품이 분실·훼손된 경우 (내용 확인을 위한 포장 개봉은 제외)', ok:true },
+  { id:'time',   t:'시간이 지나 다시 판매하기 어려울 만큼 가치가 줄어든 경우 (신선·냉장 식품 등)', ok:true },
+  { id:'copy',   t:'복제할 수 있는 상품(도서·음반·소프트웨어 등)의 포장을 훼손한 경우', ok:true },
+  { id:'custom', t:'고객 요청에 따라 개별 주문 제작한 상품 (주문 전 별도 안내하고 동의를 받은 경우)', ok:true },
+  { id:'sale',   t:'할인·세일 상품', ok:false, why:'할인 상품은 법정 제한 사유가 아닙니다' },
+  { id:'open',   t:'포장(박스)을 뜯은 경우', ok:false, why:'단순 포장 개봉만으로는 반품을 거절할 수 없습니다' },
+  { id:'nopaper',t:'영수증이 없는 경우', ok:false, why:'온라인은 주문 내역으로 확인합니다' }
+];
+const PRESET = {
+  cloth:['used','tag','lost'], food:['time','lost'], beauty:['used','lost'], elec:['used','lost'],
+  book:['copy','lost'], custom:['custom','used','lost'], etc:['used','lost']
+};
+
+$('#exList').innerHTML = EX.map(e =>
+  `<label class="chk exi${e.ok ? '' : ' illegal'}"><input type="checkbox" data-ex="${e.id}"><span>${e.t}${e.ok ? '' : ' <b>매장 구매만</b>'}</span></label>`).join('');
+
+function applyPreset(){
+  const p = PRESET[$('#cat').value] || [];
+  $$('[data-ex]').forEach(c => c.checked = p.includes(c.dataset.ex));
+}
+
+function state(){
+  const s = {};
+  $$('#f input, #f select, #f textarea').forEach(el => {
+    if (el.type === 'radio') { if (el.checked) s['r_'+el.name] = el.value; }
+    else if (el.type === 'checkbox') s[el.id || 'x_'+el.dataset.ex] = el.checked;
+    else s[el.id] = el.value;
+  });
+  return s;
+}
+function restore(s){
+  if (!s) return false;
+  $$('#f input, #f select, #f textarea').forEach(el => {
+    if (el.type === 'radio') { if (s['r_'+el.name] !== undefined) el.checked = s['r_'+el.name] === el.value; }
+    else if (el.type === 'checkbox') { const k = el.id || 'x_'+el.dataset.ex; if (k in s) el.checked = s[k]; }
+    else if (el.id in s) el.value = s[el.id];
+  });
+  return true;
+}
+
+function build(){
+  const ch = radio('ch'), on = ch !== 'offline', off = ch !== 'online';
+  $('#onlineBox').classList.toggle('hidden', !on);
+  $('#offlineBox').classList.toggle('hidden', !off);
+  const offMode = radio('off');
+  $('#offDaysRow').classList.toggle('hidden', offMode === 'none');
+
+  const shop = val('shop') || '저희 매장';
+  let days = parseInt(val('days'), 10) || 7;
+  $('#daysWarn').classList.toggle('hidden', !(on && days < 7));
+  if (days < 7) days = 7;
+  const s1 = parseInt(val('ship1'), 10) || 0, s2 = parseInt(val('ship2'), 10) || 0;
+  const checked = $$('[data-ex]').filter(c => c.checked).map(c => EX.find(e => e.id === c.dataset.ex));
+  const legal = checked.filter(e => e.ok), illegal = checked.filter(e => !e.ok);
+
+  const sec = []; // [제목, [항목...]]
+  if (on) {
+    const a = [];
+    a.push(`${ch === 'both' ? '온라인 주문은 ' : ''}상품을 받은 날부터 ${days}일 이내에 교환·반품을 신청할 수 있습니다.`);
+    a.push('상품이 표시·광고 내용과 다르거나 주문 내용과 다르게 배송된 경우에는 받은 날부터 3개월 이내, 그 사실을 안 날(알 수 있었던 날)부터 30일 이내에 신청할 수 있습니다.');
+    if (val('how')) a.push('신청 방법: ' + val('how'));
+    sec.push([ch === 'both' ? '온라인 주문 교환·반품 기간' : '교환·반품 신청 기간', a]);
+
+    const b = [];
+    if (s1 || s2) {
+      let t = '단순 변심: 고객 부담';
+      const parts = [];
+      if (s1) parts.push(`반품 ${won(s1)}` + ($('#freeShip').checked ? ` (무료배송 상품은 왕복 ${won(s1*2)})` : ''));
+      if (s2) parts.push(`교환 왕복 ${won(s2)}`);
+      b.push(t + ' — ' + parts.join(', '));
+    } else b.push('단순 변심: 반품·교환 배송비는 고객 부담입니다.');
+    b.push('상품 불량·오배송 등 판매자 사유: 배송비 전액 판매자 부담');
+    sec.push(['교환·반품 배송비', b]);
+  }
+  if (off) {
+    const c = [];
+    const pre = ch === 'both' ? '매장에서 구매한 상품은 ' : '';
+    const od = parseInt(val('offDays'), 10) || 7;
+    const rc = $('#receipt').checked ? '영수증(카드 결제 시 결제 카드)을 지참하시면 ' : '';
+    if (offMode === 'both') c.push(`${pre}구매일부터 ${od}일 이내에 ${rc}교환·환불해 드립니다.`);
+    else if (offMode === 'exch') c.push(`${pre}구매일부터 ${od}일 이내에 ${rc}교환해 드립니다. 단순 변심 환불은 어렵습니다.`);
+    else c.push(`${pre}단순 변심에 의한 교환·환불은 어렵습니다. 구매 전 꼭 확인해 주세요.`);
+    c.push('상품에 하자가 있는 경우에는 구매 기간과 관계없이 교환 또는 환불해 드립니다.');
+    sec.push([ch === 'both' ? '매장 구매 교환·환불' : '교환·환불 기준', c]);
+  }
+
+  const ex = [];
+  legal.forEach(e => ex.push(e.t));
+  if (off) illegal.forEach(e => ex.push(e.t + (on ? ' (매장 구매 상품에 한함)' : '')));
+  if (ex.length) sec.push(['교환·반품이 어려운 경우', ex]);
+
+  const r = [];
+  if (on) {
+    r.push(`${ch === 'both' ? '온라인 주문은 ' : ''}반품 상품이 도착한 날부터 3영업일 이내에 환불해 드립니다.`);
+    r.push('카드 결제는 카드사 사정에 따라 취소 반영까지 며칠 더 걸릴 수 있습니다.');
+  }
+  if (off) r.push(`${ch === 'both' ? '매장 구매는 ' : ''}결제하신 수단 그대로 환불해 드립니다. (카드 결제는 카드 승인 취소)`);
+  sec.push(['환불', r]);
+
+  if (val('extra')) sec.push(['추가 안내', val('extra').split('\n').filter(Boolean)]);
+  if (val('contact')) sec.push(['문의', [val('contact')]]);
+
+  // 법 위반 문구 경고
+  const lw = $('#legalWarn');
+  if (on && illegal.length) {
+    lw.innerHTML = `<div class="notice">온라인 안내문에서 뺀 항목: ${illegal.map(e => `<b>${e.t}</b>(${e.why})`).join(', ')}${off ? '. 매장 구매 상품에만 적용되도록 표시했습니다.' : '.'}</div>`;
+  } else lw.innerHTML = '';
+
+  const title = `${shop} 교환·환불 안내`;
+  const text = `[${title}]\n\n` + sec.map(([h, items]) => `■ ${h}\n` + items.map(i => '- ' + i).join('\n')).join('\n\n');
+  const inner = `<div class="ttl">${esc(title)}</div>` + sec.map(([h, items]) => `<h3>${esc(h)}</h3><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('');
+  $('#preview').innerHTML = `<div class="pol">${inner}</div>`;
+  const htmlCode =
+`<div style="border:1px solid #ddd;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.7;color:#222;max-width:860px">
+<div style="font-size:17px;font-weight:700;margin-bottom:6px">${esc(title)}</div>
+${sec.map(([h, items]) => `<div style="font-weight:700;margin-top:12px">${esc(h)}</div>\n<ul style="margin:4px 0;padding-left:20px">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('\n')}
+</div>`;
+  $('#htmlOut').textContent = htmlCode;
+  $('#textOut').textContent = text;
+  build.last = { text, html: htmlCode, inner };
+  store.set(KEY, state());
+}
+
+bindTabs();
+$('#cat').addEventListener('change', () => { applyPreset(); build(); });
+$('#f').addEventListener('input', build);
+$('#f').addEventListener('change', build);
+$('#copyText').addEventListener('click', () => copy(build.last.text));
+$('#copyHtml').addEventListener('click', () => copy(build.last.html));
+$('#printBtn').addEventListener('click', () => {
+  let w = $('#printWrap'); if (!w) { w = document.createElement('div'); w.id = 'printWrap'; document.body.appendChild(w); }
+  w.innerHTML = `<div class="pol">${build.last.inner}</div>`;
+  window.print();
+});
+armReset($('#resetBtn'), () => { store.del(KEY); $('#f').reset(); applyPreset(); build(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+if (!restore(store.get(KEY))) applyPreset();
+build();
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>

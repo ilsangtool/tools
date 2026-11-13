@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>더치페이·모임 정산 계산기 (무료) - N빵, 1차 2차 정산, 송금 정리</title>
+<meta name="description" content="모임·회식·여행 더치페이 정산 계산기. 간단 N빵부터 1차·2차 결제자가 다르고 참석자가 다른 경우까지 계산해 송금 횟수를 최소로 정리하고, 카톡 공유 문구와 정산 링크를 만들어 줍니다.">
+<meta name="keywords" content="더치페이 계산기, N빵 계산기, 정산 계산기, 모임 정산, 회식비 정산, 여행 경비 정산, 1차 2차 정산">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/dutch-pay/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="더치페이·모임 정산 계산기 (무료) - N빵, 1차 2차 정산, 송금 정리">
+<meta property="og:description" content="누가 누구에게 얼마? 송금 횟수 최소로 정산 끝">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/dutch-pay/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "더치페이·모임 정산 계산기", "url": "https://ilsangtool.github.io/tools/dutch-pay/", "applicationCategory": "FinanceApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+  .people{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+  .chip{display:inline-flex;align-items:center;gap:4px;border:1px solid #cfd3d8;border-radius:16px;padding:3px 4px 3px 10px;background:#fff;font-size:14px}
+  .chip input{border:0;padding:2px 0;width:5.5em;font-size:14px;background:transparent}
+  .chip input:focus{outline:none;border-bottom:1px solid var(--accent)}
+  .chip button{border:0;background:none;color:var(--sub);padding:2px 6px;font-size:15px;line-height:1}
+  .addp{display:flex;gap:6px}.addp input{flex:1}
+  .item{position:relative;border:1px solid var(--line);border-radius:8px;padding:12px 36px 12px 12px;margin-bottom:10px;background:#fcfcfb}
+  .item .top{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;align-items:end}
+  .item .top label{font-size:12.5px;color:var(--sub);display:block;margin-bottom:2px}
+  .item .who{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .item .who label{font-size:13px;border:1px solid #cfd3d8;border-radius:14px;padding:3px 10px;cursor:pointer;background:#fff;user-select:none}
+  .item .who label:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
+  .item .who input{position:absolute;opacity:0;width:1px;height:1px}
+  .item .who label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .item .del{position:absolute;top:4px;right:4px;border:0;background:none;color:var(--sub);font-size:20px;padding:4px 8px}
+  .tx{list-style:none;padding:0;margin:4px 0 10px}
+  .tx li{display:flex;justify-content:space-between;border:1px solid #bfd9d1;background:var(--accent-soft);border-radius:6px;padding:9px 12px;margin-bottom:6px;font-size:15px}
+  .tx li b{color:var(--accent)}
+  @media(max-width:560px){.item .top{grid-template-columns:1fr 1fr}.item .top .nm{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">N빵 · 차수별 정산 · 송금 최소화</span>
+    <h1>더치페이·모임 정산 계산기</h1>
+    <p>1차는 A가, 2차는 B가 냈어도 괜찮습니다. 누가 누구에게 얼마를 보내면 되는지 가장 적은 송금 횟수로 정리해 드립니다.</p>
+  </div>
+</header>
+
+<main>
+  <div id="sharedNote" class="notice ok hidden">공유받은 정산입니다. 내용을 고치면 이 기기에서만 바뀝니다.</div>
+  <div class="tabwrap">
+    <div class="tabs" id="modeTabs">
+      <button type="button" class="on" data-tab="simple">간단 N빵</button>
+      <button type="button" data-tab="multi">여러 차수 정산</button>
+    </div>
+
+    <div data-pane="simple">
+      <section class="card">
+        <div class="row">
+          <div><label class="f" for="sTotal">총 금액 (원)</label><input type="number" id="sTotal" inputmode="numeric" placeholder="예: 187000"></div>
+          <div><label class="f" for="sN">인원 (명)</label><input type="number" id="sN" inputmode="numeric" value="4" min="1"></div>
+        </div>
+        <label class="f">끝전 단위</label>
+        <div class="radio-group">
+          <label><input type="radio" name="unit" value="1"><span>1원</span></label>
+          <label><input type="radio" name="unit" value="10"><span>10원</span></label>
+          <label><input type="radio" name="unit" value="100" checked><span>100원</span></label>
+          <label><input type="radio" name="unit" value="1000"><span>1,000원</span></label>
+        </div>
+        <label class="f">끝전 처리</label>
+        <div class="radio-group">
+          <label><input type="radio" name="round" value="down" checked><span>내림 (낸 사람이 조금 더 부담)</span></label>
+          <label><input type="radio" name="round" value="up"><span>올림 (조금 남음)</span></label>
+        </div>
+        <div class="stat" id="sStat" style="margin-top:14px"></div>
+        <div class="actions"><button type="button" id="sCopy">카톡 공유 문구 복사</button></div>
+      </section>
+    </div>
+
+    <div data-pane="multi" class="hidden">
+      <section class="card">
+        <h2><span class="num">1</span>참석자</h2>
+        <div class="people" id="people"></div>
+        <div class="addp">
+          <input type="text" id="newP" placeholder="이름 입력 후 추가" aria-label="참석자 이름">
+          <button type="button" id="addP">추가</button>
+        </div>
+      </section>
+      <section class="card">
+        <h2><span class="num">2</span>결제 내역</h2>
+        <p class="hint">차수마다 낸 사람과 함께한 사람을 고르세요. 술을 안 마신 사람은 그 차수에서 빼면 됩니다.</p>
+        <div id="items"></div>
+        <button type="button" class="ghost" id="addItem">+ 결제 내역 추가</button>
+      </section>
+      <section class="card">
+        <h2><span class="num">3</span>정산 결과</h2>
+        <div id="mResult"></div>
+        <label class="f" for="acct">받을 계좌 <span class="opt">선택</span></label>
+        <input type="text" id="acct" placeholder="예: 카카오뱅크 3333-00-0000000 홍길동">
+        <div class="actions">
+          <button type="button" id="mCopy">카톡 공유 문구 복사</button>
+          <button type="button" id="mLink" class="ghost">정산 링크 복사</button>
+          <button type="button" id="mReset" class="ghost">처음부터 다시</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
+  <footer>
+    정산 링크에는 입력한 이름·금액이 주소 안에 담깁니다. 서버에는 저장되지 않으며, 링크를 받은 사람만 볼 수 있습니다.<br>
+    입력한 내용은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+
+const KEY = 'ilsang_dutch_v1';
+let S = null, nid = 1;
+const newId = () => 'p' + (Date.now().toString(36)) + (nid++);
+function fresh(){
+  const p = ['나', '친구1', '친구2'].map(n => ({ id: newId(), name: n }));
+  return { people: p, items: [{ id: newId(), name: '1차', amt: '', payer: p[0].id, who: p.map(x => x.id) }], acct: '' };
+}
+
+/* ---------- 간단 N빵 ---------- */
+function simple(){
+  const T = +val('sTotal') || 0, n = Math.max(1, +val('sN') || 1), u = +radio('unit'), up = radio('round') === 'up';
+  let per = T / n; per = up ? Math.ceil(per / u) * u : Math.floor(per / u) * u;
+  const payerShare = T - per * (n - 1);
+  $('#sStat').innerHTML = !T ? '<div><small>1인당</small><b>—</b></div>' :
+    `<div class="main"><small>1인당 보낼 금액</small><b>${won(per)}</b></div>` +
+    (up ? `<div><small>모두 보내면 남는 돈</small><b>${won(per * n - T)}</b></div>`
+        : `<div><small>결제한 사람 부담</small><b>${won(payerShare)}</b></div>`);
+  simple.text = `[N빵 정산]\n총 ${won(T)} ÷ ${n}명\n1인당 ${won(per)}씩 보내 주세요!`;
+  store.set(KEY + '_s', { T: val('sTotal'), n: val('sN'), u, r: radio('round') });
+}
+
+/* ---------- 여러 차수 ---------- */
+const pname = id => (S.people.find(p => p.id === id) || {}).name || '?';
+function renderPeople(){
+  $('#people').innerHTML = S.people.map(p =>
+    `<span class="chip"><input value="${esc(p.name)}" data-pid="${p.id}" aria-label="이름"><button type="button" data-delp="${p.id}" aria-label="${esc(p.name)} 삭제">×</button></span>`).join('');
+}
+function renderItems(){
+  $('#items').innerHTML = S.items.map((it, i) => `
+    <div class="item" data-iid="${it.id}">
+      <div class="top">
+        <div class="nm"><label>내역</label><input type="text" data-k="name" value="${esc(it.name)}" placeholder="예: ${i + 1}차 고깃집"></div>
+        <div><label>금액</label><input type="number" data-k="amt" value="${esc(it.amt)}" inputmode="numeric" placeholder="0"></div>
+        <div><label>낸 사람</label><select data-k="payer">${S.people.map(p => `<option value="${p.id}"${p.id === it.payer ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>
+        <button type="button" class="del" data-deli="${it.id}" aria-label="내역 삭제">×</button>
+      </div>
+      <div class="who" aria-label="함께한 사람">${S.people.map(p => `<label><input type="checkbox" data-who="${p.id}"${it.who.includes(p.id) ? ' checked' : ''}>${esc(p.name)}</label>`).join('')}</div>
+    </div>`).join('');
+}
+function settle(){
+  const bal = {}; S.people.forEach(p => bal[p.id] = { paid: 0, owe: 0 });
+  S.items.forEach(it => {
+    const amt = Math.round(+it.amt || 0), who = it.who.filter(id => bal[id]);
+    if (!amt || !who.length || !bal[it.payer]) return;
+    bal[it.payer].paid += amt;
+    const share = Math.floor(amt / who.length); let rem = amt - share * who.length;
+    // 끝전은 낸 사람이 함께했다면 낸 사람에게, 아니면 앞사람부터 1원씩
+    const order = who.includes(it.payer) ? [it.payer, ...who.filter(x => x !== it.payer)] : who;
+    who.forEach(id => bal[id].owe += share);
+    for (let k = 0; rem > 0; k++, rem--) bal[order[k % order.length]].owe += 1;
+  });
+  // 송금 최소화: 가장 많이 받을 사람과 가장 많이 줄 사람을 차례로 맞춤
+  const cred = [], debt = [];
+  Object.entries(bal).forEach(([id, b]) => { const d = b.paid - b.owe; if (d > 0) cred.push([id, d]); else if (d < 0) debt.push([id, -d]); });
+  cred.sort((a, b) => b[1] - a[1]); debt.sort((a, b) => b[1] - a[1]);
+  const tx = []; let i = 0, j = 0;
+  while (i < debt.length && j < cred.length) {
+    const x = Math.min(debt[i][1], cred[j][1]);
+    tx.push([debt[i][0], cred[j][0], x]);
+    debt[i][1] -= x; cred[j][1] -= x;
+    if (!debt[i][1]) i++; if (!cred[j][1]) j++;
+  }
+  return { bal, tx };
+}
+function multi(){
+  const { bal, tx } = settle();
+  const total = S.items.reduce((a, it) => a + (Math.round(+it.amt) || 0), 0);
+  const rows = S.people.map(p => { const b = bal[p.id], d = b.paid - b.owe;
+    return `<tr><td>${esc(p.name)}</td><td class="n">${won(b.owe)}</td><td class="n">${won(b.paid)}</td><td class="n" style="color:${d > 0 ? 'var(--accent)' : d < 0 ? 'var(--bad)' : 'inherit'}">${d > 0 ? '+' : ''}${won(d)}</td></tr>`; }).join('');
+  $('#mResult').innerHTML = !total ? '<p class="hint">금액을 넣으면 결과가 나옵니다.</p>' :
+    `<div class="stat"><div><small>총 사용 금액</small><b>${won(total)}</b></div><div class="main"><small>필요한 송금</small><b>${tx.length}번</b></div></div>` +
+    (tx.length ? `<ul class="tx">${tx.map(([a, b, x]) => `<li><span>${esc(pname(a))} → ${esc(pname(b))}</span><b>${won(x)}</b></li>`).join('')}</ul>` : '<p class="hint">주고받을 돈이 없습니다.</p>') +
+    `<table class="t"><tr><th>이름</th><th style="text-align:right">부담할 몫</th><th style="text-align:right">낸 돈</th><th style="text-align:right">차액</th></tr>${rows}</table>`;
+  const lines = ['[모임 정산]'];
+  S.items.forEach(it => { if (+it.amt) lines.push(`· ${it.name || '내역'} ${won(+it.amt)} (${pname(it.payer)} 결제, ${it.who.length}명)`); });
+  lines.push(`총 ${won(total)}`, '', '[보낼 돈]');
+  tx.forEach(([a, b, x]) => lines.push(`${pname(a)} → ${pname(b)} ${won(x)}`));
+  if (S.acct) lines.push('', '계좌: ' + S.acct);
+  multi.text = lines.join('\n');
+  store.set(KEY, S);
+}
+function renderAll(){ renderPeople(); renderItems(); $('#acct').value = S.acct || ''; multi(); }
+
+$('#people').addEventListener('input', e => { const p = S.people.find(x => x.id === e.target.dataset.pid); if (p) { p.name = e.target.value; renderItems(); multi(); } });
+$('#people').addEventListener('click', e => {
+  const id = e.target.dataset.delp; if (!id) return;
+  if (S.people.length <= 2) { toast('최소 2명은 있어야 합니다'); return; }
+  S.people = S.people.filter(p => p.id !== id);
+  S.items.forEach(it => { it.who = it.who.filter(w => w !== id); if (it.payer === id) it.payer = S.people[0].id; });
+  renderAll();
+});
+function addPerson(){
+  const n = val('newP'); if (!n) { $('#newP').focus(); return; }
+  const p = { id: newId(), name: n }; S.people.push(p);
+  S.items.forEach(it => it.who.push(p.id));
+  $('#newP').value = ''; renderAll(); $('#newP').focus();
+}
+$('#addP').addEventListener('click', addPerson);
+$('#newP').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPerson(); } });
+$('#items').addEventListener('input', e => {
+  const box = e.target.closest('.item'); if (!box) return;
+  const it = S.items.find(x => x.id === box.dataset.iid);
+  if (e.target.dataset.k) it[e.target.dataset.k] = e.target.value;
+  if (e.target.dataset.who) it.who = $$(`[data-iid="${it.id}"] [data-who]`).filter(c => c.checked).map(c => c.dataset.who);
+  multi();
+});
+$('#items').addEventListener('change', e => { if (e.target.dataset.k === 'payer') { const it = S.items.find(x => x.id === e.target.closest('.item').dataset.iid); it.payer = e.target.value; multi(); } });
+$('#items').addEventListener('click', e => {
+  const id = e.target.dataset.deli; if (!id) return;
+  if (S.items.length <= 1) { toast('내역이 하나는 있어야 합니다'); return; }
+  S.items = S.items.filter(i => i.id !== id); renderAll();
+});
+$('#addItem').addEventListener('click', () => {
+  S.items.push({ id: newId(), name: (S.items.length + 1) + '차', amt: '', payer: S.people[0].id, who: S.people.map(p => p.id) });
+  renderItems(); multi(); $$('#items .item').pop().querySelector('[data-k=amt]').focus();
+});
+$('#acct').addEventListener('input', () => { S.acct = $('#acct').value; multi(); });
+$('#mCopy').addEventListener('click', () => copy(multi.text));
+armReset($('#mReset'), () => { S = fresh(); history.replaceState(null, '', location.pathname); $('#sharedNote').classList.add('hidden'); renderAll(); });
+
+// 정산 링크: 상태를 주소 # 뒤에 담음 (서버 전송 없음)
+const enc = o => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const dec = s => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))));
+$('#mLink').addEventListener('click', () => {
+  const short = { p: S.people.map(p => [p.id, p.name]), i: S.items.map(it => [it.name, +it.amt || 0, it.payer, it.who]), a: S.acct };
+  copy(location.origin + location.pathname + '#s=' + enc(short));
+});
+function fromHash(){
+  const m = location.hash.match(/#s=([\w-]+)/); if (!m) return null;
+  try {
+    const o = dec(m[1]);
+    return { people: o.p.map(([id, name]) => ({ id, name })), items: o.i.map(([name, amt, payer, who]) => ({ id: newId(), name, amt: amt || '', payer, who })), acct: o.a || '' };
+  } catch (_) { return null; }
+}
+
+/* ---------- 시작 ---------- */
+bindTabs();
+$('#modeTabs').onTab = t => store.set(KEY + '_tab', t);
+['sTotal', 'sN'].forEach(id => $('#' + id).addEventListener('input', simple));
+$$('input[name=unit], input[name=round]').forEach(r => r.addEventListener('change', simple));
+$('#sCopy').addEventListener('click', () => copy(simple.text));
+
+const ss = store.get(KEY + '_s');
+if (ss) { $('#sTotal').value = ss.T || ''; $('#sN').value = ss.n || 4; $$('input[name=unit]').forEach(r => r.checked = +r.value === ss.u); $$('input[name=round]').forEach(r => r.checked = r.value === ss.r); }
+simple();
+
+const shared = fromHash();
+S = shared || store.get(KEY) || fresh();
+renderAll();
+const tab = shared ? 'multi' : store.get(KEY + '_tab');
+if (shared) $('#sharedNote').classList.remove('hidden');
+if (tab === 'multi') $('#modeTabs [data-tab=multi]').click();
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>

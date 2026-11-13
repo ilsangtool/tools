@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예약·노쇼 규정 문구 생성기 (무료) - 예약금·위약금 안내 문자</title>
+<meta name="description" content="식당·오마카세·미용실 노쇼 위약금 안내 문구 무료 생성기. 2025년 12월 개정 소비자분쟁해결기준(일반음식점 20%, 예약기반음식점 40%)에 맞춰 예약금·취소 환불 기준 문자와 공지문을 만듭니다.">
+<meta name="keywords" content="노쇼 위약금, 예약금 안내 문자, 노쇼 규정, 예약 취소 규정, 오마카세 예약금, 미용실 예약금, 소비자분쟁해결기준 노쇼">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/noshow-policy/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="예약·노쇼 규정 문구 생성기 (무료) - 예약금·위약금 안내 문자">
+<meta property="og:description" content="노쇼 위약금 최대 40%, 미리 문자로 알려야 인정됩니다">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/noshow-policy/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "예약·노쇼 규정 문구 생성기", "url": "https://ilsangtool.github.io/tools/noshow-policy/", "applicationCategory": "BusinessApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "식당 노쇼 위약금은 얼마까지 받을 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "소비자분쟁해결기준상 일반음식점은 총 이용금액의 20% 이하, 오마카세·파인다이닝 같은 예약기반음식점은 40% 이하입니다. 일반음식점도 대량 주문이나 단체 예약은 40% 기준을 쓸 수 있습니다."}}, {"@type": "Question", "name": "40% 기준은 아무 식당이나 적용되나요?", "acceptedAnswer": {"@type": "Answer", "text": "예약 기반으로 운영한다는 점과 위약금 기준을 문자 등으로 미리 알린 경우에만 적용됩니다. 미리 알리지 않으면 일반음식점 기준(20%)으로 봅니다."}}, {"@type": "Question", "name": "지각도 노쇼로 볼 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "몇 분 늦으면 노쇼로 보는지 미리 안내한 경우에 한해 노쇼로 처리할 수 있습니다. 예약 확정 문자에 함께 적어 두세요."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">2025.12 개정 소비자분쟁해결기준 반영</span>
+    <h1>예약·노쇼 규정 문구 생성기</h1>
+    <p>업종과 예약금, 취소 기한을 정하면 예약 확정 문자·매장 공지·네이버 예약 유의사항 문구를 한 번에 만들어 드립니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="notice">
+    노쇼 위약금은 <b>예약할 때 문자 등으로 미리 알린 경우에만</b> 인정받기 쉽습니다. 여기서 만든 '예약 확정 문자'를 예약마다 보내 두세요.
+  </div>
+
+  <form id="f" autocomplete="off">
+  <section class="card">
+    <h2><span class="num">1</span>업종</h2>
+    <div class="radio-group">
+      <label><input type="radio" name="biz" value="general" checked><span>일반음식점</span></label>
+      <label><input type="radio" name="biz" value="reserve"><span>예약기반음식점 (오마카세·파인다이닝)</span></label>
+      <label><input type="radio" name="biz" value="group"><span>단체 예약·대량 주문</span></label>
+      <label><input type="radio" name="biz" value="beauty"><span>미용실·네일·피부관리</span></label>
+      <label><input type="radio" name="biz" value="studio"><span>공방·스튜디오·클래스</span></label>
+    </div>
+    <p class="hint" id="bizHint" style="margin-top:8px"></p>
+    <div class="row">
+      <div><label class="f" for="shop">상호</label><input type="text" id="shop" placeholder="예: 스시 구리"></div>
+      <div><label class="f" for="contact">취소·변경 연락처</label><input type="text" id="contact" placeholder="예: 031-000-0000"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span>예약금</h2>
+    <div class="radio-group">
+      <label><input type="radio" name="dep" value="person" checked><span>1인당 금액</span></label>
+      <label><input type="radio" name="dep" value="total"><span>예약 1건당 금액</span></label>
+      <label><input type="radio" name="dep" value="none"><span>받지 않음</span></label>
+    </div>
+    <div class="row" id="depRow">
+      <div><label class="f" for="depAmt" id="depLbl">1인 예약금</label><input type="number" id="depAmt" value="30000" step="1000" inputmode="numeric"></div>
+      <div><label class="f" for="price" id="priceLbl">1인 예상 이용금액</label><input type="number" id="price" value="150000" step="1000" inputmode="numeric"></div>
+    </div>
+    <div id="capBox"></div>
+    <label class="f" for="account">예약금 입금·결제 방법 <span class="opt">선택</span></label>
+    <input type="text" id="account" placeholder="예: 네이버 예약 시 자동 결제 / ○○은행 000-000 (예금주)">
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span>취소·변경 기준</h2>
+    <div class="row">
+      <div><label class="f" for="d1">전액 환불: 이용 며칠 전까지 취소</label><select id="d1"><option value="1">1일 전(전날)까지</option><option value="2">2일 전까지</option><option value="3">3일 전까지</option><option value="7">7일 전까지</option></select></div>
+      <div><label class="f" for="late">연락 없이 몇 분 늦으면 노쇼 처리</label><select id="late"><option>10</option><option selected>15</option><option>20</option><option>30</option></select></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="mid" checked><span>중간 단계 두기: 전액 환불 기한이 지난 뒤에도 일정 시간 전까지는 일부 환불</span></label>
+    <div class="row" id="midRow">
+      <div><label class="f" for="h2">이용 몇 시간 전까지</label><select id="h2"><option value="2">2시간 전까지</option><option value="3" selected>3시간 전까지</option><option value="6">6시간 전까지</option><option value="12">12시간 전까지</option></select></div>
+      <div><label class="f" for="p2">예약금 몇 % 환불</label><select id="p2"><option>70</option><option selected>50</option><option>30</option></select></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="change" checked><span>전액 환불 기한 안에는 날짜·시간 변경 1회 무료</span></label>
+  </section>
+  </form>
+
+  <section class="card" id="out">
+    <h2>결과물</h2>
+    <div class="tabs">
+      <button type="button" class="on" data-tab="sms">예약 확정 문자</button>
+      <button type="button" data-tab="notice">매장·SNS 공지</button>
+      <button type="button" data-tab="short">예약 유의사항 (짧게)</button>
+    </div>
+    <div data-pane="sms"><pre id="smsOut"></pre><p class="hint" style="margin:6px 0 0">○ 표시 부분은 예약마다 바꿔 보내세요. 카카오톡·문자 단축 문구에 저장해 두면 편합니다.</p></div>
+    <div data-pane="notice" class="hidden"><pre id="noticeOut"></pre></div>
+    <div data-pane="short" class="hidden"><pre id="shortOut"></pre><p class="hint" style="margin:6px 0 0">네이버 예약·캐치테이블의 '예약 시 유의사항' 칸에 맞춘 짧은 버전입니다.</p></div>
+    <div class="actions">
+      <button type="button" id="copyBtn">지금 탭 문구 복사</button>
+      <button type="button" id="resetBtn" class="ghost">처음부터 다시</button>
+    </div>
+  </section>
+
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>식당 노쇼 위약금은 얼마까지 받을 수 있나요?</summary><p>소비자분쟁해결기준상 일반음식점은 총 이용금액의 20% 이하, 오마카세·파인다이닝 같은 예약기반음식점은 40% 이하입니다. 일반음식점도 대량 주문이나 단체 예약은 40% 기준을 쓸 수 있습니다.</p></details><details><summary>40% 기준은 아무 식당이나 적용되나요?</summary><p>예약 기반으로 운영한다는 점과 위약금 기준을 문자 등으로 미리 알린 경우에만 적용됩니다. 미리 알리지 않으면 일반음식점 기준(20%)으로 봅니다.</p></details><details><summary>지각도 노쇼로 볼 수 있나요?</summary><p>몇 분 늦으면 노쇼로 보는지 미리 안내한 경우에 한해 노쇼로 처리할 수 있습니다. 예약 확정 문자에 함께 적어 두세요.</p></details></section>
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
+  <footer>
+    근거: 소비자분쟁해결기준(공정거래위원회 고시, 2025.12.18 개정 시행) 외식업 예약부도 기준. 이 기준은 분쟁 조정 때 쓰는 권고 기준이며, 이 도구는 참고용으로 법률 자문이 아닙니다.<br>
+    입력한 내용은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+
+const KEY = 'ilsang_noshow_v1';
+const BIZ = {
+  general: { cap:20, food:true, hint:'일반음식점은 노쇼 위약금이 총 이용금액의 20% 이하일 때 분쟁 조정에서 인정됩니다.', late:'15' },
+  reserve: { cap:40, food:true, hint:'예약에 맞춰 재료를 미리 준비하는 예약기반음식점은 40% 이하까지 인정됩니다. 단, 예약기반음식점이라는 점과 위약금 기준을 미리 알려야 합니다.', late:'15' },
+  group:   { cap:40, food:true, hint:'일반음식점도 대량 주문·단체 예약은 미리 알린 경우 40% 이하 기준을 쓸 수 있습니다.', late:'20' },
+  beauty:  { cap:0, food:false, hint:'미용·서비스업은 별도 상한이 없지만, 예약금이 과도하면 분쟁에서 불리합니다. 서비스 금액의 일부 수준으로 정하고 미리 알리세요.', late:'10' },
+  studio:  { cap:0, food:false, hint:'공방·클래스는 재료 준비 비용을 근거로 예약금을 정하고, 취소 기한을 넉넉히 두면 분쟁이 줄어듭니다.', late:'10' }
+};
+const fields = () => $$('#f input, #f select');
+function save(){ const s = {}; fields().forEach(el => { if (el.type === 'radio') { if (el.checked) s['r_'+el.name] = el.value; } else s[el.id] = el.type === 'checkbox' ? el.checked : el.value; }); store.set(KEY, s); }
+function load(){ const s = store.get(KEY); if (!s) return; fields().forEach(el => { if (el.type === 'radio') { if (s['r_'+el.name]) el.checked = s['r_'+el.name] === el.value; } else if (el.id in s) { if (el.type === 'checkbox') el.checked = s[el.id]; else el.value = s[el.id]; } }); }
+
+function d1Text(n){ return n === 1 ? '이용 전날까지' : `이용 ${n}일 전까지`; }
+function h2Text(h){ return `이용 ${h}시간 전까지`; }
+
+function build(){
+  const biz = radio('biz'), B = BIZ[biz], dep = radio('dep');
+  $('#bizHint').textContent = B.hint;
+  $('#depRow').classList.toggle('hidden', dep === 'none');
+  $('#depLbl').textContent = dep === 'person' ? '1인 예약금' : '예약 1건당 예약금';
+  $('#priceLbl').textContent = dep === 'person' ? '1인 예상 이용금액' : '예약 1건 예상 이용금액';
+  $('#midRow').classList.toggle('hidden', !$('#mid').checked);
+
+  const shop = val('shop') || '○○○';
+  const amt = +val('depAmt') || 0, price = +val('price') || 0;
+  const unit = dep === 'person' ? '1인 ' : '';
+  const d1 = +$('#d1').value, h2 = +$('#h2').value, p2 = +$('#p2').value, late = $('#late').value;
+  const mid = $('#mid').checked && dep !== 'none';
+
+  // 상한 검토
+  let cap = '';
+  if (dep !== 'none' && amt && price) {
+    const r = amt / price * 100;
+    if (B.food) {
+      cap = r > B.cap
+        ? `<div class="warn-line">예약금이 이용금액의 ${r.toFixed(0)}%입니다. 이 업종의 노쇼 위약금 기준(${B.cap}% 이하)을 넘어 분쟁 시 차액을 돌려줘야 할 수 있습니다. ${won(price*B.cap/100)} 이하로 낮추는 것을 권합니다.</div>`
+        : `<div class="notice ok" style="margin:10px 0 0">이용금액의 ${r.toFixed(0)}% — 기준(${B.cap}% 이하) 안입니다.</div>`;
+    } else cap = `<p class="hint" style="margin:8px 0 0">이용금액의 ${r.toFixed(0)}%입니다.</p>`;
+  }
+  $('#capBox').innerHTML = cap;
+
+  const rules = [];
+  if (dep === 'none') {
+    rules.push(`${d1Text(d1)} 취소·변경 연락을 부탁드립니다.`);
+    rules.push(`연락 없이 예약 시간에서 ${late}분이 지나면 예약이 자동 취소됩니다.`);
+  } else {
+    rules.push(`${d1Text(d1)} 취소: 예약금 전액 환불`);
+    if (mid) rules.push(`${h2Text(h2)} 취소: 예약금 ${p2}% 환불`);
+    rules.push(`그 이후 취소·노쇼: 예약금 환불 불가`);
+    rules.push(`연락 없이 ${late}분 이상 늦으시면 노쇼로 처리됩니다.`);
+  }
+  if ($('#change').checked) rules.push(`${d1Text(d1)}는 날짜·시간 변경 1회 무료`);
+  const shopCancel = '매장 사정으로 예약을 취소하게 되면 예약금은 전액 돌려드립니다.';
+  const depLine = dep === 'none' ? '' : `· 예약금: ${unit}${won(amt)}${val('account') ? ` (${val('account')})` : ''}\n`;
+  const typeLine = biz === 'reserve' ? '저희 매장은 예약 인원에 맞춰 당일 재료를 준비하는 예약제 매장입니다.\n'
+                 : biz === 'group' ? '단체 예약·대량 주문은 예약에 맞춰 재료를 미리 준비합니다.\n' : '';
+
+  const sms =
+`[${shop}] 예약 확정 안내
+○○○님, 예약이 확정되었습니다.
+· 일시: ○월 ○일(○) ○시 ○분
+· 인원: ○명
+${depLine}
+${typeLine}[취소·환불 기준]
+${rules.map(r => '· ' + r).join('\n')}
+
+${shopCancel}${val('contact') ? `\n취소·변경 문의: ${val('contact')}` : ''}
+감사합니다.`;
+
+  const notice =
+`[${shop} 예약 안내]
+
+${typeLine ? typeLine + '\n' : ''}${dep === 'none' ? '' : `■ 예약금\n- ${unit}${won(amt)}을 예약 시 받습니다.${val('account') ? `\n- 결제 방법: ${val('account')}` : ''}\n- 예약금은 이용 당일 결제 금액에서 차감됩니다.\n\n`}■ 취소·환불 기준
+${rules.map(r => '- ' + r).join('\n')}
+
+■ 매장 사정으로 취소할 때
+- ${shopCancel}
+
+노쇼는 미리 준비한 재료와 다른 손님의 예약 기회를 함께 잃게 합니다. 일정이 바뀌면 꼭 미리 연락 부탁드립니다.${val('contact') ? `\n문의: ${val('contact')}` : ''}`;
+
+  const short = dep === 'none'
+    ? `${d1Text(d1)} 취소·변경 연락 부탁드립니다. 연락 없이 ${late}분 지나면 자동 취소됩니다.`
+    : `예약금 ${unit}${won(amt)}. ${d1Text(d1)} 취소 시 전액 환불${mid ? `, ${h2Text(h2)} ${p2}% 환불` : ''}, 이후 취소·노쇼는 환불 불가. 연락 없이 ${late}분 이상 늦으면 노쇼 처리됩니다.`;
+
+  $('#smsOut').textContent = sms;
+  $('#noticeOut').textContent = notice;
+  $('#shortOut').textContent = short;
+  build.out = { sms, notice, short };
+  save();
+}
+
+bindTabs();
+let cur = 'sms';
+$('.tabs').onTab = t => cur = t;
+$$('input[name=biz]').forEach(r => r.addEventListener('change', () => { $('#late').value = BIZ[radio('biz')].late; }));
+$('#f').addEventListener('input', build);
+$('#f').addEventListener('change', build);
+$('#copyBtn').addEventListener('click', () => copy(build.out[cur]));
+armReset($('#resetBtn'), () => { store.del(KEY); $('#f').reset(); build(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+load(); build();
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>

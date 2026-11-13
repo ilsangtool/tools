@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>증명사진 규격 자르기 (무료) - 여권·반명함·비자 사진, 4x6 인화용</title>
+<meta name="description" content="증명사진 사이즈 자르기 무료 도구. 여권·주민등록증·운전면허 3.5×4.5cm, 반명함·이력서 3×4cm, 명함판, 미국·중국·일본 비자 사진 규격으로 자르고 300dpi 파일과 4×6(10×15cm) 인화용 판을 만듭니다. 사진은 서버에 올라가지 않습니다.">
+<meta name="keywords" content="증명사진 사이즈, 증명사진 자르기, 여권사진 규격, 반명함 사이즈, 이력서 사진 크기, 증명사진 인화, 3x4 사진, 3.5x4.5 사진">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/id-photo/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="증명사진 규격 자르기 (무료) - 여권·반명함·비자 사진, 4x6 인화용">
+<meta property="og:description" content="사진관 안 가고 증명사진 규격 맞추기, 4×6 인화판까지">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/id-photo/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "증명사진 규격 자르기", "url": "https://ilsangtool.github.io/tools/id-photo/", "applicationCategory": "MultimediaApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "여권 사진 크기는 얼마인가요?", "acceptedAnswer": {"@type": "Answer", "text": "가로 3.5cm × 세로 4.5cm이고, 정수리부터 턱까지 얼굴 길이가 3.2~3.6cm여야 합니다. 화면의 점선 가이드에 정수리와 턱을 맞추면 됩니다."}}, {"@type": "Question", "name": "반명함과 이력서 사진은 같은 크기인가요?", "acceptedAnswer": {"@type": "Answer", "text": "보통 둘 다 3cm × 4cm입니다. 회사나 기관이 따로 정한 크기가 있으면 '직접 입력'을 쓰세요."}}, {"@type": "Question", "name": "4×6 인화용 판은 어디서 뽑나요?", "acceptedAnswer": {"@type": "Answer", "text": "편의점 사진 인화기, 사진관, 온라인 인화 서비스에서 4×6(10×15cm) 크기로 '원본 크기 그대로(테두리 없음 해제)' 인화하면 됩니다. 가위로 회색 선을 따라 자르세요."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+  main{max-width:1000px}
+  .layout{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'a s' 'c s';gap:0 12px;align-items:start}
+  .colA{grid-area:a}.colC{grid-area:c}.stagecard{grid-area:s}
+  .pick{display:inline-block;position:relative;margin-top:6px}
+  .pick input{position:absolute;opacity:0;width:1px;height:1px}
+  .pick span{display:inline-block;background:var(--ink);color:#fff;border-radius:6px;padding:10px 16px;font-weight:500;cursor:pointer}
+  .pick:has(input:focus-visible) span{outline:2px solid var(--accent);outline-offset:2px}
+  .stage{position:relative;display:flex;justify-content:center;background:repeating-conic-gradient(#eee 0% 25%,#fafafa 0% 50%) 50%/16px 16px;border-radius:6px;padding:14px}
+  #stage{touch-action:none;cursor:grab;max-width:100%;box-shadow:0 0 0 1px #999,0 4px 16px rgba(0,0,0,.15);background:#fff}
+  #stage:active{cursor:grabbing}
+  .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:14px;pointer-events:none}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  #sheetPrev{width:100%;margin-top:10px;border:1px solid var(--line);border-radius:4px}
+  @media(max-width:820px){.layout{grid-template-columns:1fr;grid-template-areas:'a' 's' 'c'}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">여권 3.5×4.5 · 반명함 3×4 · 비자 · 4×6 인화용</span>
+    <h1>증명사진 규격 자르기</h1>
+    <p>찍어 둔 사진을 여권·주민등록증·이력서·비자 규격에 맞춰 자르고, 편의점·사진관에서 바로 뽑을 수 있는 4×6 인화용 판까지 만들어 드립니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+    <div class="colA">
+      <section class="card">
+        <h2><span class="num">1</span>사진 고르기</h2>
+        <label class="pick"><input type="file" id="file" accept="image/*"><span>사진 선택</span></label>
+        <p class="hint" style="margin:8px 0 0">밝은 흰 벽 앞에서 정면으로 찍은 사진이 가장 좋습니다. 휴대폰은 얼굴에서 1m 이상 떨어져 찍어야 얼굴이 덜 왜곡됩니다.</p>
+      </section>
+      <section class="card">
+        <h2><span class="num">2</span>규격</h2>
+        <select id="spec" aria-label="사진 규격">
+          <option value="35x45x32x36">여권 (3.5×4.5cm)</option>
+          <option value="35x45x30x36">주민등록증·운전면허 (3.5×4.5cm)</option>
+          <option value="30x40x0x0">반명함·이력서 (3×4cm)</option>
+          <option value="25x30x0x0">3×2.5cm (일부 자격증)</option>
+          <option value="50x70x0x0">명함판 (5×7cm)</option>
+          <option value="51x51x25x35">미국 비자 (5.1×5.1cm)</option>
+          <option value="33x48x28x33">중국 비자 (3.3×4.8cm)</option>
+          <option value="45x45x0x0">일본 비자 (4.5×4.5cm)</option>
+          <option value="custom">직접 입력</option>
+        </select>
+        <div class="row hidden" id="customRow">
+          <div><label class="f" for="cw">가로 (mm)</label><input type="number" id="cw" value="30" min="10" max="120"></div>
+          <div><label class="f" for="ch">세로 (mm)</label><input type="number" id="ch" value="40" min="10" max="120"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card stagecard">
+      <h2>위치 맞추기</h2>
+      <p class="hint">사진을 끌어서 옮기고, 아래 막대나 두 손가락으로 크기를 조절하세요. 정수리를 위 점선, 턱을 아래 점선에 맞춥니다.</p>
+      <div class="stage" id="stageWrap">
+        <canvas id="stage" aria-label="자르기 화면"></canvas>
+        <div class="empty" id="empty">사진을 먼저 골라 주세요</div>
+      </div>
+      <label class="f" for="zoom">크기</label>
+      <input type="range" id="zoom" min="0.2" max="4" step="0.01" value="1" disabled>
+      <div class="actions">
+        <button type="button" class="ghost sm" id="rot" disabled>90° 회전</button>
+        <button type="button" class="ghost sm" id="fit" disabled>처음 위치로</button>
+        <label class="chk" style="border:0;padding:4px 0"><input type="checkbox" id="guide" checked><span>얼굴 가이드 보기</span></label>
+      </div>
+      <label class="f" for="bright">밝기</label>
+      <input type="range" id="bright" min="80" max="130" value="100" disabled>
+    </section>
+
+    <div class="colC">
+      <section class="card">
+        <h2><span class="num">3</span>저장</h2>
+        <div class="actions" style="margin-top:4px">
+          <button type="button" id="saveOne" disabled>사진 1장 저장 (300dpi)</button>
+          <button type="button" id="saveSheet" class="ghost" disabled>4×6 인화용 판 저장</button>
+        </div>
+        <p class="hint" id="sheetInfo" style="margin:0"></p>
+        <canvas id="sheetPrev" class="hidden" aria-label="인화용 판 미리보기"></canvas>
+      </section>
+    </div>
+  </div>
+
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>여권 사진 크기는 얼마인가요?</summary><p>가로 3.5cm × 세로 4.5cm이고, 정수리부터 턱까지 얼굴 길이가 3.2~3.6cm여야 합니다. 화면의 점선 가이드에 정수리와 턱을 맞추면 됩니다.</p></details><details><summary>반명함과 이력서 사진은 같은 크기인가요?</summary><p>보통 둘 다 3cm × 4cm입니다. 회사나 기관이 따로 정한 크기가 있으면 &#x27;직접 입력&#x27;을 쓰세요.</p></details><details><summary>4×6 인화용 판은 어디서 뽑나요?</summary><p>편의점 사진 인화기, 사진관, 온라인 인화 서비스에서 4×6(10×15cm) 크기로 &#x27;원본 크기 그대로(테두리 없음 해제)&#x27; 인화하면 됩니다. 가위로 회색 선을 따라 자르세요.</p></details></section>
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li></ul></nav>
+  <footer>
+    여권 사진은 최근 6개월 이내 촬영, 흰색 배경, 정면, 눈썹·귀 윤곽이 보이는 사진 등 외교부 기준을 지켜야 접수됩니다. 이 도구는 크기만 맞추며 배경을 바꾸거나 얼굴을 보정하지 않습니다.<br>
+    선택한 사진은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+
+const DPMM = 300 / 25.4; // 300dpi 기준 1mm 당 픽셀
+const SHEET = { w: 152.4, h: 101.6, margin: 3, gap: 2 }; // 4×6인치 가로
+const st = { img: null, z: 1, cx: 0, cy: 0, rot: 0, bright: 100 };
+const cv = $('#stage'), ctx = cv.getContext('2d');
+let P = 8; // 미리보기 1mm 당 CSS 픽셀
+
+function spec(){
+  const v = $('#spec').value;
+  if (v === 'custom') return { W: Math.min(120, Math.max(10, +val('cw') || 30)), H: Math.min(120, Math.max(10, +val('ch') || 40)), hmin: 0, hmax: 0 };
+  const [W, H, hmin, hmax] = v.split('x').map(Number); return { W, H, hmin, hmax };
+}
+function dims(){ const iw = st.img.width, ih = st.img.height; return st.rot % 180 ? [ih, iw] : [iw, ih]; }
+function kFit(){ const { W, H } = spec(), [rw, rh] = dims(); return Math.max(W / rw, H / rh); }
+function fit(){ const { W, H } = spec(); st.z = 1; st.cx = W / 2; st.cy = H / 2; $('#zoom').value = 1; }
+
+function paint(c, pxPerMm, guides){
+  const { W, H, hmin, hmax } = spec(), x = c.getContext('2d');
+  x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  x.scale(pxPerMm, pxPerMm);
+  if (st.img) {
+    const k = kFit() * st.z, iw = st.img.width * k, ih = st.img.height * k;
+    x.save(); x.translate(st.cx, st.cy); x.rotate(st.rot * Math.PI / 180);
+    if (st.bright !== 100) x.filter = `brightness(${st.bright}%)`;
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(st.img, -iw / 2, -ih / 2, iw, ih);
+    x.restore();
+  }
+  if (guides) {
+    const top = H * 0.1, len = hmin ? (hmin + hmax) / 2 : H * 0.62, lw = 1 / pxPerMm;
+    x.strokeStyle = 'rgba(15,92,74,.9)'; x.lineWidth = 1.5 * lw; x.setLineDash([4 * lw, 3 * lw]);
+    x.beginPath(); x.moveTo(0, top); x.lineTo(W, top); x.stroke();
+    if (hmin) { x.fillStyle = 'rgba(15,92,74,.14)'; x.fillRect(0, top + hmin, W, hmax - hmin); x.beginPath(); x.moveTo(0, top + hmin); x.lineTo(W, top + hmin); x.moveTo(0, top + hmax); x.lineTo(W, top + hmax); x.stroke(); }
+    else { x.beginPath(); x.moveTo(0, top + len); x.lineTo(W, top + len); x.stroke(); }
+    x.beginPath(); x.moveTo(W / 2, 0); x.lineTo(W / 2, H); x.strokeStyle = 'rgba(15,92,74,.35)'; x.stroke();
+    x.beginPath(); x.ellipse(W / 2, top + len / 2, len * 0.36, len / 2, 0, 0, Math.PI * 2); x.strokeStyle = 'rgba(15,92,74,.9)'; x.stroke();
+    x.setLineDash([]);
+    x.font = `500 ${11 * lw}px "Noto Sans KR",sans-serif`; x.fillStyle = 'rgba(15,92,74,1)';
+    x.fillText('정수리', 1.5 * lw * 2, top - 3 * lw);
+    x.fillText(hmin ? '턱 (이 띠 안)' : '턱', 1.5 * lw * 2, top + (hmin ? hmax : len) + 12 * lw);
+  }
+  x.restore();
+}
+
+function layout(){
+  const { W, H } = spec(), wrapW = $('#stageWrap').clientWidth - 28;
+  const cssW = Math.min(340, wrapW), cssH = cssW * H / W, maxH = 440;
+  const s = cssH > maxH ? maxH / cssH : 1;
+  P = cssW * s / W;
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.width = W * P + 'px'; cv.style.height = H * P + 'px';
+  cv.width = Math.round(W * P * dpr); cv.height = Math.round(H * P * dpr);
+  draw();
+}
+function draw(){ paint(cv, cv.width / spec().W, $('#guide').checked); }
+
+function photoCanvas(){
+  const { W, H } = spec(), c = document.createElement('canvas');
+  c.width = Math.round(W * DPMM); c.height = Math.round(H * DPMM);
+  paint(c, DPMM, false); return c;
+}
+function sheetCanvas(){
+  const { W, H } = spec(), S = SHEET, one = photoCanvas();
+  const cols = Math.floor((S.w - 2 * S.margin + S.gap) / (W + S.gap)), rows = Math.floor((S.h - 2 * S.margin + S.gap) / (H + S.gap));
+  const c = document.createElement('canvas'); c.width = Math.round(S.w * DPMM); c.height = Math.round(S.h * DPMM);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  const gw = cols * W + (cols - 1) * S.gap, gh = rows * H + (rows - 1) * S.gap;
+  const ox = (S.w - gw) / 2, oy = (S.h - gh) / 2;
+  x.strokeStyle = '#b0b0b0'; x.lineWidth = 2;
+  for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
+    const px = (ox + q * (W + S.gap)) * DPMM, py = (oy + r * (H + S.gap)) * DPMM;
+    x.drawImage(one, px, py, W * DPMM, H * DPMM);
+    x.strokeRect(px - 1, py - 1, W * DPMM + 2, H * DPMM + 2);
+  }
+  return { c, n: cols * rows, cols, rows };
+}
+let sheetT;
+function updateSheet(){
+  clearTimeout(sheetT);
+  sheetT = setTimeout(() => {
+    if (!st.img) return;
+    const { c, n, cols, rows } = sheetCanvas(), p = $('#sheetPrev');
+    p.width = 600; p.height = 400; p.getContext('2d').drawImage(c, 0, 0, 600, 400); p.classList.remove('hidden');
+    $('#sheetInfo').textContent = n ? `4×6(10×15cm) 인화지 한 장에 ${n}장 (${cols}×${rows})이 들어갑니다.` : '이 크기는 4×6 인화지에 들어가지 않습니다.';
+    $('#saveSheet').disabled = !n;
+  }, 250);
+}
+function changed(){ draw(); updateSheet(); }
+
+async function loadFile(f){
+  if (!f) return;
+  try { st.img = await createImageBitmap(f, { imageOrientation: 'from-image' }); }
+  catch (_) {
+    st.img = await new Promise((ok, no) => { const u = URL.createObjectURL(f), im = new Image(); im.onload = () => ok(im); im.onerror = () => no(); im.src = u; })
+      .catch(() => { toast('이 사진 형식은 열 수 없습니다. JPG로 바꿔서 넣어 주세요'); return null; });
+  }
+  if (!st.img) return;
+  st.rot = 0; fit();
+  $('#empty').classList.add('hidden');
+  ['zoom', 'rot', 'fit', 'bright', 'saveOne'].forEach(id => $('#' + id).disabled = false);
+  layout(); updateSheet();
+}
+
+// 끌기·두 손가락 확대
+const ptr = new Map(); let pinch0 = 0, z0 = 1;
+cv.addEventListener('pointerdown', e => { if (!st.img) return; cv.setPointerCapture(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]); if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); z0 = st.z; } });
+cv.addEventListener('pointermove', e => {
+  if (!ptr.has(e.pointerId)) return;
+  const prev = ptr.get(e.pointerId); ptr.set(e.pointerId, [e.clientX, e.clientY]);
+  if (ptr.size === 1) { st.cx += (e.clientX - prev[0]) / P; st.cy += (e.clientY - prev[1]) / P; }
+  else if (ptr.size === 2 && pinch0) { const [a, b] = [...ptr.values()]; st.z = Math.min(4, Math.max(0.2, z0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch0)); $('#zoom').value = st.z; }
+  draw();
+});
+['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, e => { ptr.delete(e.pointerId); if (ptr.size < 2) pinch0 = 0; updateSheet(); }));
+cv.addEventListener('wheel', e => { if (!st.img) return; e.preventDefault(); st.z = Math.min(4, Math.max(0.2, st.z * Math.exp(-e.deltaY * 0.0015))); $('#zoom').value = st.z; changed(); }, { passive: false });
+cv.addEventListener('keydown', e => { const m = { ArrowLeft: [-.5, 0], ArrowRight: [.5, 0], ArrowUp: [0, -.5], ArrowDown: [0, .5] }[e.key]; if (m && st.img) { e.preventDefault(); st.cx += m[0]; st.cy += m[1]; changed(); } });
+cv.tabIndex = 0;
+
+$('#file').addEventListener('change', e => loadFile(e.target.files[0]));
+$('#zoom').addEventListener('input', () => { st.z = +$('#zoom').value; changed(); });
+$('#bright').addEventListener('input', () => { st.bright = +$('#bright').value; changed(); });
+$('#rot').addEventListener('click', () => { st.rot = (st.rot + 90) % 360; changed(); });
+$('#fit').addEventListener('click', () => { fit(); changed(); });
+$('#guide').addEventListener('change', draw);
+$('#spec').addEventListener('change', () => { $('#customRow').classList.toggle('hidden', $('#spec').value !== 'custom'); if (st.img) fit(); layout(); updateSheet(); store.set('ilsang_idphoto_v1', { spec: $('#spec').value, cw: val('cw'), ch: val('ch') }); });
+['cw', 'ch'].forEach(id => $('#' + id).addEventListener('input', () => { if (st.img) fit(); layout(); updateSheet(); store.set('ilsang_idphoto_v1', { spec: $('#spec').value, cw: val('cw'), ch: val('ch') }); }));
+const name = () => { const { W, H } = spec(); return `증명사진_${W}x${H}mm`; };
+$('#saveOne').addEventListener('click', () => photoCanvas().toBlob(b => download(b, name() + '.jpg'), 'image/jpeg', 0.95));
+$('#saveSheet').addEventListener('click', () => sheetCanvas().c.toBlob(b => download(b, name() + '_4x6인화용.jpg'), 'image/jpeg', 0.95));
+window.addEventListener('resize', layout);
+
+const saved = store.get('ilsang_idphoto_v1');
+if (saved) { $('#spec').value = saved.spec || $('#spec').value; if (saved.cw) $('#cw').value = saved.cw; if (saved.ch) $('#ch').value = saved.ch; $('#customRow').classList.toggle('hidden', $('#spec').value !== 'custom'); }
+layout();
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>

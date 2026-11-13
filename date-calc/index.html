@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D-day·전역일·만나이 계산기 - 기념일 100일, 날짜 더하기 (무료)</title>
+<meta name="description" content="디데이 계산기, 100일·1000일 기념일 계산, 날짜 더하기 빼기, 육군·해군·공군·사회복무요원 전역일 계산, 만 나이 계산을 한 곳에서. 설치 없이 무료로 바로 씁니다.">
+<meta name="keywords" content="디데이 계산기, D-day 계산, 100일 계산기, 기념일 계산기, 날짜 계산기, 전역일 계산기, 만나이 계산기, 날짜 더하기">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/date-calc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="D-day·전역일·만나이 계산기 - 기념일 100일, 날짜 더하기 (무료)">
+<meta property="og:description" content="디데이·100일·전역일·만나이, 한 화면에서 끝">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/date-calc/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "D-day·전역일·만나이 계산기", "url": "https://ilsangtool.github.io/tools/date-calc/", "applicationCategory": "UtilitiesApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "100일은 시작일을 1일로 세나요?", "acceptedAnswer": {"@type": "Answer", "text": "연애·아기 100일은 보통 시작일(태어난 날)을 1일로 셉니다. 그래서 100일째는 시작일부터 99일 뒤입니다. '시작일을 1일로' 옵션을 끄면 시작일 다음 날을 1일로 셉니다."}}, {"@type": "Question", "name": "전역일은 어떻게 계산하나요?", "acceptedAnswer": {"@type": "Answer", "text": "입대일에 복무 개월 수를 더한 날의 전날입니다. 예를 들어 2026년 3월 2일 육군 입대(18개월)면 2027년 9월 1일 전역입니다."}}, {"@type": "Question", "name": "만 나이는 어떻게 세나요?", "acceptedAnswer": {"@type": "Answer", "text": "태어난 날을 0살로 하고 생일이 지날 때마다 한 살씩 더합니다. 올해 생일이 아직 안 지났으면 (올해 − 출생연도 − 1)살입니다."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+  .tabwrap>.card{border-top-left-radius:0;border-top-right-radius:0}
+  .tabwrap>.tabs{margin-bottom:0;background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0}
+  .big{font-size:30px;font-weight:700;letter-spacing:-.5px;margin:14px 0 8px;color:var(--accent);line-height:1.3}
+  .big small{display:block;font-size:14px;color:var(--sub);font-weight:400;letter-spacing:0}
+  .bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:4px 0 12px}
+  .bar div{height:100%;background:var(--accent);width:0;transition:width .3s}
+  tr.past td{color:#9aa0a6}
+  tr.next td{font-weight:700;color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">디데이 · 기념일 · 날짜 계산 · 전역일 · 만 나이</span>
+    <h1>D-day·전역일·만나이 계산기</h1>
+    <p>시험·여행 디데이, 연애·아기 100일, 며칠 뒤 날짜, 군 전역일, 만 나이를 한 화면에서 계산합니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="tabwrap">
+    <div class="tabs" id="mainTabs">
+      <button type="button" class="on" data-tab="dday">D-day</button>
+      <button type="button" data-tab="anniv">기념일·100일</button>
+      <button type="button" data-tab="add">날짜 더하기</button>
+      <button type="button" data-tab="army">전역일</button>
+      <button type="button" data-tab="age">만 나이</button>
+    </div>
+
+    <section class="card" data-pane="dday">
+      <h2>D-day 계산</h2>
+      <div class="row">
+        <div><label class="f" for="ddTarget">목표 날짜</label><input type="date" id="ddTarget"></div>
+        <div><label class="f" for="ddBase">기준 날짜 (기본: 오늘)</label><input type="date" id="ddBase"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="ddBoth"><span>시작일과 끝날 모두 포함해 기간 세기 (양편 넣기, 예: 숙박·근무일수)</span></label>
+      <div class="big" id="ddOut"></div>
+      <div class="stat" id="ddStat"></div>
+    </section>
+
+    <section class="card hidden" data-pane="anniv">
+      <h2>기념일 계산</h2>
+      <div class="row">
+        <div><label class="f" for="anStart">시작일 (사귄 날·태어난 날)</label><input type="date" id="anStart"></div>
+        <div><label class="f">&nbsp;</label><label class="chk" style="border:0"><input type="checkbox" id="anOne" checked><span>시작일을 1일로 세기</span></label></div>
+      </div>
+      <div class="big" id="anOut"></div>
+      <table class="t" id="anTable"></table>
+    </section>
+
+    <section class="card hidden" data-pane="add">
+      <h2>날짜 더하기·빼기</h2>
+      <div class="row3">
+        <div><label class="f" for="adBase">기준 날짜</label><input type="date" id="adBase"></div>
+        <div><label class="f" for="adN">더할 값 (빼려면 −)</label><input type="number" id="adN" value="30" inputmode="numeric"></div>
+        <div><label class="f" for="adUnit">단위</label><select id="adUnit"><option value="d">일</option><option value="w">주</option><option value="m">개월</option><option value="y">년</option></select></div>
+      </div>
+      <div class="big" id="adOut"></div>
+    </section>
+
+    <section class="card hidden" data-pane="army">
+      <h2>전역일 계산</h2>
+      <div class="row">
+        <div><label class="f" for="arIn">입대일</label><input type="date" id="arIn"></div>
+        <div><label class="f" for="arType">복무 형태</label>
+          <select id="arType">
+            <option value="18">육군 (18개월)</option>
+            <option value="18">해병대 (18개월)</option>
+            <option value="20">해군 (20개월)</option>
+            <option value="21">공군 (21개월)</option>
+            <option value="21">사회복무요원 (21개월)</option>
+            <option value="23">산업기능요원·보충역 (23개월)</option>
+            <option value="34">산업기능요원·현역 (34개월)</option>
+            <option value="36">전문연구요원 (36개월)</option>
+          </select></div>
+      </div>
+      <div class="big" id="arOut"></div>
+      <div class="bar" aria-hidden="true"><div id="arBar"></div></div>
+      <div class="stat" id="arStat"></div>
+    </section>
+
+    <section class="card hidden" data-pane="age">
+      <h2>만 나이 계산</h2>
+      <div class="row">
+        <div><label class="f" for="agBirth">생년월일</label><input type="date" id="agBirth" min="1900-01-01"></div>
+        <div><label class="f" for="agBase">기준 날짜 (기본: 오늘)</label><input type="date" id="agBase"></div>
+      </div>
+      <div class="big" id="agOut"></div>
+      <div class="stat" id="agStat"></div>
+    </section>
+  </div>
+  <div class="actions"><button type="button" id="copyBtn">결과 복사</button></div>
+
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>100일은 시작일을 1일로 세나요?</summary><p>연애·아기 100일은 보통 시작일(태어난 날)을 1일로 셉니다. 그래서 100일째는 시작일부터 99일 뒤입니다. &#x27;시작일을 1일로&#x27; 옵션을 끄면 시작일 다음 날을 1일로 셉니다.</p></details><details><summary>전역일은 어떻게 계산하나요?</summary><p>입대일에 복무 개월 수를 더한 날의 전날입니다. 예를 들어 2026년 3월 2일 육군 입대(18개월)면 2027년 9월 1일 전역입니다.</p></details><details><summary>만 나이는 어떻게 세나요?</summary><p>태어난 날을 0살로 하고 생일이 지날 때마다 한 살씩 더합니다. 올해 생일이 아직 안 지났으면 (올해 − 출생연도 − 1)살입니다.</p></details></section>
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
+  <footer>
+    복무기간: 육군·해병대 18개월, 해군 20개월, 공군 21개월, 사회복무요원 21개월 등 병무청 공시 기준. 휴가·조기전역은 반영하지 않습니다. 만 나이는 '행정기본법' 나이 계산 기준(2023.6.28 시행)을 따릅니다.<br>
+    입력한 내용은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+
+const KEY = 'ilsang_datecalc_v1';
+const T0 = today();
+function addMonths(d, n){
+  const y = d.getFullYear(), m = d.getMonth() + n, day = d.getDate();
+  const last = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(day, last));
+}
+const dd = n => n === 0 ? 'D-Day' : n > 0 ? 'D-' + n.toLocaleString() : 'D+' + (-n).toLocaleString();
+const n0 = n => n.toLocaleString('ko-KR');
+let cur = 'dday'; const out = {};
+
+function dday(){
+  const t = parseDate($('#ddTarget').value), b = parseDate($('#ddBase').value) || T0;
+  if (!t) { $('#ddOut').innerHTML = '<small>목표 날짜를 고르세요</small>'; $('#ddStat').innerHTML = ''; return; }
+  const n = dayDiff(b, t), span = Math.abs(n) + ($('#ddBoth').checked ? 1 : 0);
+  $('#ddOut').innerHTML = `${dd(n)}<small>${kDate(t, true)}까지 ${n >= 0 ? n0(n) + '일 남음' : n0(-n) + '일 지남'}</small>`;
+  $('#ddStat').innerHTML =
+    `<div><small>기간 (일)</small><b>${n0(span)}일</b></div>` +
+    `<div><small>주 단위</small><b>${Math.floor(span / 7)}주 ${span % 7}일</b></div>` +
+    `<div><small>평일만 (월~금)</small><b>${n0(weekdays(n >= 0 ? b : t, span))}일</b></div>`;
+  out.dday = `${kDate(t, true)} ${dd(n)} (${n0(span)}일)`;
+}
+function weekdays(from, span){ let c = 0; for (let i = 0; i < span; i++) { const w = addDays(from, i + ($('#ddBoth').checked ? 0 : 1)).getDay(); if (w && w !== 6) c++; } return c; }
+
+function anniv(){
+  const s = parseDate($('#anStart').value), one = $('#anOne').checked;
+  if (!s) { $('#anOut').innerHTML = '<small>시작일을 고르세요</small>'; $('#anTable').innerHTML = ''; return; }
+  const nth = dayDiff(s, T0) + (one ? 1 : 0);
+  $('#anOut').innerHTML = `오늘은 ${n0(nth)}일째<small>${kDate(s, true)}부터</small>`;
+  const list = [];
+  for (let k = 50; k <= 1000; k += (k < 100 ? 50 : 100)) list.push([`${n0(k)}일`, addDays(s, k - (one ? 1 : 0))]);
+  for (const k of [2000, 3000]) list.push([`${n0(k)}일`, addDays(s, k - (one ? 1 : 0))]);
+  for (let y = 1; y <= 10; y++) list.push([`${y}주년`, addMonths(s, y * 12)]);
+  list.sort((a, b) => a[1] - b[1]);
+  const nextIdx = list.findIndex(([, d]) => d >= T0);
+  $('#anTable').innerHTML = '<tr><th>기념일</th><th>날짜</th><th style="text-align:right">D-day</th></tr>' +
+    list.map(([k, d], i) => `<tr class="${d < T0 ? 'past' : i === nextIdx ? 'next' : ''}"><td>${k}</td><td>${kDate(d, true)}</td><td class="n">${dd(dayDiff(T0, d))}</td></tr>`).join('');
+  out.anniv = `${kDate(s, true)}부터 오늘 ${n0(nth)}일째` + (nextIdx >= 0 ? `\n다음 기념일: ${list[nextIdx][0]} ${kDate(list[nextIdx][1], true)} (${dd(dayDiff(T0, list[nextIdx][1]))})` : '');
+}
+
+function add(){
+  const b = parseDate($('#adBase').value) || T0, n = parseInt(val('adN'), 10) || 0, u = $('#adUnit').value;
+  const r = u === 'd' ? addDays(b, n) : u === 'w' ? addDays(b, n * 7) : addMonths(b, u === 'm' ? n : n * 12);
+  const ul = { d:'일', w:'주', m:'개월', y:'년' }[u];
+  $('#adOut').innerHTML = `${kDate(r, true)}<small>${kDate(b, true)}${n >= 0 ? '부터 ' + n0(n) + ul + ' 뒤' : '부터 ' + n0(-n) + ul + ' 전'} · 오늘 기준 ${dd(dayDiff(T0, r))}</small>`;
+  out.add = `${kDate(b, true)} ${n >= 0 ? '+' : ''}${n}${ul} = ${kDate(r, true)}`;
+}
+
+function army(){
+  const s = parseDate($('#arIn').value), months = +$('#arType').value, label = $('#arType').selectedOptions[0].text.split(' (')[0];
+  if (!s) { $('#arOut').innerHTML = '<small>입대일을 고르세요</small>'; $('#arStat').innerHTML = ''; $('#arBar').style.width = 0; return; }
+  const end = addDays(addMonths(s, months), -1);
+  const total = dayDiff(s, end) + 1, done = Math.min(total, Math.max(0, dayDiff(s, T0) + 1)), left = Math.max(0, dayDiff(T0, end));
+  const pct = total ? done / total * 100 : 0;
+  $('#arOut').innerHTML = `${kDate(end, true)} 전역<small>${label} ${months}개월 · ${dd(dayDiff(T0, end))}</small>`;
+  $('#arBar').style.width = pct.toFixed(1) + '%';
+  $('#arStat').innerHTML =
+    `<div class="main"><small>복무 진행률</small><b>${pct.toFixed(1)}%</b></div>` +
+    `<div><small>복무한 날</small><b>${n0(done)}일</b></div>` +
+    `<div><small>남은 날</small><b>${n0(left)}일</b></div>` +
+    `<div><small>총 복무일</small><b>${n0(total)}일</b></div>`;
+  out.army = `${label} ${kDate(s, true)} 입대 → ${kDate(end, true)} 전역 (${dd(dayDiff(T0, end))}, 진행률 ${pct.toFixed(1)}%)`;
+}
+
+function age(){
+  const b = parseDate($('#agBirth').value), base = parseDate($('#agBase').value) || T0;
+  if (!b) { $('#agOut').innerHTML = '<small>생년월일을 고르세요</small>'; $('#agStat').innerHTML = ''; return; }
+  if (b > base) { $('#agOut').innerHTML = '<small>생년월일이 기준 날짜보다 늦습니다</small>'; $('#agStat').innerHTML = ''; return; }
+  let man = base.getFullYear() - b.getFullYear();
+  const passed = base.getMonth() > b.getMonth() || (base.getMonth() === b.getMonth() && base.getDate() >= b.getDate());
+  if (!passed) man--;
+  let next = addMonths(b, (man + 1) * 12);
+  const toNext = dayDiff(base, next);
+  $('#agOut').innerHTML = `만 ${man}세<small>${kDate(b, true)}생 · ${kDate(base, true)} 기준</small>`;
+  $('#agStat').innerHTML =
+    `<div><small>연 나이 (올해 − 출생연도)</small><b>${base.getFullYear() - b.getFullYear()}세</b></div>` +
+    `<div><small>세는 나이 (참고)</small><b>${base.getFullYear() - b.getFullYear() + 1}세</b></div>` +
+    `<div><small>다음 생일까지</small><b>${toNext === 0 ? '오늘!' : n0(toNext) + '일'}</b></div>` +
+    `<div><small>태어난 지</small><b>${n0(dayDiff(b, base) + 1)}일째</b></div>`;
+  out.age = `${kDate(b, true)}생 → 만 ${man}세 (${kDate(base, true)} 기준)`;
+}
+
+const RUN = { dday, anniv, add, army, age };
+function save(){ const s = { tab: cur, arType: $('#arType').selectedIndex }; $$('input[type=date], input[type=number], select').forEach(e => s[e.id] = e.value); $$('input[type=checkbox]').forEach(e => s[e.id] = e.checked); store.set(KEY, s); }
+function load(){
+  const s = store.get(KEY);
+  if (!s) { $('#ddTarget').value = ymd(addDays(T0, 100)); $('#adBase').value = ymd(T0); return; }
+  $$('input[type=date], input[type=number], select').forEach(e => { if (s[e.id] != null) e.value = s[e.id]; });
+  $$('input[type=checkbox]').forEach(e => { if (s[e.id] != null) e.checked = s[e.id]; });
+  if (s.arType != null) $('#arType').selectedIndex = s.arType;
+  if (s.tab && s.tab !== 'dday') $(`#mainTabs [data-tab=${s.tab}]`).click();
+}
+function all(){ Object.values(RUN).forEach(f => f()); save(); }
+
+bindTabs();
+$('#mainTabs').onTab = t => { cur = t; save(); };
+document.addEventListener('input', all);
+document.addEventListener('change', all);
+$('#copyBtn').addEventListener('click', () => copy((out[cur] || '') + '\n' + location.href));
+load(); all();
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>
