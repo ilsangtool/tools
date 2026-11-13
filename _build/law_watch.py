@@ -60,6 +60,8 @@ class LawAPI:
             txt = http(url)
         except Exception as e:
             self.error = f'{type(e).__name__}: {e}'; log('API 실패', key, self.error); return None
+        if '시스템 점검' in txt[:600]:
+            self.error = 'MAINTENANCE: 국가법령정보센터 시스템 점검 중'; return None
         if '검증에 실패' in txt or ('차단' in txt[:300]):
             self.error = '인증 실패(OC 값, 승인 여부, 등록 IP 확인 필요): ' + re.sub(r'\s+', ' ', txt[:200]); return None
         try: return json.loads(txt)
@@ -247,15 +249,17 @@ def news(query, days=21):
         out.append({'title': title, 'link': it.findtext('link') or '', 'source': src, 'date': d.isoformat()})
     return out
 
+NUM = r'\d[\d,]*\s*(?:원|%)|\d만\s*\d*\s*원'
+FOREIGN = ['프랑스', '미국', '일본', '중국', '독일', '영국', '호주', '캐나다', '베트남', '해외', '각국']
 HEADS_UP = [
-    ('최저임금 결정', ['최저임금'], ['결정', '확정', '의결']),
-    ('건강보험료율 결정', ['건강보험료율'], ['결정', '인상', '동결', '의결']),
-    ('장기요양보험료율 결정', ['장기요양보험료율'], ['결정', '인상', '동결', '의결']),
-    ('고용보험료율 인상', ['고용보험료율', '실업급여 보험료율'], ['인상', '결정', '조정']),
-    ('노쇼 위약금 소비자분쟁해결기준', ['노쇼', '예약부도'], ['개정', '상향', '변경']),
-    ('전자상거래법 청약철회 개정', ['청약철회'], ['개정', '변경']),
-    ('병 복무기간 단축', ['복무기간', '복무 기간'], ['단축', '개정', '변경']),
-    ('주휴수당 근로기준법 개정', ['주휴수당'], ['개정', '폐지', '국회 통과']),
+    ('최저임금 결정', ['최저임금'], ['결정', '확정', '의결', '고시'], NUM),
+    ('건강보험료율 결정', ['건강보험료율'], ['결정', '인상', '동결', '의결'], NUM),
+    ('장기요양보험료율 결정', ['장기요양보험료율'], ['결정', '인상', '동결', '의결'], NUM),
+    ('고용보험료율 인상', ['고용보험료율', '실업급여 보험료율'], ['인상', '결정', '조정'], NUM),
+    ('노쇼 위약금 소비자분쟁해결기준', ['노쇼', '예약부도'], ['개정', '상향', '변경'], None),
+    ('전자상거래법 청약철회 개정', ['청약철회'], ['개정', '변경'], None),
+    ('병 복무기간 단축', ['복무기간', '복무 기간'], ['단축', '개정', '변경'], None),
+    ('주휴수당 근로기준법 개정', ['주휴수당'], ['개정', '폐지', '국회 통과'], None),
 ]
 
 # ---------- GitHub 이슈 ----------
@@ -285,10 +289,16 @@ def main():
         n = official_check(api, R, S, notes)
         status = {'officialOk': n, 'officialError': api.error}
         if n == 0:
-            wk = TODAY.isocalendar()
-            once(f'offfail:{wk[0]}-{wk[1]}', '[점검 실패] 국가법령정보센터에 접속하지 못했습니다',
-                 f'오류: {api.error}\n\n값은 바꾸지 않았습니다. OC 승인 상태와 등록 IP를 확인해 주세요. 다음 점검 때 다시 시도합니다.')
+            # 사이트 점검·일시 장애는 흔하므로, 연속 2회 실패할 때만 알림 (점검 중이면 알림 안 함)
+            fails = (S.get('status') or {}).get('consecutiveFail', 0) + 1
+            status['consecutiveFail'] = fails
+            maint = (api.error or '').startswith('MAINTENANCE')
+            if fails >= 2 and not maint:
+                wk = TODAY.isocalendar()
+                once(f'offfail:{wk[0]}-{wk[1]}', '[점검 실패] 국가법령정보센터에 연속으로 접속하지 못했습니다',
+                     f'오류: {api.error}\n\n값은 바꾸지 않았습니다. 비밀값 LAW_API_OC(가입 이메일 @ 앞부분)를 확인해 주세요. 다음 점검 때 다시 시도합니다.')
         else:
+            status['consecutiveFail'] = 0
             R['officialCheckedAt'] = TODAY.isoformat()
     else:
         status = {'officialOk': 0, 'officialError': 'LAW_OC 없음'}
@@ -300,8 +310,9 @@ def main():
     for title, body in notes:
         once('note:' + hashlib.sha1((title + body).encode()).hexdigest()[:12], title, body)
 
-    for q, must, verbs in HEADS_UP:
+    for q, must, verbs, need in HEADS_UP:
         hits = [i for i in news(q) if any(m in i['title'] for m in must) and any(v in i['title'] for v in verbs)
+                and (not need or re.search(need, i['title'])) and not any(f in i['title'] for f in FOREIGN)
                 and (TODAY - dt.date.fromisoformat(i['date'])).days <= 21]
         new = [i for i in hits if 'n:' + hashlib.sha1(i['link'].encode()).hexdigest()[:12] not in seen]
         if new:
