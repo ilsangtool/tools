@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 리뷰 작성 자격·게시 기간·평점 기준·삭제 기준과 이의제기 절차 고지문을 무료로 만들어 드립니다.">
+<meta name="keywords" content="리뷰 운영정책, 리뷰 고지문, 전자상거래법 리뷰 공개, 사용후기 공개 의무, 리뷰 삭제 기준, 쇼핑몰 리뷰 정책">
+<link rel="canonical" href="https://gurifire.github.io/tools/review-policy/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="리뷰 운영정책 고지문 생성기 (무료)">
+<meta property="og:description" content="개정 전자상거래법 리뷰 공개 의무, 5분 만에 고지문 완성">
+<meta property="og:url" content="https://gurifire.github.io/tools/review-policy/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"리뷰 운영정책 고지문 생성기","url":"https://gurifire.github.io/tools/review-policy/","applicationCategory":"BusinessApplication","operatingSystem":"All","inLanguage":"ko","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
+<title>리뷰 운영정책 고지문 생성기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .progress{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px}
+  .progress .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+  .progress .fill{height:100%;width:0;background:var(--accent);transition:width .25s}
+  .progress .txt{font-size:12.5px;color:var(--sub);margin-top:4px;display:flex;justify-content:space-between}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .req{font-size:11px;font-weight:500;color:#b42318;border:1px solid #f1c3be;padding:0 6px;border-radius:3px}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label{position:relative}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group input:checked + span{color:var(--accent);font-weight:700}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+  .hidden{display:none}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:10px}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .missing{color:#b42318;font-size:13px;margin-top:6px}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row{grid-template-columns:1fr}h1{font-size:19px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a href="../" style="font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px">← 생활·업무 도구 모음</a><br>
+    <span class="tag">2026년 개정 전자상거래법 대응</span>
+    <h1>리뷰 운영정책 고지문 생성기</h1>
+    <p>질문에 답하면 쇼핑몰 리뷰 화면에 붙일 고지문과 HTML 코드를 바로 만들어 드립니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="notice">
+    리뷰를 게시하는 사업자는 소상공인·개인사업자라도 <b>리뷰 작성 자격, 게시 기간, 평점 기준과 효과, 삭제 기준과 이의제기 절차</b>를 리뷰가 처음 보이는 화면에 공개해야 합니다. 리뷰를 게시하지 않는 쇼핑몰은 대상이 아닙니다.
+  </div>
+
+  <div class="progress">
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="txt"><span id="progTxt">필수 항목 0 / 5 완료</span><span>입력 내용은 이 기기에만 임시 저장됩니다</span></div>
+  </div>
+
+  <form id="f" autocomplete="off">
+  <!-- 0 기본 정보 -->
+  <section class="card">
+    <h2><span class="num">0</span>기본 정보 <span class="req">필수</span></h2>
+    <p class="hint">고지문에 표시될 쇼핑몰 정보입니다.</p>
+    <label class="f" for="shop">쇼핑몰(상호) 이름</label>
+    <input type="text" id="shop" placeholder="예: 구리농산">
+    <div class="row">
+      <div><label class="f" for="date">정책 시행일</label><input type="text" id="date" placeholder="예: 2026년 11월 20일"></div>
+      <div><label class="f" for="contact">문의 연락처</label><input type="text" id="contact" placeholder="예: 고객센터 031-000-0000"></div>
+    </div>
+  </section>
+
+  <!-- 1 작성 자격 -->
+  <section class="card">
+    <h2><span class="num">1</span>리뷰 작성 자격 <span class="req">필수</span></h2>
+    <p class="hint">누가 리뷰를 쓸 수 있나요?</p>
+    <div class="radio-group" data-name="who">
+      <label><input type="radio" name="who" value="buyer"><span>실제 구매자만</span></label>
+      <label><input type="radio" name="who" value="member"><span>회원이면 누구나</span></label>
+      <label><input type="radio" name="who" value="anyone"><span>비회원 포함 누구나</span></label>
+    </div>
+    <div id="buyerOpt" class="hidden">
+      <div class="row">
+        <div><label class="f" for="whoFrom">작성 가능 시점</label>
+          <select id="whoFrom"><option>구매확정 후</option><option>배송완료 후</option><option>결제완료 후</option></select></div>
+        <div><label class="f" for="whoDays">작성 가능 기간 (일)</label><input type="number" id="whoDays" min="1" placeholder="예: 90 (비우면 제한 없음)"></div>
+      </div>
+    </div>
+    <label class="f" for="whoEtc">추가 제한 (선택)</label>
+    <input type="text" id="whoEtc" placeholder="예: 주문 1건당 리뷰는 1개만 작성할 수 있습니다">
+  </section>
+
+  <!-- 2 게시 기간 -->
+  <section class="card">
+    <h2><span class="num">2</span>리뷰 게시 기간 <span class="req">필수</span></h2>
+    <p class="hint">작성된 리뷰는 얼마 동안 보이나요?</p>
+    <div class="radio-group">
+      <label><input type="radio" name="period" value="forever"><span>상품 판매 기간 동안 계속</span></label>
+      <label><input type="radio" name="period" value="fixed"><span>일정 기간만 게시</span></label>
+    </div>
+    <div id="periodOpt" class="hidden">
+      <label class="f" for="periodVal">게시 기간</label>
+      <input type="text" id="periodVal" placeholder="예: 작성일로부터 2년">
+    </div>
+    <label class="chk"><input type="checkbox" id="periodEnd" checked><span>판매 종료 상품의 리뷰는 판매 종료 시 비공개 처리</span></label>
+  </section>
+
+  <!-- 3 평점 -->
+  <section class="card">
+    <h2><span class="num">3</span>평점 기준과 효과 <span class="req">필수</span></h2>
+    <p class="hint">별점을 어떻게 매기고, 그 결과가 어디에 쓰이나요?</p>
+    <div class="row">
+      <div><label class="f" for="scale">평점 체계</label>
+        <select id="scale"><option value="5">별점 1~5점</option><option value="10">1~10점</option><option value="none">평점 없음 (글 리뷰만)</option></select></div>
+      <div><label class="f" for="calc">평균 평점 계산 방식</label>
+        <select id="calc"><option value="all">게시 중인 전체 리뷰의 단순 평균</option><option value="recent">최근 1년 리뷰의 단순 평균</option><option value="none">평균 평점을 표시하지 않음</option></select></div>
+    </div>
+    <label class="f">평점이 영향을 주는 곳 (해당 항목 모두 선택)</label>
+    <label class="chk"><input type="checkbox" id="effList"><span>상품 목록의 "평점순" 정렬 순서</span></label>
+    <label class="chk"><input type="checkbox" id="effBadge"><span>베스트·추천 상품 선정</span></label>
+    <label class="chk"><input type="checkbox" id="effNone"><span>평점은 표시용이며 다른 곳에 반영하지 않음</span></label>
+  </section>
+
+  <!-- 4 삭제 -->
+  <section class="card">
+    <h2><span class="num">4</span>리뷰 삭제 기준과 이의제기 절차 <span class="req">필수</span></h2>
+    <p class="hint">어떤 리뷰를 삭제·비공개하나요? (해당 항목 모두 선택)</p>
+    <div id="delList">
+      <label class="chk"><input type="checkbox" value="욕설, 비방, 혐오 표현이 포함된 경우" checked><span>욕설·비방·혐오 표현</span></label>
+      <label class="chk"><input type="checkbox" value="개인정보(연락처, 주소 등)가 노출된 경우" checked><span>개인정보 노출</span></label>
+      <label class="chk"><input type="checkbox" value="광고, 홍보, 상품과 무관한 내용인 경우" checked><span>광고·홍보·상품과 무관한 내용</span></label>
+      <label class="chk"><input type="checkbox" value="타인의 저작물(사진 등)을 무단으로 사용한 경우" checked><span>타인 저작물 무단 사용</span></label>
+      <label class="chk"><input type="checkbox" value="허위 사실이 명백하거나 법령에 위반되는 경우" checked><span>명백한 허위 사실·법령 위반</span></label>
+      <label class="chk"><input type="checkbox" value="작성자 본인이 삭제를 요청한 경우" checked><span>작성자 본인 요청</span></label>
+    </div>
+    <label class="chk" style="background:#fafafa;padding:8px;border-radius:6px;margin-top:6px"><input type="checkbox" id="noNeg" checked><span><b>낮은 평점이나 부정적인 내용이라는 이유만으로는 삭제하지 않습니다</b> (권장: 소비자 신뢰 확보)</span></label>
+    <label class="f" for="delEtc">기타 삭제 기준 (선택)</label>
+    <input type="text" id="delEtc" placeholder="예: 동일 내용을 반복 게시한 경우">
+
+    <label class="f">삭제 사실을 작성자에게 알리나요?</label>
+    <div class="radio-group">
+      <label><input type="radio" name="notify" value="yes" checked><span>알림 발송</span></label>
+      <label><input type="radio" name="notify" value="no"><span>알리지 않음</span></label>
+    </div>
+    <div class="row">
+      <div><label class="f" for="objWay">이의제기 방법</label><input type="text" id="objWay" placeholder="예: 고객센터 1:1 문의 게시판"></div>
+      <div><label class="f" for="objDays">처리 기한 (영업일)</label><input type="number" id="objDays" min="1" placeholder="예: 7"></div>
+    </div>
+  </section>
+
+  <!-- 5 추가 -->
+  <section class="card">
+    <h2><span class="num">5</span>해당할 때만 공개하는 항목 <span class="opt">해당 시</span></h2>
+    <p class="hint">공정거래위원회 안내에 따라 해당하는 경우에만 공개합니다.</p>
+
+    <label class="chk"><input type="checkbox" id="hasSort"><span>리뷰 정렬 순서에 기준이 있음 (예: 베스트 리뷰 상단 노출)</span></label>
+    <div id="sortOpt" class="hidden">
+      <label class="f">정렬·노출 시 반영하는 요소</label>
+      <div id="sortList">
+        <label class="chk"><input type="checkbox" value="실제 구매·사용 여부"><span>실제 구매·사용 여부</span></label>
+        <label class="chk"><input type="checkbox" value="내용의 구체성(글자 수 등)"><span>내용의 구체성</span></label>
+        <label class="chk"><input type="checkbox" value="사진·영상 첨부 여부와 적절성"><span>사진·영상 첨부</span></label>
+        <label class="chk"><input type="checkbox" value="조회수와 '도움돼요' 수"><span>조회수·추천 수</span></label>
+        <label class="chk"><input type="checkbox" value="작성일(최신순)"><span>작성일</span></label>
+      </div>
+    </div>
+
+    <label class="chk"><input type="checkbox" id="hasReward"><span>리뷰 작성 시 적립금·쿠폰·경품을 지급함</span></label>
+    <div id="rewardOpt" class="hidden">
+      <label class="f" for="rewardWhat">지급 내용</label>
+      <input type="text" id="rewardWhat" placeholder="예: 글 리뷰 500원, 포토 리뷰 1,000원 적립">
+      <label class="f" for="rewardRule">특정 리뷰 선정 시 기준 (선택)</label>
+      <input type="text" id="rewardRule" placeholder="예: 매월 사진 품질과 내용 충실도 기준으로 베스트 리뷰 3건 선정">
+      <label class="chk"><input type="checkbox" id="rewardNeutral" checked><span>평점·내용(긍정/부정)과 무관하게 지급</span></label>
+      <label class="chk"><input type="checkbox" id="rewardMark"><span>혜택을 받은 리뷰에 "적립금 지급" 등 표시를 붙임</span></label>
+    </div>
+
+    <label class="chk"><input type="checkbox" id="hasAI"><span>AI·자동 필터로 리뷰를 삭제하거나 가림</span></label>
+    <div id="aiOpt" class="hidden">
+      <label class="f" for="aiRule">자동 처리 기준</label>
+      <input type="text" id="aiRule" placeholder="예: 욕설·개인정보 패턴이 감지되면 자동 비공개 후 담당자가 확인">
+    </div>
+  </section>
+  </form>
+
+  <div class="actions">
+    <button id="genBtn" type="button">고지문 만들기</button>
+    <button id="resetBtn" type="button" class="ghost">처음부터 다시</button>
+  </div>
+  <div id="missing" class="missing"></div>
+
+  <section class="card hidden" id="out">
+    <h2>결과물</h2>
+    <p class="hint">리뷰 목록 <b>바로 위</b>에 붙이세요. 공간이 좁으면 접힌 상태로 두어도 되지만, 버튼이 눈에 잘 띄어야 합니다.</p>
+    <div class="tabs">
+      <button type="button" class="on" data-tab="preview">미리보기</button>
+      <button type="button" data-tab="html">HTML 코드</button>
+      <button type="button" data-tab="text">텍스트</button>
+    </div>
+    <div data-pane="preview"><div class="preview-box" id="preview"></div></div>
+    <div data-pane="html" class="hidden"><pre id="htmlOut"></pre></div>
+    <div data-pane="text" class="hidden"><pre id="textOut"></pre></div>
+    <div class="actions">
+      <button type="button" id="copyHtml">HTML 코드 복사</button>
+      <button type="button" id="copyText" class="ghost">텍스트 복사</button>
+    </div>
+    <p class="hint" style="margin-top:4px">
+      <b>붙이는 곳:</b> 카페24·아임웹·고도몰은 상품 상세의 리뷰 영역 위 HTML 편집에 붙입니다. 스마트스토어처럼 HTML을 넣을 수 없는 곳은 텍스트를 공지사항이나 상품 상세 하단에 게시하세요.
+    </p>
+  </section>
+
+  <footer>
+    근거: 전자상거래법 시행령 개정(2026.7.21 시행, 3개월 유예) 중 사용후기 공개 의무. 이 도구는 작성을 돕는 참고용이며 법률 자문이 아닙니다. 최종 문구는 공정거래위원회의 리뷰 관련 Q&A 안내서로 확인하세요.<br>
+    입력한 내용은 서버로 전송되지 않습니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const val = id => ($('#'+id).value || '').trim();
+  const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ro = w => { const c = w.charCodeAt(w.length-1); if (c < 0xAC00 || c > 0xD7A3) return w + '(으)로'; const j = (c - 0xAC00) % 28; return w + ((j === 0 || j === 8) ? '로' : '으로'); };
+  const posInt = id => { const n = parseInt(val(id), 10); return n > 0 ? n : 0; };
+
+  // 토글
+  const toggles = [
+    ['input[name="who"]', () => $('#buyerOpt').classList.toggle('hidden', radio('who') !== 'buyer')],
+    ['input[name="period"]', () => $('#periodOpt').classList.toggle('hidden', radio('period') !== 'fixed')],
+    ['#hasSort', () => $('#sortOpt').classList.toggle('hidden', !$('#hasSort').checked)],
+    ['#hasReward', () => $('#rewardOpt').classList.toggle('hidden', !$('#hasReward').checked)],
+    ['#hasAI', () => $('#aiOpt').classList.toggle('hidden', !$('#hasAI').checked)],
+  ];
+  toggles.forEach(([sel, fn]) => $$(sel).forEach(el => el.addEventListener('change', fn)));
+  $('#effNone').addEventListener('change', e => { if (e.target.checked) { $('#effList').checked = false; $('#effBadge').checked = false; } });
+  ['#effList','#effBadge'].forEach(s => $(s).addEventListener('change', e => { if (e.target.checked) $('#effNone').checked = false; }));
+
+  // 필수 진행률
+  function checks(){
+    return {
+      '기본 정보(쇼핑몰 이름·문의 연락처)': !!(val('shop') && val('contact')),
+      '1. 리뷰 작성 자격': !!radio('who'),
+      '2. 리뷰 게시 기간': !!radio('period') && (radio('period') !== 'fixed' || !!val('periodVal')),
+      '3. 평점 효과': $('#scale').value === 'none' || $('#effList').checked || $('#effBadge').checked || $('#effNone').checked,
+      '4. 이의제기 방법·처리 기한': !!(val('objWay') && posInt('objDays')) && ($$('#delList input:checked').length > 0 || !!val('delEtc')),
+    };
+  }
+  function progress(){
+    const c = checks(); const done = Object.values(c).filter(Boolean).length; const total = Object.keys(c).length;
+    $('#fill').style.width = (done/total*100) + '%';
+    $('#progTxt').textContent = '필수 항목 ' + done + ' / ' + total + ' 완료';
+    save();
+  }
+
+  // 임시 저장
+  const KEY = 'review-policy-draft-v1';
+  function save(){
+    try {
+      const d = {};
+      $$('#f input, #f select, #f textarea').forEach((el, i) => {
+        const k = el.id || (el.name + ':' + el.value) || ('i' + i);
+        d[k] = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
+      });
+      localStorage.setItem(KEY, JSON.stringify(d));
+    } catch(e) {}
+  }
+  function load(){
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (!d) return;
+      $$('#f input, #f select, #f textarea').forEach((el, i) => {
+        const k = el.id || (el.name + ':' + el.value) || ('i' + i);
+        if (!(k in d)) return;
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = d[k]; else el.value = d[k];
+      });
+      toggles.forEach(([, fn]) => fn());
+    } catch(e) {}
+  }
+  $('#f').addEventListener('input', progress);
+  $('#f').addEventListener('change', progress);
+
+  // 문장 생성
+  function build(){
+    const shop = val('shop'), date = val('date'), contact = val('contact');
+    const S = []; // [title, [lines]]
+
+    // 1 자격
+    const who = radio('who'); let w = [];
+    if (who === 'buyer') {
+      const days = posInt('whoDays');
+      w.push('해당 상품을 실제로 구매한 고객만 ' + $('#whoFrom').value + ' 리뷰를 작성할 수 있습니다.');
+      if (days) w.push('리뷰는 ' + $('#whoFrom').value.replace(' 후','') + '일로부터 ' + days + '일 이내에 작성할 수 있습니다.');
+    } else if (who === 'member') w.push('회원 가입한 고객이면 구매 여부와 관계없이 리뷰를 작성할 수 있습니다. 구매 고객의 리뷰에는 "구매 인증" 표시가 붙습니다.');
+    else if (who === 'anyone') w.push('회원·비회원 구분 없이 누구나 리뷰를 작성할 수 있습니다.');
+    if (val('whoEtc')) w.push(val('whoEtc').replace(/[.。]?$/, '.'));
+    S.push(['리뷰 작성 자격', w]);
+
+    // 2 기간
+    const p = [];
+    if (radio('period') === 'forever') p.push('작성된 리뷰는 상품을 판매하는 동안 계속 게시됩니다.');
+    else if (radio('period') === 'fixed') p.push('작성된 리뷰는 ' + val('periodVal') + ' 동안 게시됩니다.');
+    if ($('#periodEnd').checked) p.push('판매가 종료된 상품의 리뷰는 판매 종료 시 비공개로 전환됩니다.');
+    S.push(['리뷰 게시 기간', p]);
+
+    // 3 평점
+    const r = []; const scale = $('#scale').value;
+    if (scale === 'none') r.push('별도의 평점 없이 글 리뷰만 운영합니다.');
+    else {
+      r.push('리뷰 작성자는 상품에 ' + (scale === '5' ? '1점부터 5점까지' : '1점부터 10점까지') + ' 평점을 매길 수 있습니다.');
+      const calc = $('#calc').value;
+      if (calc === 'all') r.push('상품의 평균 평점은 현재 게시 중인 전체 리뷰 평점의 단순 평균으로 계산하며, 특정 리뷰에 가중치를 두지 않습니다.');
+      else if (calc === 'recent') r.push('상품의 평균 평점은 최근 1년간 작성된 리뷰 평점의 단순 평균으로 계산하며, 특정 리뷰에 가중치를 두지 않습니다.');
+      else r.push('상품별 평균 평점은 표시하지 않습니다.');
+      const eff = [];
+      if ($('#effList').checked) eff.push('상품 목록의 "평점순" 정렬 순서');
+      if ($('#effBadge').checked) eff.push('베스트·추천 상품 선정');
+      if (eff.length) r.push('평점은 ' + eff.join(', ') + '에 반영됩니다.');
+      else if ($('#effNone').checked) r.push('평점은 표시용으로만 사용하며, 상품 노출 순서 등 다른 곳에는 반영하지 않습니다.');
+    }
+    S.push(['평점 기준과 효과', r]);
+
+    // 4 삭제
+    const d = [];
+    const dl = $$('#delList input:checked').map(i => i.value);
+    if (val('delEtc')) dl.push(val('delEtc').replace(/[.。]$/, ''));
+    if (dl.length) d.push('다음에 해당하는 리뷰는 삭제하거나 비공개로 전환할 수 있습니다.\n' + dl.map(x => '  - ' + x).join('\n'));
+    if ($('#noNeg').checked) d.push('낮은 평점이나 부정적인 내용이라는 이유만으로는 리뷰를 삭제하지 않습니다.');
+    if (radio('notify') === 'yes') d.push('리뷰를 삭제·비공개하면 작성자에게 그 사유를 알려 드립니다.');
+    if (val('objWay')) d.push('삭제·비공개에 동의하지 않으면 ' + ro(val('objWay')) + ' 이의를 제기할 수 있으며, 접수일로부터 ' + (posInt('objDays') || '○') + '영업일 이내에 검토 결과를 안내해 드립니다. 이의가 타당하면 리뷰를 다시 게시합니다.');
+    S.push(['리뷰 삭제 기준과 이의제기 절차', d]);
+
+    // 5 해당 시
+    if ($('#hasSort').checked) {
+      const sl = $$('#sortList input:checked').map(i => i.value);
+      S.push(['리뷰 정렬·노출 기준', [sl.length ? '리뷰 정렬과 상단 노출(베스트 리뷰 등)에는 다음 요소를 반영합니다: ' + sl.join(', ') + '.' : '리뷰 정렬·노출 기준을 입력해 주세요.']]);
+    }
+    if ($('#hasReward').checked) {
+      const rw = [];
+      if (val('rewardWhat')) rw.push('리뷰 작성 혜택: ' + val('rewardWhat').replace(/[.。]$/, '') + '.');
+      if ($('#rewardNeutral').checked) rw.push('혜택은 평점이나 내용(긍정·부정)과 관계없이 동일하게 지급합니다.');
+      if (val('rewardRule')) rw.push('특정 리뷰 선정 기준: ' + val('rewardRule').replace(/[.。]?$/, '.'));
+      if ($('#rewardMark').checked) rw.push('혜택을 받고 작성된 리뷰에는 그 사실을 표시합니다.');
+      S.push(['리뷰 작성 혜택', rw]);
+    }
+    if ($('#hasAI').checked) {
+      S.push(['자동(AI) 처리 안내', ['리뷰 관리에 AI·자동 필터를 사용합니다. ' + (val('aiRule') ? val('aiRule').replace(/[.。]?$/, '.') : '자동 처리 기준을 입력해 주세요.') + ' 자동 처리된 리뷰도 위 이의제기 절차를 똑같이 이용할 수 있습니다.']]);
+    }
+
+    const title = (shop ? shop + ' ' : '') + '리뷰 운영정책';
+    const foot = [date ? '시행일: ' + date : '', contact ? '문의: ' + contact : ''].filter(Boolean).join(' · ');
+    return { title, S, foot };
+  }
+
+  function toText(o){
+    let t = '[' + o.title + ']\n\n';
+    o.S.forEach(([h, lines], i) => { t += (i+1) + '. ' + h + '\n' + lines.map(l => l.startsWith('다음에') ? l : '- ' + l).join('\n') + '\n\n'; });
+    if (o.foot) t += o.foot + '\n';
+    return t.trim();
+  }
+
+  function toHtml(o){
+    const body = o.S.map(([h, lines]) => {
+      const li = lines.map(l => {
+        if (l.includes('\n')) {
+          const [head, ...rest] = l.split('\n');
+          return '<li style="margin:2px 0">' + esc(head) + '<ul style="margin:4px 0 0;padding-left:18px">' + rest.map(x => '<li>' + esc(x.replace(/^\s*-\s*/, '')) + '</li>').join('') + '</ul></li>';
+        }
+        return '<li style="margin:2px 0">' + esc(l) + '</li>';
+      }).join('');
+      return '<p style="margin:12px 0 4px;font-weight:700">' + esc(h) + '</p><ul style="margin:0;padding-left:18px">' + li + '</ul>';
+    }).join('\n');
+    return '<!-- 리뷰 운영정책 고지 (리뷰 목록 바로 위에 넣으세요) -->\n' +
+      '<details style="border:1px solid #d0d4d9;border-radius:8px;padding:0;margin:0 0 16px;font-size:14px;line-height:1.6;color:#222;background:#fff">\n' +
+      '<summary style="cursor:pointer;padding:12px 14px;font-weight:700;font-size:15px;list-style:none">' + esc(o.title) + ' 안내 <span style="font-weight:400;color:#555;font-size:13px">(작성 자격·게시 기간·평점·삭제 기준 보기 ▾)</span></summary>\n' +
+      '<div style="padding:0 14px 14px;border-top:1px solid #eee">\n' + body + '\n' +
+      (o.foot ? '<p style="margin:14px 0 0;color:#666;font-size:12.5px">' + esc(o.foot) + '</p>\n' : '') +
+      '</div>\n</details>';
+  }
+
+  let last = null;
+  $('#genBtn').addEventListener('click', () => {
+    const c = checks(); const miss = Object.entries(c).filter(([,v]) => !v).map(([k]) => k);
+    $('#missing').innerHTML = miss.length ? '아직 채우지 않은 필수 항목: ' + miss.map(esc).join(', ') + '<br>그대로 만들 수는 있지만, 빠진 항목은 법정 공개 항목이니 채운 뒤 사용하세요.' : '';
+    const o = build();
+    last = { text: toText(o), html: toHtml(o) };
+    $('#preview').innerHTML = last.html;
+    $('#htmlOut').textContent = last.html;
+    $('#textOut').textContent = last.text;
+    $('#out').classList.remove('hidden');
+    $('#preview details') && ($('#preview details').open = true);
+    $('#out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  $$('.tabs button').forEach(b => b.addEventListener('click', () => {
+    $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+    $$('[data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+  }));
+
+  function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); }
+  async function copy(s){
+    try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+    catch(e) {
+      const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 코드 탭에서 직접 선택해 복사하세요'); }
+      ta.remove();
+    }
+  }
+  $('#copyHtml').addEventListener('click', () => last && copy(last.html));
+  $('#copyText').addEventListener('click', () => last && copy(last.text));
+
+  // 처음부터 다시 (페이지 안 확인 단계)
+  let armed = false;
+  $('#resetBtn').addEventListener('click', e => {
+    if (!armed) { armed = true; e.target.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; e.target.textContent = '처음부터 다시'; }, 3000); return; }
+    try { localStorage.removeItem(KEY); } catch(_) {}
+    $('#f').reset(); toggles.forEach(([, fn]) => fn()); $('#out').classList.add('hidden'); $('#missing').textContent = '';
+    armed = false; e.target.textContent = '처음부터 다시'; progress(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  load(); progress();
+})();
+</script>
+</body>
+</html>
