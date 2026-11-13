@@ -14,6 +14,7 @@
   "official": {},
   "status": {
     "officialOk": 0,
-    "officialError": "응답 해석 실패:  <!DOCTYPE html> <html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"> <title>시스템 점검</title> <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> <meta name"
+    "officialError": "MAINTENANCE: 국가법령정보센터 시스템 점검 중",
+    "consecutiveFail": 1
   }
 }
