@@ -1,7 +1,19 @@
 {
   "seen": [
-    "conflict:ltcRatio:2027:0.151,0.139"
+    "conflict:ltcRatio:2027:0.151,0.139",
+    "n:7bd80bb6ea3e",
+    "n:c94a058a8b75",
+    "n:d71199bd1104",
+    "n:dddc138ea2d5",
+    "news:장기요양보험료율 결정:2026-11-14",
+    "news:최저임금 결정:2026-11-14",
+    "offfail:2026-46"
   ],
   "laws": {},
-  "lastRun": "2026-11-14"
+  "lastRun": "2026-11-14",
+  "official": {},
+  "status": {
+    "officialOk": 0,
+    "officialError": "응답 해석 실패:  <!DOCTYPE html> <html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"> <title>시스템 점검</title> <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> <meta name"
+  }
 }
