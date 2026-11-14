@@ -88,12 +88,16 @@
             <button type="button" class="ghost sm" id="addScene">+ 글 장면 추가</button>
             <button type="button" class="ghost sm" id="hookAlt">첫 문구 바꾸기</button>
             <button type="button" class="ghost sm" id="endAlt">끝 문구 바꾸기</button>
+            <button type="button" class="ghost sm" id="refit">시간 다시 나누기</button>
           </div>
+          <p class="hint" style="margin:8px 0 0" id="sumInfo"></p>
         </section>
         <section class="card">
           <h2>소리 <span class="opt">선택</span></h2>
-          <div class="srow"><span>배경음</span><label class="addm sm2"><input type="file" id="bgmIn" accept="audio/*"><span id="bgmName">음악 파일 넣기</span></label><button type="button" class="ghost sm hidden" id="bgmDel">빼기</button></div>
-          <p class="hint" style="margin:0 0 8px">저작권이 해결된 음악만 넣으세요. (유튜브 오디오 보관함·공유마당 등)</p>
+          <div class="srow"><span>배경음</span><select id="bgmSel" aria-label="배경음 고르기"></select><button type="button" class="ghost sm" id="bgmPlay">듣기</button></div>
+          <div class="srow"><span>음량</span><input type="range" id="bgmVol" min="0" max="100" step="5" value="60" aria-label="배경음 음량"><b id="bgmVolV" class="num">60</b></div>
+          <div class="srow"><span>내 음악</span><label class="addm sm2"><input type="file" id="bgmIn" accept="audio/*"><span id="bgmName">파일 넣기</span></label><button type="button" class="ghost sm hidden" id="bgmDel">빼기</button></div>
+          <p class="hint" style="margin:0 0 8px">목록의 음악 37곡은 FreePD 공개 음원(CC0)이라 유튜브·인스타그램·상업용에도 출처 표시 없이 쓸 수 있습니다. 내 음악은 저작권이 해결된 것만 넣으세요.</p>
           <div class="srow"><span>내 목소리</span><button type="button" class="ghost sm" id="recBtn">녹음하기</button><button type="button" class="ghost sm hidden" id="recDel">지우기</button></div>
           <p class="hint" style="margin:0" id="recHint">녹음을 누르면 3초 뒤 미리보기가 처음부터 재생되고, 끝날 때까지 녹음합니다.</p>
         </section>

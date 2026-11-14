@@ -2,14 +2,20 @@
    장면 {d:초, kind:'text'|'visual'|'big'|'list'|'end', lines:[{t, role:'main'|'sub'|'accent'|'label'}], rows:[[라벨, 값]], visual:{media:번호}|{g:그림종류, ...}|null, align}
 */
 const RATIOS = { '9:16': [1080, 1920], '16:9': [1920, 1080], '1:1': [1080, 1080] };
-const PALETTES = [
-  { id: 'ink',    name: '먹색',   bg: '#151515', fg: '#FFFFFF', ac: '#E8B04B', panel: '#242424', line: '#3A3A3A' },
-  { id: 'cream',  name: '크림',   bg: '#F3EEE5', fg: '#2A2118', ac: '#B5442C', panel: '#E6DECF', line: '#CFC4B0' },
-  { id: 'white',  name: '흰색',   bg: '#FFFFFF', fg: '#1F1F1F', ac: '#8C6A43', panel: '#EFECE8', line: '#D9D5CF' },
-  { id: 'navy',   name: '남색',   bg: '#1A2B5F', fg: '#FFFFFF', ac: '#F2C94C', panel: '#24376F', line: '#3A4C86' },
-  { id: 'forest', name: '숲',     bg: '#1F3B2D', fg: '#F4F1EA', ac: '#D7B56D', panel: '#284A39', line: '#3B5E4C' },
-  { id: 'brick',  name: '벽돌',   bg: '#F7F3EF', fg: '#2B1D1A', ac: '#A33B2B', panel: '#EADFD6', line: '#D6C6B9' }
+// 색 조합: [이름, 배경, 글자, 강조]. 그림 바탕·선 색은 배경과 글자색을 섞어 자동으로 만듦
+const PAL_GROUPS = [
+  ['어두운 바탕', [['먹색', '#151515', '#FFFFFF', '#E8B04B'], ['숯회색', '#2B2D30', '#F5F5F5', '#7FC8A9'], ['남색', '#1A2B5F', '#FFFFFF', '#F2C94C'], ['밤하늘', '#0F1A2E', '#E8EEF7', '#6FA8FF'], ['숲', '#1F3B2D', '#F4F1EA', '#D7B56D'], ['와인', '#4A1622', '#FBEFEA', '#F0B27A'], ['초콜릿', '#3B2A20', '#F6EDE3', '#E3A857'], ['청록', '#0E3B43', '#EAF6F4', '#F4A261']]],
+  ['밝은 바탕', [['크림', '#F3EEE5', '#2A2118', '#B5442C'], ['흰색', '#FFFFFF', '#1F1F1F', '#8C6A43'], ['종이', '#FAF7F0', '#222222', '#2F6F4F'], ['하늘', '#EAF3FB', '#14324F', '#E0533D'], ['민트', '#E8F5EF', '#173B2F', '#E07A1F'], ['살구', '#FCEDE4', '#3A2218', '#C2462A'], ['연노랑', '#FFF8DC', '#2B2610', '#C0392B'], ['연보라', '#F1EDF7', '#2A1F3D', '#6B4FA0'], ['회색', '#EDEEF0', '#1D1F22', '#C8102E']]],
+  ['선명한 바탕', [['빨강', '#C8102E', '#FFFFFF', '#FFE08A'], ['주황', '#E8631C', '#FFFFFF', '#1D1F22'], ['노랑', '#F6C744', '#1D1F22', '#B0213E'], ['초록', '#2E7D4F', '#FFFFFF', '#FFE08A'], ['파랑', '#1F5FBF', '#FFFFFF', '#FFD54A'], ['분홍', '#F4C6CF', '#3A1620', '#B0213E'], ['검정·빨강', '#111111', '#FFFFFF', '#E63946']]]
 ];
+function hex2rgb(h){ const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function mixHex(a, b, k){ const A = hex2rgb(a), B = hex2rgb(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); }
+function lum(h){ return hex2rgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0); }
+function contrast(a, b){ const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+function makePalette(id, name, bg, fg, ac){ return { id, name, bg, fg, ac, panel: mixHex(bg, fg, 0.08), line: mixHex(bg, fg, 0.2) }; }
+const PALETTES = [];
+PAL_GROUPS.forEach(([g, list]) => list.forEach(([n, bg, fg, ac]) => PALETTES.push(Object.assign(makePalette('p' + PALETTES.length, n, bg, fg, ac), { group: g }))));
+
 const FONT = '"Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
 const easeOut = k => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
 

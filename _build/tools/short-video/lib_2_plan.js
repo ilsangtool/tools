@@ -23,14 +23,15 @@ function extractFields(type, text){
   const ph = t.match(/0\d{1,2}-?\d{3,4}-?\d{4}/); if (ph) f.contact = ph[0];
   const st = t.match(/[가-힣A-Za-z0-9]+역(?:\s*\d+번\s*출구)?(?:\s*(?:에서)?\s*(?:걸어서|도보)\s*\d+\s*분)?/);
   const ad = t.match(/[가-힣]+[시군구]\s*[가-힣0-9]+(?:로|길|동)\s*[\d\-]+(?:번지)?/);
-  if (st) f.place = st[0].trim(); else if (ad) f.place = ad[0].trim();
+  const vn = t.match(/(?<![가-힣0-9])[가-힣]{2,}(?:\s[가-힣]+)?\s?(?:앞|옆|뒤|안)?\s?(?:광장|공원|체육관|회관|문화센터|시민회관|운동장|강당|대강당|회의실|도서관|주차장|시장|역 광장)/);
+  if (st) f.place = st[0].trim(); else if (ad) f.place = ad[0].trim(); else if (vn && type !== 'promo') f.place = vn[0].trim();
   const nm = t.match(/([가-힣A-Za-z0-9]+(?:베이커리|카페|커피|식당|분식|치킨|피자|빵집|떡집|공방|마트|상회|약국|병원|의원|학원|센터|미용실|헤어|네일|스튜디오|소방서|구청|시청|주민센터|도서관|교회|협회|복지관|체육관|학교|어린이집))/);
   if (nm) f.name = nm[1];
   if (type === 'promo') {
     const it = t.match(/(?:신메뉴|신상품|새 메뉴|새 상품)\s*([가-힣A-Za-z0-9 ]{1,12}?)\s*(?:출시|판매|오픈|나왔)/) || t.match(/([가-힣A-Za-z0-9]{2,10})\s*(?:출시|판매 시작|오픈|할인)/);
     if (it) f.item = it[1].trim();
   }
-  if (type === 'event') { const ev = t.match(/([가-힣A-Za-z0-9 ]{2,16}?(?:축제|장터|행사|박람회|설명회|교육|체험|대회|공연|캠페인))/); if (ev) f.name = f.name || ev[1].trim(); }
+  if (type === 'event') { const ev = t.match(/((?:[가-힣A-Za-z0-9]+\s){0,3}[가-힣A-Za-z0-9]*(?:축제|장터|행사|박람회|설명회|교육|체험|대회|공연|캠페인|음악회|강연|강좌))/); if (ev) f.name = ev[1].trim(); }
   if (type === 'recruit') { const rc = t.match(/([가-힣A-Za-z0-9 ]{2,16}?모집)/); if (rc) f.name = rc[1].trim(); const tg = t.match(/(\d+\s*명)/); if (tg) f.target = tg[1]; }
   return f;
 }
@@ -90,7 +91,7 @@ function keywordOf(t, fallback){
   return k.replace(/\s/g, '').length >= 2 ? k : (fallback || t.slice(0, 6));
 }
 /* 장면 하나 */
-const S = (lines, extra) => Object.assign({ d: 0, kind: 'text', lines: lines.filter(l => l && l.t), visual: null }, extra || {});
+const S = (lines, extra) => Object.assign({ d: 0, kind: 'text', lines: lines.filter(l => l && l.t), visual: null, role: 'feat', p: 2 }, extra || {});
 const T = (t, role) => ({ t, role: role || 'main' });
 
 /* 구성안 만들기. f: 항목, feats: 특징 문장, media: 사진·영상 수, ph: 고른 문구 번호 */
@@ -105,56 +106,83 @@ function buildPlans(type, f, feats, nMedia, mood, ph){
 
   if (type === 'free') {
     const lines = feats.length ? feats : [];
-    const mk = (align) => { mi = 0; const sc = lines.map(t => S([T(t)], { visual: vis({ g: 'poster', text: t.split(' ').slice(0, 2).join(' ') }), align })); if (f.name) sc.push(S([T(f.name)], { kind: 'end', align })); return sc; };
+    const mk = (align) => { mi = 0; const sc = lines.map((t, n) => S([T(t)], { visual: vis({ g: 'poster', text: keywordOf(t, t.slice(0, 6)) }), align, role: n ? 'feat' : 'hook', p: n ? 2 : 1 })); if (f.name) sc.push(S([T(f.name)], { kind: 'end', align, role: 'end', p: 1 })); return sc; };
     return { A: mk(), B: mk(), C: mk('center') };
   }
   // A 첫마디형: 질문·짧은 문구로 시작 → 하나씩 빠르게
   mi = 0;
-  const A = [S([T(hook)], { kind: 'text' })];
-  if (subject) A.push(S([T(subject, 'accent'), T(f.name && f.item ? f.name : '', 'sub')], { visual: vis({ g: 'poster', text: subject }) }));
-  feats.slice(0, 2).forEach(t => A.push(S([T(t)], { visual: vis({ g: 'poster', text: keywordOf(t, subject) }) })));
+  const A = [S([T(hook)], { kind: 'text', role: 'hook', p: 1 })];
+  if (subject) A.push(S([T(subject, 'accent'), T(f.name && f.item ? f.name : '', 'sub')], { visual: vis({ g: 'poster', text: subject }), role: 'subject', p: 1 }));
+  feats.slice(0, 2).forEach((t, n) => A.push(S([T(t)], { visual: vis({ g: 'poster', text: keywordOf(t, subject) }), role: 'feat', p: n ? 3 : 2 })));
   infoKeys.forEach(k => {
-    if (k === 'price') A.push(S([T(lab(k), 'sub'), T(f[k], 'accent')], { kind: 'big', visual: vis(visualFor(k, f[k], f)) }));
-    else { const v = visualFor(k, f[k], f); if (v && v.label) v.label = ''; A.push(S([T(f[k])], { visual: vis(v) })); }
+    if (k === 'price') A.push(S([T(lab(k), 'sub'), T(f[k], 'accent')], { kind: 'big', visual: vis(visualFor(k, f[k], f)), role: 'info', p: 1 }));
+    else { const v = visualFor(k, f[k], f); if (v && v.label) v.label = ''; A.push(S([T(f[k])], { visual: vis(v), role: 'info', p: k === 'contact' || k === 'hours' ? 2 : 1 })); }
   });
-  A.push(S([T(end), T(f.name || '', 'accent')], { kind: 'end' }));
+  A.push(S([T(end), T(f.name || '', 'accent')], { kind: 'end', role: 'end', p: 1 }));
 
   // B 정보형: 제목 → 특징 → 정보 한 장 → 마무리
   mi = 0;
-  const B = [S([T(type === 'promo' ? '새 소식' : TYPES[type].name, 'label'), T(subject), T(f.name && f.item ? f.name : '', 'sub')], { visual: vis({ g: 'poster', text: subject }) })];
-  if (feats[0]) B.push(S([T(feats[0])], { visual: vis({ g: 'poster', text: keywordOf(feats[0], subject) }) }));
-  if (infoKeys.length) B.push(S([], { kind: 'list', rows: infoKeys.filter(k => k !== 'contact').map(k => [lab(k), f[k]]) }));
-  if (f.contact) B.push(S([T('문의', 'sub'), T(f.contact, 'accent')], { visual: vis(visualFor('contact', f.contact, f)) }));
-  B.push(S([T(f.name || subject), T(end, 'sub')], { kind: 'end' }));
+  const B = [S([T(type === 'promo' ? '새 소식' : TYPES[type].name, 'label'), T(subject), T(f.name && f.item ? f.name : '', 'sub')], { visual: vis({ g: 'poster', text: subject }), role: 'subject', p: 1 })];
+  feats.slice(0, 3).forEach((t, n) => B.push(S([T(t)], { visual: vis({ g: 'poster', text: keywordOf(t, subject) }), role: 'feat', p: n ? 3 : 2 })));
+  // 길이가 넉넉할 때만 들어가는 그림 장면 (정보 한 장 앞에 하나씩)
+  ['date', 'hours', 'place'].forEach(k => { if (f[k]) { const v = visualFor(k, f[k], f); if (v && v.label) v.label = ''; B.push(S([T(LABEL_BY_TYPE[type] && LABEL_BY_TYPE[type][k] || LABEL[k], 'sub'), T(f[k])], { visual: vis(v), role: 'info', p: 3 })); } });
+  if (infoKeys.length) B.push(S([], { kind: 'list', role: 'list', p: 1, rows: infoKeys.filter(k => k !== 'contact').map(k => [lab(k), f[k]]) }));
+  if (f.contact) B.push(S([T('문의', 'sub'), T(f.contact, 'accent')], { visual: vis(visualFor('contact', f.contact, f)), role: 'info', p: 2 }));
+  B.push(S([T(f.name || subject), T(end, 'sub')], { kind: 'end', role: 'end', p: 1 }));
   if (B[2] && B[2].kind === 'list' && !B[2].rows.length) B.splice(2, 1);
 
   // C 이야기형: 느린 호흡, 가운데 정렬, 그림 크게
   mi = 0;
   const C = [];
-  (feats.length ? feats.slice(0, 3) : [hook]).forEach(t => C.push(S([T(t, 'sub')], { visual: vis({ g: 'poster', text: feats.length ? keywordOf(t, subject) : subject }), align: 'center' })));
-  if (subject) C.push(S([T(subject, 'accent'), T([f.date, f.price].filter(Boolean).join(' · '), 'sub')], { visual: vis(f.price ? visualFor('price', f.price, f) : visualFor('date', f.date, f)), align: 'center' }));
-  if (f.place) C.push(S([T(f.place, 'sub')], { visual: vis(visualFor('place', f.place, f)), align: 'center' }));
-  C.push(S([T(f.name || subject), T(f.hours || end, 'sub')], { kind: 'end', align: 'center' }));
+  (feats.length ? feats.slice(0, 3) : [hook]).forEach((t, n) => C.push(S([T(t, 'sub')], { visual: vis({ g: 'poster', text: feats.length ? keywordOf(t, subject) : subject }), align: 'center', role: n ? 'feat' : 'hook', p: n ? 3 : 1 })));
+  if (subject) C.push(S([T(subject, 'accent'), T([f.date, f.price].filter(Boolean).join(' · '), 'sub')], { visual: vis(f.price ? visualFor('price', f.price, f) : visualFor('date', f.date, f)), align: 'center', role: 'subject', p: 1 }));
+  if (f.price && f.date) C.push(S([T(f.date, 'sub')], { visual: vis(visualFor('date', f.date, f)), align: 'center', role: 'info', p: 3 }));
+  if (f.hours) { const v = visualFor('hours', f.hours, f); v.label = ''; C.push(S([T(f.hours, 'sub')], { visual: vis(v), align: 'center', role: 'info', p: 3 })); }
+  if (f.place) C.push(S([T(f.place, 'sub')], { visual: vis(visualFor('place', f.place, f)), align: 'center', role: 'info', p: 2 }));
+  ['target', 'apply'].forEach(k => { if (f[k]) C.push(S([T(f[k], 'sub')], { visual: vis(visualFor(k, f[k], f)), align: 'center', role: 'info', p: 2 })); });
+  if (f.contact) { const v = visualFor('contact', f.contact, f); v.label = ''; C.push(S([T(f.contact, 'sub')], { visual: vis(v), align: 'center', role: 'info', p: 3 })); }
+  C.push(S([T(f.name || subject), T(end, 'sub')], { kind: 'end', align: 'center', role: 'end', p: 1 }));
   return { A, B, C };
 }
 
-/* 장면 길이를 목표 길이에 맞춤: 글자 수만큼 읽을 시간 + 분위기 */
-function fitDurations(scenes, target, mood, plan){
-  const tempo = { bright: 1, calm: 1.15, strong: 0.88 }[mood] * (plan === 'C' ? 1.2 : 1);
-  scenes.forEach(s => {
-    const chars = s.kind === 'list' ? s.rows.reduce((a, r) => a + r[0].length + r[1].length, 0) : s.lines.reduce((a, l) => a + l.t.length, 0);
-    s.d = (2.2 + chars * 0.11 + (s.kind === 'list' ? s.rows.length * 0.6 : 0)) * tempo;
-  });
-  const sum = totalOf(scenes);
-  const k = target / sum;
-  scenes.forEach(s => s.d = Math.max(2, Math.min(s.kind === 'list' ? 16 : 10, s.d * k)));
-  // 반올림 후 남는 시간은 마지막 장면에서 조정
-  scenes.forEach(s => s.d = Math.round(s.d * 2) / 2);
-  const diff = target - totalOf(scenes);
-  let i = scenes.length - 1;
-  if (Math.abs(diff) > 0.01) { scenes[i].d = Math.max(2, scenes[i].d + diff); }
-  // 장면이 적어 목표 길이에 못 미치면 모든 장면을 고르게 늘림(최대 10초)
-  const left = target - totalOf(scenes);
-  if (left > 0.5) { const add = left / scenes.length; scenes.forEach(s => s.d = Math.min(12, s.d + add)); }
+/* 장면 길이 나누기
+   1) 장면마다 '읽는 데 필요한 시간'을 계산: 기본 시간(역할별) + 글자 수 ÷ 초당 7자
+   2) 첫 장면(눈길 끌기)은 짧게 묶어 두고(최대 3초), 남는 시간은 정보·마무리 장면에 필요 시간 비율로 나눔
+   3) 목표보다 길면 덜 중요한 장면(p=3 → p=2)부터 빼고, 그래도 길면 고르게 줄임(최소 시간은 지킴) */
+const ROLE_T = { // [기본, 최소, 최대]
+  hook: [1.2, 2, 3], subject: [1.8, 2.5, 5], feat: [1.4, 2.5, 7], info: [2.2, 3, 6.5], list: [1.6, 4, 16], end: [2.4, 3.5, 6]
+};
+function needOf(s){
+  const chars = s.kind === 'list' ? s.rows.reduce((a, r) => a + r[0].length + r[1].length, 0) : s.lines.reduce((a, l) => a + l.t.replace(/\s/g, '').length, 0);
+  const R = ROLE_T[s.role] || ROLE_T.feat;
+  return Math.max(R[1], R[0] + chars / 7 + (s.kind === 'list' ? s.rows.length * 0.9 : 0) + (s.visual ? 0.4 : 0));
+}
+function fitDurations(scenes, target, mood, plan, keepAll){
+  const tempo = { bright: 0.95, calm: 1.1, strong: 0.9 }[mood || 'calm'] * (plan === 'C' ? 1.15 : 1);
+  let list = scenes.slice();
+  const need = s => needOf(s) * tempo;
+  // 너무 길면 덜 중요한 장면부터 뺌
+  if (!keepAll) for (const pr of [3, 2]) {
+    while (list.reduce((a, s) => a + Math.max((ROLE_T[s.role] || ROLE_T.feat)[1], need(s) * 0.75), 0) > target) {
+      const i = list.map(s => s.p).lastIndexOf(pr); if (i < 0) break; list.splice(i, 1);
+    }
+  }
+  list.forEach(s => s.d = need(s));
+  const lim = s => ROLE_T[s.role] || ROLE_T.feat;
+  for (let round = 0; round < 6; round++) {
+    const sum = totalOf(list), gap = target - sum;
+    if (Math.abs(gap) < 0.05) break;
+    const free = list.filter(s => gap > 0 ? s.d < lim(s)[2] - 0.01 : s.d > lim(s)[1] + 0.01);
+    if (!free.length) break;
+    const w = free.reduce((a, s) => a + need(s), 0);
+    free.forEach(s => s.d = Math.max(lim(s)[1], Math.min(gap > 0 ? lim(s)[2] : 99, s.d + gap * need(s) / w)));
+  }
+  // 최대치에 다 걸려도 남으면 첫 장면을 뺀 모든 장면에 고르게
+  let left = target - totalOf(list);
+  if (left > 0.05) { const others = list.filter(s => s.role !== 'hook'); others.forEach(s => s.d += left / others.length); }
+  list.forEach(s => s.d = Math.round(s.d * 10) / 10);
+  const diff = Math.round((target - totalOf(list)) * 10) / 10;
+  if (Math.abs(diff) >= 0.1) { const e = list[list.length - 1]; e.d = Math.max(lim(e)[1], Math.round((e.d + diff) * 10) / 10); }
+  scenes.length = 0; list.forEach(s => scenes.push(s));
   return scenes;
 }

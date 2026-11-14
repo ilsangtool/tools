@@ -5,10 +5,10 @@ const PLAN_INFO = {
   B: ['B 정보형', '가격·날짜·시간·위치를 한 화면에 모아 차례로 보여 줍니다. 단골·주민에게 소식 전할 때'],
   C: ['C 이야기형', '가운데 정렬, 느린 호흡으로 그림을 크게 보여 줍니다. 사진이 3장 이상일 때 잘 어울림']
 };
-const DEF_PAL = { A: 'ink', B: 'cream', C: 'white' };
+const DEF_PAL = { A: 'p0', B: 'p8', C: 'p9' }; // 먹색·크림·흰색
 const fmt = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 const ratio = () => radio('ratio'), len = () => +radio('len'), mood = () => radio('mood');
-const pal = () => PALETTES.find(p => p.id === (ST.pal || DEF_PAL[ST.plan])) || PALETTES[0];
+const pal = () => ST.pal === 'custom' && ST.custom ? makePalette('custom', '직접', ST.custom.bg, ST.custom.fg, ST.custom.ac) : (PALETTES.find(p => p.id === (ST.pal || DEF_PAL[ST.plan])) || PALETTES[0]);
 
 /* ---- 1단계 ---- */
 $('#types').innerHTML = Object.entries(TYPES).map(([k, v]) => `<label><input type="radio" name="type" value="${k}"${k === 'promo' ? ' checked' : ''}><span>${v.name}</span></label>`).join('');
@@ -64,15 +64,24 @@ $('#fieldList').addEventListener('input', e => {
   ST.plans = null;
 });
 $('#feats').addEventListener('input', () => { ST.featsTouched = true; ST.feats = $('#feats').value.split('\n').map(s => s.trim()).filter(Boolean); ST.plans = null; });
-$$('input[name=mood]').forEach(r => r.addEventListener('change', () => ST.plans = null));
+$$('input[name=mood]').forEach(r => r.addEventListener('change', () => { ST.plans = null; if (!ST.trackPicked) ST.track = null; }));
 
 /* ---- 3단계: 구성안 ---- */
 function makePlans(){
   const raw = buildPlans(ST.type, ST.fields, ST.feats, ST.media.length, mood(), ST.ph);
   ST.plans = {};
-  for (const k of ['A', 'B', 'C']) ST.plans[k] = fitDurations(raw[k], len(), mood(), k);
+  for (const k of ['A', 'B', 'C']) ST.plans[k] = fitDurations(raw[k], len(), mood(), k, false);
 }
-$('#pals').innerHTML = PALETTES.map(p => `<button type="button" data-pal="${p.id}"><i><em style="background:${p.bg}"></em><em style="background:${p.fg}"></em><em style="background:${p.ac}"></em></i>${p.name}</button>`).join('');
+$('#pals').innerHTML = PAL_GROUPS.map(([g]) => `<p class="pg">${g}</p><div class="pgl">` + PALETTES.filter(p => p.group === g).map(p => `<button type="button" data-pal="${p.id}"><i><em style="background:${p.bg}"></em><em style="background:${p.fg}"></em><em style="background:${p.ac}"></em></i>${p.name}</button>`).join('') + '</div>').join('') +
+  `<p class="pg">직접 고르기</p><div class="custom"><button type="button" data-pal="custom">직접 만든 색 쓰기</button><label>배경<input type="color" id="cBg" value="#151515"></label><label>글자<input type="color" id="cFg" value="#FFFFFF"></label><label>강조<input type="color" id="cAc" value="#E8B04B"></label></div><p class="warn-line hidden" id="cWarn"></p>`;
+function readCustom(){
+  ST.custom = { bg: $('#cBg').value.toUpperCase(), fg: $('#cFg').value.toUpperCase(), ac: $('#cAc').value.toUpperCase() };
+  const c1 = contrast(ST.custom.bg, ST.custom.fg), c2 = contrast(ST.custom.bg, ST.custom.ac), w = $('#cWarn');
+  const msg = c1 < 4.5 ? `배경과 글자색 차이가 작아 글이 잘 안 보일 수 있습니다 (대비 ${c1.toFixed(1)}, 4.5 이상 권장).` : c2 < 3 ? `강조색이 배경과 비슷해 눈에 잘 띄지 않습니다 (대비 ${c2.toFixed(1)}, 3 이상 권장).` : '';
+  w.textContent = msg; w.classList.toggle('hidden', !msg);
+}
+['cBg', 'cFg', 'cAc'].forEach(id => $('#' + id).addEventListener('input', () => { readCustom(); ST.pal = 'custom'; ST.palPicked = true; markPal(); drawPlanThumbs(); save(); }));
+readCustom();
 $('#pals').addEventListener('click', e => { const b = e.target.closest('[data-pal]'); if (!b) return; ST.pal = b.dataset.pal; markPal(); drawPlanThumbs(); save(); });
 const markPal = () => $$('#pals button').forEach(b => b.classList.toggle('on', b.dataset.pal === pal().id));
 
@@ -148,6 +157,15 @@ function visOptions(s){
   const cur = !s.visual ? 'none' : s.visual.media != null ? 'm' + s.visual.media : 'auto';
   return `<select data-k="vis" aria-label="그림">${auto}${media}<option value="none">그림 없음</option></select>`.replace(`value="${cur}"`, `value="${cur}" selected`);
 }
+function sumInfo(){
+  const tot = totalOf(ST.scenes), tg = len(), off = tot - tg;
+  $('#sumInfo').textContent = `전체 ${tot.toFixed(1)}초 · 목표 ${tg}초` + (Math.abs(off) < 1 ? '' : off > 0 ? ` (${off.toFixed(1)}초 김)` : ` (${(-off).toFixed(1)}초 짧음)`) + (Math.abs(off) >= 1 ? ' · 시간 다시 나누기를 누르면 맞춰집니다' : '');
+}
+$('#refit').addEventListener('click', () => {
+  if (!ST.scenes.length) return;
+  fitDurations(ST.scenes, len(), mood(), ST.plan, true);
+  renderScenes(); toast(`글 길이에 맞춰 ${totalOf(ST.scenes).toFixed(1)}초로 나눴습니다`);
+});
 function renderScenes(){
   $('#sceneList').innerHTML = ST.scenes.map((s, i) => {
     const inputs = s.kind === 'list'
@@ -155,7 +173,7 @@ function renderScenes(){
       : s.lines.map((l, j) => `<input type="text" data-line="${j}" value="${esc(l.t)}" aria-label="장면 ${i + 1} 글 ${j + 1}">`).join('');
     return `<div class="sc" data-i="${i}"><div class="hd"><b>장면 ${i + 1}</b><span class="dur"><button type="button" data-a="dm" aria-label="짧게">−</button>${s.d.toFixed(1)}초<button type="button" data-a="dp" aria-label="길게">+</button></span><span class="sp"></span>${s.kind === 'list' ? '' : visOptions(s)}<button type="button" data-a="up" aria-label="위로">↑</button><button type="button" data-a="dn" aria-label="아래로">↓</button><button type="button" data-a="del" aria-label="삭제">×</button></div>${inputs}</div>`;
   }).join('');
-  player.lastI = -1; drawAt(Math.min(player.t, totalOf(ST.scenes) - 0.01));
+  player.lastI = -1; drawAt(Math.min(player.t, totalOf(ST.scenes) - 0.01)); sumInfo();
   save();
 }
 $('#sceneList').addEventListener('input', e => {
@@ -199,11 +217,42 @@ $('#hookAlt').addEventListener('click', () => swapPhrase('hook'));
 $('#endAlt').addEventListener('click', () => swapPhrase('end'));
 
 /* ---- 소리: 배경음·녹음 ---- */
+const MOOD_KO = { bright: '밝게', calm: '차분하게', strong: '힘 있게', season: '계절·명절' };
+function fillBgm(){
+  $('#bgmSel').innerHTML = '<option value="">배경음 없음</option>' + (ST.bgm ? `<option value="file">내 음악: ${esc(ST.bgm.name)}</option>` : '') +
+    Object.keys(MOOD_KO).map(m => `<optgroup label="${MOOD_KO[m]}">` + TRACKS.filter(t => t.mood === m).map(t => `<option value="${t.id}">${esc(t.title)}</option>`).join('') + '</optgroup>').join('');
+  $('#bgmSel').value = ST.track || '';
+}
+// 고르지 않았으면 영상 분위기에 맞는 첫 곡 (12월·1월·2월 행사는 겨울 곡)
+function autoTrack(){
+  if (ST.trackPicked) return;
+  const winter = /(^|[^0-9])(12|1|2)월/.test(ST.fields.date || '') && /성탄|크리스마스|연말/.test(val('text'));
+  const list = TRACKS.filter(t => t.mood === (winter ? 'season' : mood()));
+  ST.track = (list[(ST.plan.charCodeAt(0) - 65) % list.length] || TRACKS[0]).id;
+}
+let bgmAudio = null;
+function stopBgm(){ if (bgmAudio) { bgmAudio.pause(); bgmAudio = null; } $('#bgmPlay').textContent = '듣기'; }
+$('#bgmSel').addEventListener('change', () => { stopBgm(); ST.track = $('#bgmSel').value; ST.trackPicked = true; save(); });
+$('#bgmPlay').addEventListener('click', () => {
+  if (bgmAudio) { stopBgm(); return; }
+  const v = $('#bgmSel').value; if (!v) { toast('배경음 없음을 골랐습니다'); return; }
+  bgmAudio = new Audio(v === 'file' ? URL.createObjectURL(ST.bgm.file) : 'music/' + TRACKS.find(t => t.id === v).file);
+  bgmAudio.volume = +$('#bgmVol').value / 100; bgmAudio.onended = stopBgm;
+  bgmAudio.play().then(() => $('#bgmPlay').textContent = '멈춤').catch(() => { stopBgm(); toast('음악을 불러오지 못했습니다'); });
+});
+$('#bgmVol').addEventListener('input', () => { $('#bgmVolV').textContent = $('#bgmVol').value; if (bgmAudio) bgmAudio.volume = +$('#bgmVol').value / 100; ST.vol = +$('#bgmVol').value; save(); });
 $('#bgmIn').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
-  ST.bgm = { file: f, name: f.name }; $('#bgmName').textContent = f.name.length > 18 ? f.name.slice(0, 16) + '…' : f.name; $('#bgmDel').classList.remove('hidden'); e.target.value = '';
+  ST.bgm = { file: f, name: f.name }; ST.track = 'file'; ST.trackPicked = true; stopBgm();
+  $('#bgmName').textContent = f.name.length > 18 ? f.name.slice(0, 16) + '…' : f.name; $('#bgmDel').classList.remove('hidden'); e.target.value = ''; fillBgm();
 });
-$('#bgmDel').addEventListener('click', () => { ST.bgm = null; $('#bgmName').textContent = '음악 파일 넣기'; $('#bgmDel').classList.add('hidden'); });
+$('#bgmDel').addEventListener('click', () => { ST.bgm = null; if (ST.track === 'file') { ST.trackPicked = false; autoTrack(); } stopBgm(); $('#bgmName').textContent = '파일 넣기'; $('#bgmDel').classList.add('hidden'); fillBgm(); });
+async function bgmBlob(){
+  const v = ST.track; if (!v) return null;
+  if (v === 'file') return ST.bgm ? ST.bgm.file : null;
+  const t = TRACKS.find(x => x.id === v); if (!t) return null;
+  const r = await fetch('music/' + t.file); if (!r.ok) throw new Error('bgm'); return r.blob();
+}
 let recorder = null;
 $('#recBtn').addEventListener('click', async () => {
   if (recorder) { recorder.stop(); return; }
@@ -230,7 +279,7 @@ let outBlob = null;
 $('#exportBtn').addEventListener('click', async () => {
   const mime = pickMime();
   if (!mime || !HTMLCanvasElement.prototype.captureStream) { toast('이 브라우저에서는 영상 저장이 되지 않습니다. 크롬·엣지·사파리 최신판을 써 주세요'); return; }
-  pause();
+  pause(); stopBgm();
   const btn = $('#exportBtn'); btn.disabled = true; $('#exp').classList.remove('hidden'); $('#outBox').classList.add('hidden');
   const scale = +radio('q') || 1, cv = document.createElement('canvas'), st = new Stage(cv);
   st.media = ST.media; st.setup(ratio(), scale);
@@ -238,11 +287,12 @@ $('#exportBtn').addEventListener('click', async () => {
   let ac = null;
   const audioSrc = [];
   try {
-    if (ST.bgm || ST.voice) {
+    const bgm = await bgmBlob().catch(() => { toast('배경음을 불러오지 못해 빼고 만듭니다'); return null; });
+    if (bgm || ST.voice) {
       ac = new (window.AudioContext || window.webkitAudioContext)();
       const dest = ac.createMediaStreamDestination();
       const add = async (blob, gain, loop) => { const buf = await ac.decodeAudioData(await blob.arrayBuffer()); const s = ac.createBufferSource(); s.buffer = buf; s.loop = loop; const g = ac.createGain(); g.gain.value = gain; s.connect(g).connect(dest); audioSrc.push({ s, g }); };
-      if (ST.bgm) await add(ST.bgm.file, ST.voice ? 0.25 : 0.7, true);
+      if (bgm) await add(bgm, (ST.vol ?? 60) / 100 * (ST.voice ? 0.4 : 1), true);
       if (ST.voice) await add(ST.voice, 1, false);
       dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
     }
@@ -308,6 +358,7 @@ function go(n){
       ST.scenes = JSON.parse(JSON.stringify(ST.plans[ST.plan])).map(s => ({ ...s, autoVisual: s.visual && s.visual.media == null ? s.visual : (s.visual ? fallbackVisual(s) : null) }));
       ST.sceneFrom = ST.plan + JSON.stringify(ST.plans[ST.plan].map(s => s.lines));
     }
+    autoTrack(); fillBgm(); $('#bgmVol').value = ST.vol ?? 60; $('#bgmVolV').textContent = $('#bgmVol').value;
     stageSetup(); player.t = 0.9; renderScenes();
     if (!radio('q')) $$('input[name=q]').forEach(r => r.checked = r.value === (innerWidth < 760 ? '0.6667' : '1'));
   }
@@ -333,7 +384,7 @@ $('#plans').addEventListener('click', () => { if (ST.step === 3) $('#next').text
 
 /* ---- 저장해 두기 (사진·영상·소리 파일은 저장하지 않음) ---- */
 function save(){
-  store.set(KEY, { ratio: ratio(), type: radio('type'), text: val('text'), len: radio('len'), mood: mood(), fields: ST.fields, feats: ST.feats, featsTouched: ST.featsTouched, plan: ST.plan, pal: ST.pal, palPicked: ST.palPicked, ph: ST.ph });
+  store.set(KEY, { ratio: ratio(), type: radio('type'), text: val('text'), len: radio('len'), mood: mood(), fields: ST.fields, feats: ST.feats, featsTouched: ST.featsTouched, plan: ST.plan, pal: ST.pal, palPicked: ST.palPicked, custom: ST.custom, track: ST.track, trackPicked: ST.trackPicked, vol: ST.vol, ph: ST.ph });
 }
 (() => {
   const s = store.get(KEY); if (!s) { showTypeHint(); return; }
@@ -342,7 +393,9 @@ function save(){
   $$('input[name=len]').forEach(r => r.checked = r.value === s.len);
   $$('input[name=mood]').forEach(r => r.checked = r.value === s.mood);
   $('#text').value = s.text || '';
-  Object.assign(ST, { fields: s.fields || {}, feats: s.feats || [], featsTouched: s.featsTouched, plan: s.plan || 'A', pal: s.pal || null, palPicked: s.palPicked, ph: s.ph || { hook: 0, end: 0 }, lastText: s.text, type: s.type || 'promo' });
+  Object.assign(ST, { fields: s.fields || {}, feats: s.feats || [], featsTouched: s.featsTouched, plan: s.plan || 'A', pal: s.pal || null, palPicked: s.palPicked, ph: s.ph || { hook: 0, end: 0 }, lastText: s.text, type: s.type || 'promo', custom: s.custom, track: s.track === 'file' ? null : s.track, trackPicked: s.track !== 'file' && s.trackPicked, vol: s.vol });
+  if (ST.custom) { $('#cBg').value = ST.custom.bg; $('#cFg').value = ST.custom.fg; $('#cAc').value = ST.custom.ac; readCustom(); }
+  if (ST.pal && ST.pal !== 'custom' && !PALETTES.some(p => p.id === ST.pal)) ST.pal = null;
   if (ST.featsTouched) $('#feats').value = ST.feats.join('\n');
   showTypeHint();
 })();
