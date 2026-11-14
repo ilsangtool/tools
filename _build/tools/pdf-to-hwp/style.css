@@ -22,3 +22,8 @@
   .flist button{padding:6px 10px;min-width:auto;font-size:13px}
   #modes>.tabs button{font-size:15px;padding:10px 14px}
   #mList input{flex:1 1 90px}
+  .pwask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+  .pwask.hidden{display:none}
+  .pwbox{background:#fff;border-radius:6px;padding:16px;width:100%;max-width:360px}
+  .pwbox p{margin:0 0 8px;font-size:14.5px}
+  .pwbox input{width:100%;height:48px;padding:0 12px;border:1px solid #cfd3d8;border-radius:4px;font-size:16px;box-sizing:border-box}

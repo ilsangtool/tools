@@ -209,13 +209,24 @@ const pagesLabel = list => { // [1,2,3,5] → "1-3, 5"
   return out.join(', ');
 };
 async function loadForEdit(f){
-  const { PDFDocument } = await loadPdfLib();
-  const bytes = new Uint8Array(await f.arrayBuffer());
+  const L = await loadPdfLib(), bytes = new Uint8Array(await f.arrayBuffer());
   let doc;
-  try { doc = await PDFDocument.load(bytes, { ignoreEncryption: true }); }
-  catch (e) { throw new Error('손상됐거나 PDF가 아닌 파일입니다'); }
-  if (doc.isEncrypted) throw new Error('보안(암호)이 걸린 PDF는 나누거나 합칠 수 없습니다. 만든 프로그램에서 보안을 풀고 다시 저장해 주세요');
+  try { doc = await PdfUnlock.load(L, bytes, t => askPw(f.name, t)); }
+  catch (e) { console.error(e); throw new Error(e.message === 'UNSUPPORTED' ? '표준이 아닌 보안 방식(인증서·DRM)이라 풀 수 없습니다' : '손상됐거나 PDF가 아닌 파일입니다'); }
+  if (!doc) throw new Error('암호를 넣지 않아 열지 않았습니다');
   return doc;
+}
+/* 여는 암호 묻기 (틀리면 다시) */
+function askPw(name, tries){
+  return new Promise(ok => {
+    const box = $('#pwAsk'), inp = $('#pwAskIn');
+    $('#pwAskMsg').textContent = tries ? '암호가 맞지 않습니다. 다시 넣어 주세요.' : `${name} 은(는) 여는 암호가 걸려 있습니다.`;
+    inp.value = ''; box.classList.remove('hidden'); setTimeout(() => inp.focus(), 50);
+    const done = v => { box.classList.add('hidden'); $('#pwAskOk').onclick = $('#pwAskNo').onclick = inp.onkeydown = null; ok(v); };
+    $('#pwAskOk').onclick = () => done(inp.value);
+    $('#pwAskNo').onclick = () => done(null);
+    inp.onkeydown = e => { if (e.key === 'Enter') done(inp.value); if (e.key === 'Escape') done(null); };
+  });
 }
 async function buildPdf(parts){ // parts: [[doc, [쪽번호…]]]
   const { PDFDocument } = await loadPdfLib(), out = await PDFDocument.create();
@@ -230,7 +241,7 @@ async function sOpen(f){
   $('#sCard').classList.remove('hidden'); $('#sOut').classList.add('hidden'); $('#sInfo').textContent = '불러오는 중…'; $('#sGo').disabled = true;
   try {
     sDoc = await loadForEdit(f); sName = f.name.replace(/\.pdf$/i, '');
-    $('#sInfo').innerHTML = `<b>${esc(f.name)}</b> · ${sDoc.getPageCount()}쪽 · ${mb(f.size)}`;
+    $('#sInfo').innerHTML = `<b>${esc(f.name)}</b> · ${sDoc.getPageCount()}쪽 · ${mb(f.size)}` + (sDoc.unlocked ? ' · <b>보안을 풀었습니다</b> (나눈 파일에는 보안이 없습니다)' : '');
     $('#sGo').disabled = false; sPlan();
   } catch (e) { sDoc = null; $('#sInfo').textContent = e.message; }
 }
@@ -278,13 +289,13 @@ async function mAdd(files){
   const list = [...files].filter(isPdf); if (!list.length) { toast('PDF 파일만 넣을 수 있습니다'); return; }
   $('#mCard').classList.remove('hidden');
   for (const f of list) {
-    try { const doc = await loadForEdit(f); mFiles.push({ name: f.name, size: f.size, doc, n: doc.getPageCount(), range: '' }); }
+    try { const doc = await loadForEdit(f); mFiles.push({ name: f.name, size: f.size, doc, n: doc.getPageCount(), range: '', unlocked: doc.unlocked }); }
     catch (e) { toast(`${f.name}: ${e.message}`); }
   }
   mRender();
 }
 function mRender(){
-  $('#mList').innerHTML = mFiles.map((m, i) => `<li><b>${i + 1}</b><span class="nm">${esc(m.name)}<small>${m.n}쪽 · ${mb(m.size)}</small></span>
+  $('#mList').innerHTML = mFiles.map((m, i) => `<li><b>${i + 1}</b><span class="nm">${esc(m.name)}<small>${m.n}쪽 · ${mb(m.size)}${m.unlocked ? ' · 보안 풂' : ''}</small></span>
     <input type="text" data-i="${i}" value="${esc(m.range)}" placeholder="전체" aria-label="${i + 1}번 파일에서 넣을 쪽" inputmode="numeric">
     <button type="button" class="ghost" data-a="up" data-i="${i}" aria-label="위로" ${i ? '' : 'disabled'}>위</button><button type="button" class="ghost" data-a="dn" data-i="${i}" aria-label="아래로" ${i < mFiles.length - 1 ? '' : 'disabled'}>아래</button><button type="button" class="ghost" data-a="del" data-i="${i}">빼기</button></li>`).join('');
   mInfo();

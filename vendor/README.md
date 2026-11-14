@@ -9,3 +9,5 @@
 | tesseract/*.traineddata | tesseract-ocr/tessdata_fast (kor, eng) | — | Apache-2.0 (`tesseract/LICENSE-tessdata`) |
 
 pdf-to-hwp의 HWPX 기본 틀은 python-hwpx(Apache-2.0, airmang) 저장소의 한컴 한글 저장 견본(`tests/fixtures/hancom_saved/cell_border_2x3_base.hwpx`)을 바탕으로 합니다.
+
+pdf-to-hwp의 PDF 보안 풀기(`_build/tools/pdf-to-hwp/lib_4_unlock.js`)는 ISO 32000 표준 보안 처리기(RC4·AES-128·AES-256, R2~R6)를 직접 구현한 것으로 외부 라이브러리를 쓰지 않습니다.
