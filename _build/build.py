@@ -16,6 +16,7 @@ TOOLS = [
     ('date-calc', '생활 계산', 'D-day·전역일·만나이 계산기'),
     ('image-resize', '사진 도구', '사진 용량 줄이기·HEIC 변환'),
     ('id-photo', '사진 도구', '증명사진 규격 자르기'),
+    ('pdf-to-hwp', '문서 도구', 'PDF → 한글·워드 변환'),
 ]
 
 def read(p, default=''):
@@ -135,7 +136,7 @@ def build(slug):
 <script>
 (function(){{
 {common_js}
-{read(os.path.join(d, 'app.js'))}
+{''.join(read(os.path.join(d, f)) + chr(10) for f in sorted(os.listdir(d)) if f.startswith('lib_') and f.endswith('.js'))}{read(os.path.join(d, 'app.js'))}
 }})();
 </script>
 <!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->

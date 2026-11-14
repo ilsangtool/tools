@@ -6,6 +6,7 @@
 
 | 도구 | 설명 | 바로가기 |
 |---|---|---|
+| PDF → 한글·워드 변환 | 서버 업로드 없이 PDF를 HWPX·DOCX·TXT로. 표·합친 칸·글자 모양 유지, 스캔 PDF 한국어 글자 인식 | [열기](https://ilsangtool.github.io/tools/pdf-to-hwp/) |
 | 리뷰 운영정책 고지문 생성기 | 2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 고지문과 HTML 코드가 완성됩니다. | [열기](https://ilsangtool.github.io/tools/review-policy/) |
 | 환불·교환 규정 고지문 생성기 | 온라인 7일 청약철회 기준 반영. 법에 어긋나는 "세일 상품 환불 불가" 문구는 자동으로 걸러냅니다. | [열기](https://ilsangtool.github.io/tools/refund-policy/) |
 | 예약·노쇼 규정 문구 생성기 | 2025.12 개정 노쇼 위약금 기준(20%·40%) 반영. 예약 확정 문자와 매장 공지를 한 번에. | [열기](https://ilsangtool.github.io/tools/noshow-policy/) |
@@ -28,6 +29,8 @@
 /date-calc/            D-day·전역일·만나이 계산기
 /image-resize/         사진 용량 줄이기·HEIC 변환
 /id-photo/             증명사진 규격 자르기
+/pdf-to-hwp/           PDF → 한글·워드 변환
+/vendor/               변환 라이브러리 자체 호스팅 (pdf.js, Tesseract) — vendor/README.md 참고
 robots.txt, sitemap.xml   검색엔진 등록용
 ```
 

@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF 한글 변환 (HWPX·워드) - 업로드 없이 무료, 표·스캔본까지</title>
+<meta name="description" content="PDF를 한글(HWPX)·워드(DOCX)·텍스트로 무료 변환. 파일을 서버에 올리지 않고 브라우저에서 처리해 공문·계약서도 안전합니다. 표와 합친 칸, 글자 크기·굵기·정렬을 살리고 스캔 PDF는 한국어 글자 인식(OCR)으로 변환합니다.">
+<meta name="keywords" content="PDF 한글 변환, PDF HWP 변환, PDF 한글파일로, PDF 워드 변환, PDF HWPX, 스캔 PDF 텍스트 변환, PDF 표 변환, PDF OCR 한국어">
+<link rel="canonical" href="https://ilsangtool.github.io/tools/pdf-to-hwp/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PDF 한글 변환 (HWPX·워드) - 업로드 없이 무료, 표·스캔본까지">
+<meta property="og:description" content="PDF를 서버에 안 올리고 한글·워드로 변환, 표까지 그대로">
+<meta property="og:url" content="https://ilsangtool.github.io/tools/pdf-to-hwp/">
+<meta property="og:locale" content="ko_KR">
+<!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "PDF → 한글·워드 변환", "url": "https://ilsangtool.github.io/tools/pdf-to-hwp/", "applicationCategory": "BusinessApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "PDF가 서버에 올라가나요?", "acceptedAnswer": {"@type": "Answer", "text": "아니요. 변환은 지금 쓰는 브라우저 안에서만 이루어집니다. 처음 한 번 변환 도구를 받은 뒤에는 인터넷을 끊어도 글자 PDF 변환이 됩니다."}}, {"@type": "Question", "name": ".hwp 파일로 받을 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "한글(HWPX)로 저장한 뒤 한글 프로그램에서 열어 '다른 이름으로 저장'에서 HWP를 고르면 됩니다. HWPX는 2026년부터 공공기관 표준 형식이라 그대로 써도 됩니다."}}, {"@type": "Question", "name": "표도 그대로 옮겨지나요?", "acceptedAnswer": {"@type": "Answer", "text": "테두리 선이 있는 표는 칸 나눔과 합친 칸까지 한글·워드 표로 만듭니다. 선이 없는 표는 문단으로 옮겨집니다."}}, {"@type": "Question", "name": "스캔한 PDF도 되나요?", "acceptedAnswer": {"@type": "Answer", "text": "네. 글자가 없는 쪽은 자동으로 한국어·영어 글자 인식을 합니다. 처음 한 번 약 7MB를 받고, 한 쪽에 10~30초쯤 걸립니다. 숫자와 이름은 원본과 꼭 대조하세요."}}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
+    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
+  header .wrap{max-width:860px;margin:0 auto}
+  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
+  header p{margin:0;color:var(--sub);font-size:14px}
+  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
+  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
+  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
+  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  .chk:last-child{border-bottom:0}
+  .chk input{margin-top:4px;accent-color:var(--accent)}
+  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
+  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
+  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .hidden{display:none!important}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  button.ghost{background:#fff;color:var(--ink)}
+  button.sm{padding:5px 9px;font-size:13px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
+  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .stat small{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:20px;letter-spacing:-.3px}
+  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+  .stat .main b{color:var(--accent)}
+  table.t{width:100%;border-collapse:collapse;font-size:14px}
+  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
+  table.t th{font-weight:500;color:var(--sub);font-size:13px}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .related{margin-top:28px}
+  .related h2{font-size:14px;color:var(--sub);font-weight:500;margin:0 0 8px}
+  .related ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+  .related a{display:block;background:#fff;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
+  .related a span{display:block;font-size:11.5px;color:var(--accent)}
+  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
+  footer a{color:var(--sub)}
+  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
+  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
+  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
+  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed #cfd3d8;border-radius:8px;padding:34px 12px;text-align:center;cursor:pointer;background:#fafafa;transition:.15s}
+  .drop.over,.drop:hover,.drop:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
+  .drop input{position:absolute;opacity:0;width:1px;height:1px}
+  .drop span{font-size:13px;color:var(--sub)}
+  .pwrow{display:flex;gap:6px}.pwrow input{flex:1}
+  .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+  .bar div{height:100%;width:0;background:var(--accent);transition:width .2s}
+  .notes{margin:6px 0 4px;padding-left:18px;font-size:13.5px;color:#5a3500}
+  .notes li{margin:3px 0}
+  .pv{border:1px solid var(--line);border-radius:6px;background:#fff;padding:22px 20px;max-height:640px;overflow:auto;font-family:"Noto Serif KR","Batang",serif;color:#111;line-height:1.6;margin-top:6px}
+  .pv p{margin:0 0 2px;white-space:pre-wrap;word-break:keep-all}
+  .pv .tw{overflow-x:auto;margin:6px 0 8px}
+  .pv table{border-collapse:collapse;width:100%;table-layout:fixed}
+  .pv td{border:1px solid #444;padding:3px 5px;vertical-align:middle}
+  .pv td p{margin:0}
+  .pv hr.pg{border:0;border-top:2px dashed #c9ccd1;margin:16px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
+    <span class="tag">서버 업로드 없음 · 표 살리기 · 스캔 글자 인식</span>
+    <h1>PDF → 한글·워드 변환</h1>
+    <p>PDF를 다시 고칠 수 있는 한글(HWPX)·워드(DOCX) 문서로 바꿉니다. 글자 크기·굵기·정렬·표를 살리고, 스캔한 PDF는 글자를 인식해 옮깁니다.</p>
+  </div>
+</header>
+
+<main>
+  <div class="notice ok">
+    PDF는 <b>이 기기 안에서만</b> 변환됩니다. 서버로 올라가지 않아 공문·계약서·개인정보가 담긴 문서도 안심하고 쓸 수 있습니다.
+  </div>
+
+  <section class="card">
+    <label class="drop" id="drop" tabindex="0">
+      <input type="file" id="file" accept="application/pdf,.pdf">
+      <b>PDF를 여기로 끌어 놓거나 눌러서 고르세요</b>
+      <span>한글·워드에서 저장한 PDF, 스캔한 PDF 모두 가능</span>
+    </label>
+  </section>
+
+  <section class="card hidden" id="fileCard">
+    <h2><span class="num">1</span>파일</h2>
+    <p class="hint" id="fileInfo" style="margin:4px 0 0"></p>
+    <div id="pwBox" class="hidden" style="margin-top:10px">
+      <label class="f" for="pw" id="pwMsg">비밀번호가 걸린 PDF입니다.</label>
+      <div class="pwrow"><input type="password" id="pw" autocomplete="off"><button type="button" id="pwGo">열기</button></div>
+    </div>
+
+    <h2 style="margin-top:16px"><span class="num">2</span>변환 설정</h2>
+    <label class="chk"><input type="checkbox" id="optTables" checked><span><b>표 살리기</b> — 테두리가 있는 표를 한글·워드 표로 만듭니다 (합친 칸 포함)</span></label>
+    <label class="chk"><input type="checkbox" id="optStrip" checked><span><b>머리말·쪽번호 빼기</b> — 쪽마다 반복되는 위·아래 줄을 지웁니다</span></label>
+    <label class="chk"><input type="checkbox" id="optBreak"><span><b>PDF 쪽마다 새 쪽에서 시작</b> — 끄면 내용이 자연스럽게 이어집니다</span></label>
+    <div class="row">
+      <div><label class="f" for="optOcr">스캔 글자 인식</label>
+        <select id="optOcr">
+          <option value="auto" selected>자동 (글자 없는 쪽만)</option>
+          <option value="always">항상 (모든 쪽을 그림으로 보고 인식)</option>
+          <option value="off">끄기</option>
+        </select></div>
+      <div><label class="f" for="optRange">변환할 쪽 <span class="opt">선택</span></label><input type="text" id="optRange" inputmode="numeric" placeholder="전체"></div>
+    </div>
+    <div class="actions">
+      <button type="button" id="convert" disabled>변환 시작</button>
+      <button type="button" id="stop" class="ghost hidden">멈추기</button>
+    </div>
+    <div id="progress" class="hidden" aria-live="polite">
+      <div class="bar"><div id="bar"></div></div>
+      <p class="hint" id="status" style="margin:6px 0 0"></p>
+    </div>
+  </section>
+
+  <section class="card hidden" id="resultCard">
+    <h2><span class="num">3</span>결과</h2>
+    <div class="stat" id="stats" style="margin-top:10px"></div>
+    <ul class="notes hidden" id="notes"></ul>
+    <div class="actions">
+      <button type="button" id="saveHwpx">한글로 저장 (.hwpx)</button>
+      <button type="button" id="saveDocx" class="ghost">워드로 저장 (.docx)</button>
+      <button type="button" id="saveTxt" class="ghost">텍스트 (.txt)</button>
+      <button type="button" id="copyTxt" class="ghost">글자 복사</button>
+    </div>
+    <p class="hint">옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요. 미리보기는 대략적인 모양이며, 실제 한글·워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
+    <h2 style="margin-top:14px;font-size:14px;color:var(--sub);font-weight:500">미리보기</h2>
+    <div class="pv" id="preview"></div>
+  </section>
+
+  <section class="card">
+    <h2>이런 PDF가 잘 됩니다</h2>
+    <table class="t" style="margin-top:8px">
+      <tr><th>PDF 종류</th><th>결과</th></tr>
+      <tr><td>한글·워드에서 PDF로 저장한 문서</td><td>글자, 굵기, 크기, 가운데 정렬, 들여쓰기, 표까지 거의 그대로</td></tr>
+      <tr><td>스캔·사진 PDF</td><td>글자 인식으로 변환. 선명할수록 정확하며, 숫자·이름은 대조 필요</td></tr>
+      <tr><td>2단 편집, 도형·그림이 많은 문서</td><td>글자는 살지만 배치가 달라질 수 있음. 그림은 넣지 않습니다</td></tr>
+    </table>
+  </section>
+
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>PDF가 서버에 올라가나요?</summary><p>아니요. 변환은 지금 쓰는 브라우저 안에서만 이루어집니다. 처음 한 번 변환 도구를 받은 뒤에는 인터넷을 끊어도 글자 PDF 변환이 됩니다.</p></details><details><summary>.hwp 파일로 받을 수 있나요?</summary><p>한글(HWPX)로 저장한 뒤 한글 프로그램에서 열어 &#x27;다른 이름으로 저장&#x27;에서 HWP를 고르면 됩니다. HWPX는 2026년부터 공공기관 표준 형식이라 그대로 써도 됩니다.</p></details><details><summary>표도 그대로 옮겨지나요?</summary><p>테두리 선이 있는 표는 칸 나눔과 합친 칸까지 한글·워드 표로 만듭니다. 선이 없는 표는 문단으로 옮겨집니다.</p></details><details><summary>스캔한 PDF도 되나요?</summary><p>네. 글자가 없는 쪽은 자동으로 한국어·영어 글자 인식을 합니다. 처음 한 번 약 7MB를 받고, 한 쪽에 10~30초쯤 걸립니다. 숫자와 이름은 원본과 꼭 대조하세요.</p></details></section>
+<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul><li><a href="../review-policy/"><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</a></li><li><a href="../refund-policy/"><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</a></li><li><a href="../noshow-policy/"><span>매장 운영</span>예약·노쇼 규정 문구 생성기</a></li><li><a href="../closed-notice/"><span>매장 운영</span>휴무·임시휴업 안내문 만들기</a></li><li><a href="../weekly-pay/"><span>급여 계산</span>알바 주휴수당·월급 계산기</a></li><li><a href="../dutch-pay/"><span>생활 계산</span>더치페이·모임 정산 계산기</a></li><li><a href="../date-calc/"><span>생활 계산</span>D-day·전역일·만나이 계산기</a></li><li><a href="../image-resize/"><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</a></li><li><a href="../id-photo/"><span>사진 도구</span>증명사진 규격 자르기</a></li></ul></nav>
+  <footer>
+    변환에는 Mozilla pdf.js, Tesseract OCR(Apache-2.0)을 이 사이트에 직접 두고 씁니다. HWPX 틀은 한컴 한글로 저장된 견본(python-hwpx, Apache-2.0)을 바탕으로 합니다. 한글·HWPX는 한글과컴퓨터의 상표입니다.<br>
+    
+    선택한 PDF는 서버로 전송되지 않습니다. 모든 변환은 이 기기의 브라우저 안에서 이루어집니다.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const val = id => ($('#'+id) && $('#'+id).value || '').trim();
+const radio = n => { const r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; };
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR') + '원';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD = ['일','월','화','수','목','금','토'];
+function parseDate(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return (y && m && d) ? new Date(y, m-1, d) : null; }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function kDate(d, withYear){ return (withYear ? d.getFullYear()+'년 ' : '') + (d.getMonth()+1)+'월 '+d.getDate()+'일('+WD[d.getDay()]+')'; }
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000); }
+function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+async function copy(s){
+  try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
+  catch(e) {
+    const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했습니다'); } catch(_) { toast('복사가 막혀 있습니다. 직접 선택해 복사하세요'); }
+    ta.remove();
+  }
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { localStorage.removeItem(k); } catch(_) {} }
+};
+function bindTabs(root){
+  (root || document).querySelectorAll('.tabs').forEach(tb => {
+    tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      tb.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const scope = tb.parentElement;
+      scope.querySelectorAll(':scope > [data-pane]').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== b.dataset.tab));
+      if (tb.onTab) tb.onTab(b.dataset.tab);
+    }));
+  });
+}
+function download(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function armReset(btn, fn){
+  let armed = false; const label = btn.textContent;
+  btn.addEventListener('click', () => {
+    if (!armed) { armed = true; btn.textContent = '한 번 더 누르면 모두 지워집니다'; setTimeout(() => { armed = false; btn.textContent = label; }, 3000); return; }
+    armed = false; btn.textContent = label; fn();
+  });
+}
+/* ---- 법령 값: data/rules.json (매주 자동 점검) ---- */
+let RULES = {"checkedAt": "2026-11-14", "minWage": [{"from": "2025-01-01", "hourly": 10030, "source": "최저임금위원회 결정(2025년 적용)"}, {"from": "2026-01-01", "hourly": 10320, "source": "최저임금위원회 결정(2026년 적용)"}, {"from": "2027-01-01", "hourly": 10700, "source": "고용노동부 최저임금 고시(2027년 적용, 2026.8.5 고시)"}], "insurance": [{"from": "2026-01-01", "np": 0.0475, "hi": 0.03595, "ltcRatio": 0.1314, "ei": 0.009, "source": "국민연금법 제88조, 국민건강보험법 시행령 제44조(1만분의 719), 노인장기요양보험료율 0.9448%, 고용보험료징수법 시행령 제12조(실업급여 1천분의 18)"}, {"from": "2027-01-01", "np": 0.05, "source": "국민연금법 제88조 단계 인상(10%)"}, {"from": "2028-01-01", "np": 0.0525, "source": "국민연금법 단계 인상 10.5%"}, {"from": "2029-01-01", "np": 0.055, "source": "국민연금법 단계 인상 11%"}, {"from": "2030-01-01", "np": 0.0575, "source": "국민연금법 단계 인상 11.5%"}, {"from": "2031-01-01", "np": 0.06, "source": "국민연금법 단계 인상 12%"}, {"from": "2032-01-01", "np": 0.0625, "source": "국민연금법 단계 인상 12.5%"}, {"from": "2033-01-01", "np": 0.065, "source": "국민연금법 단계 인상 13%"}], "weeklyHoliday": {"minHours": 15, "fullHours": 40, "paidHours": 8, "source": "근로기준법 제55조, 시행령 제30조"}, "noshow": [{"from": "2025-12-18", "general": 20, "reserve": 40, "group": 40, "source": "소비자분쟁해결기준(공정거래위원회 고시) 외식업 예약부도"}], "ecommerce": [{"from": "2016-09-30", "withdrawDays": 7, "mismatchMonths": 3, "mismatchKnownDays": 30, "refundBizDays": 3, "source": "전자상거래법 제17조·제18조"}], "military": [{"from": "2020-06-15", "army": 18, "marine": 18, "navy": 20, "air": 21, "social": 21, "industrySupp": 23, "industryActive": 34, "research": 36, "source": "병역법 시행령, 병무청 복무기간"}]};
+// from(시행일)이 date 이하인 항목을 차례로 덮어써서 그 날짜에 유효한 값을 만듦
+function ruleAt(list, date){
+  const d = typeof date === 'string' ? date : ymd(date || today());
+  const out = {};
+  (list || []).filter(x => x.from <= d).sort((a, b) => a.from < b.from ? -1 : 1).forEach(x => Object.assign(out, x));
+  return out;
+}
+function onRulesLoaded(fn){
+  const show = () => { const el = $('#rulesInfo'); if (!el) return; const d = s => s.replace(/-/g, '.');
+    el.textContent = RULES.officialCheckedAt ? `법령 기준값은 법제처 국가법령정보센터 원문(법령·고시)으로 자동 확인합니다 (마지막 확인 ${d(RULES.officialCheckedAt)}).` : `법령 기준값은 법령·고시 원문 기준으로 관리합니다 (마지막 점검 ${d(RULES.checkedAt || '')}).`; };
+  show();
+  const ctl = 'AbortController' in window ? new AbortController() : null;
+  if (ctl) setTimeout(() => ctl.abort(), 4000);
+  fetch('../data/rules.json', { cache: 'no-cache', signal: ctl && ctl.signal })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && JSON.stringify(j) !== JSON.stringify(RULES)) { RULES = j; show(); fn(); } else show(); })
+    .catch(() => {});
+}
+
+// HWPX 기본 틀: 한컴 한글로 저장된 견본(python-hwpx, Apache-2.0)에서 가져옴
+const HWPX_BASE = {"version.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><hv:HCFVersion xmlns:hv=\"http://www.hancom.co.kr/hwpml/2011/version\" tagetApplication=\"WORDPROCESSOR\" major=\"5\" minor=\"1\" micro=\"1\" buildNumber=\"0\" os=\"2\" xmlVersion=\"1.5\" application=\"Hancom Office Hangul\" appVersion=\"\"/>", "settings.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><ha:HWPApplicationSetting xmlns:ha=\"http://www.hancom.co.kr/hwpml/2011/app\" xmlns:config=\"urn:oasis:names:tc:opendocument:xmlns:config:1.0\"><ha:CaretPosition listIDRef=\"1\" paraIDRef=\"0\" pos=\"0\"/></ha:HWPApplicationSetting>", "META-INF/container.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><ocf:container xmlns:ocf=\"urn:oasis:names:tc:opendocument:xmlns:container\" xmlns:hpf=\"http://www.hancom.co.kr/schema/2011/hpf\"><ocf:rootfiles><ocf:rootfile full-path=\"Contents/content.hpf\" media-type=\"application/hwpml-package+xml\"/><ocf:rootfile full-path=\"Preview/PrvText.txt\" media-type=\"text/plain\"/><ocf:rootfile full-path=\"META-INF/container.rdf\" media-type=\"application/rdf+xml\"/></ocf:rootfiles></ocf:container>", "META-INF/container.rdf": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><rdf:Description rdf:about=\"\"><ns0:hasPart xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2016/meta/pkg#\" rdf:resource=\"Contents/header.xml\"/></rdf:Description><rdf:Description rdf:about=\"Contents/header.xml\"><rdf:type rdf:resource=\"http://www.hancom.co.kr/hwpml/2016/meta/pkg#HeaderFile\"/></rdf:Description><rdf:Description rdf:about=\"\"><ns0:hasPart xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2016/meta/pkg#\" rdf:resource=\"Contents/section0.xml\"/></rdf:Description><rdf:Description rdf:about=\"Contents/section0.xml\"><rdf:type rdf:resource=\"http://www.hancom.co.kr/hwpml/2016/meta/pkg#SectionFile\"/></rdf:Description><rdf:Description rdf:about=\"\"><rdf:type rdf:resource=\"http://www.hancom.co.kr/hwpml/2016/meta/pkg#Document\"/></rdf:Description></rdf:RDF>", "META-INF/manifest.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><odf:manifest xmlns:odf=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\"/>", "Contents/content.hpf": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><opf:package xmlns:ha=\"http://www.hancom.co.kr/hwpml/2011/app\" xmlns:hp=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:hp10=\"http://www.hancom.co.kr/hwpml/2016/paragraph\" xmlns:hs=\"http://www.hancom.co.kr/hwpml/2011/section\" xmlns:hc=\"http://www.hancom.co.kr/hwpml/2011/core\" xmlns:hh=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:hhs=\"http://www.hancom.co.kr/hwpml/2011/history\" xmlns:hm=\"http://www.hancom.co.kr/hwpml/2011/master-page\" xmlns:hpf=\"http://www.hancom.co.kr/schema/2011/hpf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf/\" xmlns:ooxmlchart=\"http://www.hancom.co.kr/hwpml/2016/ooxmlchart\" xmlns:hwpunitchar=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xmlns:config=\"urn:oasis:names:tc:opendocument:xmlns:config:1.0\" version=\"\" unique-identifier=\"\" id=\"\"><opf:metadata><opf:title/><opf:language>ko</opf:language><opf:meta name=\"creator\" content=\"text\"/><opf:meta name=\"subject\" content=\"text\"/><opf:meta name=\"description\" content=\"text\"/><opf:meta name=\"lastsaveby\" content=\"text\"/><opf:meta name=\"CreatedDate\" content=\"text\"/><opf:meta name=\"ModifiedDate\" content=\"text\"/><opf:meta name=\"date\" content=\"text\"/><opf:meta name=\"keyword\" content=\"text\"/></opf:metadata><opf:manifest><opf:item id=\"header\" href=\"Contents/header.xml\" media-type=\"application/xml\"/><opf:item id=\"section0\" href=\"Contents/section0.xml\" media-type=\"application/xml\"/><opf:item id=\"settings\" href=\"settings.xml\" media-type=\"application/xml\"/></opf:manifest><opf:spine><opf:itemref idref=\"header\" linear=\"yes\"/><opf:itemref idref=\"section0\" linear=\"yes\"/></opf:spine></opf:package>", "Contents/header.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><hh:head xmlns:ha=\"http://www.hancom.co.kr/hwpml/2011/app\" xmlns:hp=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:hp10=\"http://www.hancom.co.kr/hwpml/2016/paragraph\" xmlns:hs=\"http://www.hancom.co.kr/hwpml/2011/section\" xmlns:hc=\"http://www.hancom.co.kr/hwpml/2011/core\" xmlns:hh=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:hhs=\"http://www.hancom.co.kr/hwpml/2011/history\" xmlns:hm=\"http://www.hancom.co.kr/hwpml/2011/master-page\" xmlns:hpf=\"http://www.hancom.co.kr/schema/2011/hpf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf/\" xmlns:ooxmlchart=\"http://www.hancom.co.kr/hwpml/2016/ooxmlchart\" xmlns:hwpunitchar=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xmlns:config=\"urn:oasis:names:tc:opendocument:xmlns:config:1.0\" version=\"1.5\" secCnt=\"1\"><hh:beginNum page=\"1\" footnote=\"1\" endnote=\"1\" pic=\"1\" tbl=\"1\" equation=\"1\"/><hh:refList><hh:fontfaces itemCnt=\"7\"><hh:fontface lang=\"HANGUL\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"LATIN\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"HANJA\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"JAPANESE\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"OTHER\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"SYMBOL\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface><hh:fontface lang=\"USER\" fontCnt=\"1\"><hh:font id=\"0\" face=\"함초롬바탕\" type=\"TTF\" isEmbedded=\"0\"><hh:typeInfo familyType=\"FCAT_GOTHIC\" weight=\"6\" proportion=\"4\" contrast=\"0\" strokeVariation=\"1\" armStyle=\"1\" letterform=\"1\" midline=\"1\" xHeight=\"1\"/></hh:font></hh:fontface></hh:fontfaces><hh:borderFills itemCnt=\"2\"><hh:borderFill id=\"1\" threeD=\"0\" shadow=\"0\" centerLine=\"NONE\" breakCellSeparateLine=\"0\"><hh:slash type=\"NONE\" Crooked=\"0\" isCounter=\"0\"/><hh:backSlash type=\"NONE\" Crooked=\"0\" isCounter=\"0\"/><hh:leftBorder type=\"NONE\" width=\"0.1 mm\" color=\"#000000\"/><hh:rightBorder type=\"NONE\" width=\"0.1 mm\" color=\"#000000\"/><hh:topBorder type=\"NONE\" width=\"0.1 mm\" color=\"#000000\"/><hh:bottomBorder type=\"NONE\" width=\"0.1 mm\" color=\"#000000\"/><hh:diagonal type=\"SOLID\" width=\"0.1 mm\" color=\"#000000\"/></hh:borderFill><hh:borderFill id=\"2\" threeD=\"0\" shadow=\"0\" centerLine=\"NONE\" breakCellSeparateLine=\"0\"><hh:slash type=\"NONE\" Crooked=\"0\" isCounter=\"0\"/><hh:backSlash type=\"NONE\" Crooked=\"0\" isCounter=\"0\"/><hh:leftBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hh:rightBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hh:topBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hh:bottomBorder type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hh:diagonal type=\"SOLID\" width=\"0.1 mm\" color=\"#000000\"/></hh:borderFill></hh:borderFills><hh:charProperties itemCnt=\"1\"><hh:charPr id=\"0\" height=\"1000\" textColor=\"#000000\" shadeColor=\"none\" useFontSpace=\"0\" useKerning=\"0\" symMark=\"NONE\" borderFillIDRef=\"1\"><hh:fontRef hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\"/><hh:ratio hangul=\"100\" latin=\"100\" hanja=\"100\" japanese=\"100\" other=\"100\" symbol=\"100\" user=\"100\"/><hh:spacing hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\"/><hh:relSz hangul=\"100\" latin=\"100\" hanja=\"100\" japanese=\"100\" other=\"100\" symbol=\"100\" user=\"100\"/><hh:offset hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\"/><hh:underline type=\"NONE\" shape=\"SOLID\" color=\"#000000\"/><hh:strikeout shape=\"NONE\" color=\"#000000\"/><hh:outline type=\"NONE\"/><hh:shadow type=\"NONE\" color=\"#B2B2B2\" offsetX=\"10\" offsetY=\"10\"/></hh:charPr></hh:charProperties><hh:tabProperties itemCnt=\"1\"><hh:tabPr id=\"0\" autoTabLeft=\"0\" autoTabRight=\"0\"/></hh:tabProperties><hh:paraProperties itemCnt=\"1\"><hh:paraPr id=\"0\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\" textDir=\"AUTO\"><hh:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\"/><hh:heading type=\"NONE\" idRef=\"0\" level=\"0\"/><hh:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\"/><hh:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\"/><hp:switch><hp:case hp:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><hh:margin><hc:intent value=\"0\" unit=\"HWPUNIT\"/><hc:left value=\"0\" unit=\"HWPUNIT\"/><hc:right value=\"0\" unit=\"HWPUNIT\"/><hc:prev value=\"0\" unit=\"HWPUNIT\"/><hc:next value=\"0\" unit=\"HWPUNIT\"/></hh:margin><hh:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\"/></hp:case><hp:default><hh:margin><hc:intent value=\"0\" unit=\"HWPUNIT\"/><hc:left value=\"0\" unit=\"HWPUNIT\"/><hc:right value=\"0\" unit=\"HWPUNIT\"/><hc:prev value=\"0\" unit=\"HWPUNIT\"/><hc:next value=\"0\" unit=\"HWPUNIT\"/></hh:margin><hh:lineSpacing type=\"PERCENT\" value=\"160\" unit=\"HWPUNIT\"/></hp:default></hp:switch><hh:border borderFillIDRef=\"1\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\"/></hh:paraPr></hh:paraProperties><hh:styles itemCnt=\"1\"><hh:style id=\"0\" type=\"PARA\" name=\"바탕글\" engName=\"Normal\" paraPrIDRef=\"0\" charPrIDRef=\"0\" nextStyleIDRef=\"0\" langID=\"1042\" lockForm=\"0\"/></hh:styles></hh:refList><hh:compatibleDocument targetProgram=\"HWP201X\"><hh:layoutCompatibility/></hh:compatibleDocument><hh:docOption><hh:linkinfo path=\"\" pageInherit=\"1\" footnoteInherit=\"0\"/></hh:docOption><hh:trackchageConfig flags=\"56\"/></hh:head>", "_sectionHead": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?><hs:sec xmlns:ha=\"http://www.hancom.co.kr/hwpml/2011/app\" xmlns:hp=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:hp10=\"http://www.hancom.co.kr/hwpml/2016/paragraph\" xmlns:hs=\"http://www.hancom.co.kr/hwpml/2011/section\" xmlns:hc=\"http://www.hancom.co.kr/hwpml/2011/core\" xmlns:hh=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:hhs=\"http://www.hancom.co.kr/hwpml/2011/history\" xmlns:hm=\"http://www.hancom.co.kr/hwpml/2011/master-page\" xmlns:hpf=\"http://www.hancom.co.kr/schema/2011/hpf\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf/\" xmlns:ooxmlchart=\"http://www.hancom.co.kr/hwpml/2016/ooxmlchart\" xmlns:hwpunitchar=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xmlns:config=\"urn:oasis:names:tc:opendocument:xmlns:config:1.0\">", "_secPrRun": "<hp:run charPrIDRef=\"0\"><hp:secPr id=\"\" textDirection=\"HORIZONTAL\" spaceColumns=\"1134\" tabStop=\"8000\" tabStopVal=\"4000\" tabStopUnit=\"HWPUNIT\" outlineShapeIDRef=\"0\" memoShapeIDRef=\"0\" textVerticalWidthHead=\"0\" masterPageCnt=\"0\"><hp:grid lineGrid=\"0\" charGrid=\"0\" wonggojiFormat=\"0\"/><hp:startNum pageStartsOn=\"BOTH\" page=\"0\" pic=\"0\" tbl=\"0\" equation=\"0\"/><hp:visibility hideFirstHeader=\"0\" hideFirstFooter=\"0\" hideFirstMasterPage=\"0\" border=\"SHOW_ALL\" fill=\"SHOW_ALL\" hideFirstPageNum=\"0\" hideFirstEmptyLine=\"0\" showLineNumber=\"0\"/><hp:lineNumberShape restartType=\"0\" countBy=\"0\" distance=\"0\" startNumber=\"0\"/><hp:pagePr landscape=\"WIDELY\" width=\"59528\" height=\"84188\" gutterType=\"LEFT_ONLY\"><hp:margin header=\"4252\" footer=\"4252\" gutter=\"0\" left=\"8504\" right=\"8504\" top=\"5668\" bottom=\"4252\"/></hp:pagePr><hp:footNotePr><hp:autoNumFormat type=\"DIGIT\" userChar=\"\" prefixChar=\"\" suffixChar=\")\" supscript=\"0\"/><hp:noteLine length=\"-1\" type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hp:noteSpacing betweenNotes=\"283\" belowLine=\"567\" aboveLine=\"850\"/><hp:numbering type=\"CONTINUOUS\" newNum=\"1\"/><hp:placement place=\"EACH_COLUMN\" beneathText=\"0\"/></hp:footNotePr><hp:endNotePr><hp:autoNumFormat type=\"DIGIT\" userChar=\"\" prefixChar=\"\" suffixChar=\")\" supscript=\"0\"/><hp:noteLine length=\"-4\" type=\"SOLID\" width=\"0.12 mm\" color=\"#000000\"/><hp:noteSpacing betweenNotes=\"0\" belowLine=\"567\" aboveLine=\"850\"/><hp:numbering type=\"CONTINUOUS\" newNum=\"1\"/><hp:placement place=\"END_OF_DOCUMENT\" beneathText=\"0\"/></hp:endNotePr><hp:pageBorderFill type=\"BOTH\" borderFillIDRef=\"1\" textBorder=\"PAPER\" headerInside=\"0\" footerInside=\"0\" fillArea=\"PAPER\"><hp:offset left=\"1417\" right=\"1417\" top=\"1417\" bottom=\"1417\"/></hp:pageBorderFill><hp:pageBorderFill type=\"EVEN\" borderFillIDRef=\"1\" textBorder=\"PAPER\" headerInside=\"0\" footerInside=\"0\" fillArea=\"PAPER\"><hp:offset left=\"1417\" right=\"1417\" top=\"1417\" bottom=\"1417\"/></hp:pageBorderFill><hp:pageBorderFill type=\"ODD\" borderFillIDRef=\"1\" textBorder=\"PAPER\" headerInside=\"0\" footerInside=\"0\" fillArea=\"PAPER\"><hp:offset left=\"1417\" right=\"1417\" top=\"1417\" bottom=\"1417\"/></hp:pageBorderFill></hp:secPr><hp:ctrl><hp:colPr id=\"\" type=\"NEWSPAPER\" layout=\"LEFT\" colCount=\"1\" sameSz=\"1\" sameGap=\"0\"/></hp:ctrl></hp:run>"};
+
+/* ===== 문서 저장기: HWPX(한글) · DOCX(워드) · TXT =====
+   문서 모델
+   - 문단 {type:'p', runs:[{t, b(굵게), sz(pt)}], align:'J'|'L'|'C'|'R', ml(왼쪽 여백 pt), fi(첫 줄 들여쓰기 pt, 음수=내어쓰기), pb(새 쪽)}
+   - 표   {type:'table', cols:[너비 pt], rows:[높이 pt], cells:[{r, c, rs, cs, paras:[문단]}], pb}
+*/
+const xesc = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---- ZIP (무압축) ---- */
+const ZCRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function zcrc(u){ let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = ZCRC[(c ^ u[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(entries, mime){ // entries: [[이름, 문자열|Uint8Array]]
+  const te = new TextEncoder(), parts = [], cen = []; let off = 0;
+  for (const [name, content] of entries) {
+    const data = typeof content === 'string' ? te.encode(content) : content, nb = te.encode(name), crc = zcrc(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(12, 0x21, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true);
+    parts.push(lh.buffer, nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(14, 0x21, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true); ch.setUint32(42, off, true);
+    cen.push(ch.buffer, nb); off += 30 + nb.length + data.length;
+  }
+  const cs = cen.reduce((s, p) => s + (p.byteLength || p.length), 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, cs, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...cen, end.buffer], { type: mime });
+}
+
+function docPlainText(blocks){
+  const out = [];
+  const pt = p => p.runs.map(r => r.t).join('');
+  for (const b of blocks) {
+    if (b.pb && out.length) out.push('');
+    if (b.type === 'p') out.push(pt(b));
+    else {
+      const grid = [];
+      for (const c of b.cells) (grid[c.r] = grid[c.r] || [])[c.c] = c.paras.map(pt).join(' ');
+      grid.forEach(row => out.push(Array.from(row || [], v => v || '').join('\t')));
+      out.push('');
+    }
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+/* ---- HWPX ---- */
+const PT2HU = 100; // 1pt = 100 HWPUNIT
+function makeHwpx(blocks, title){
+  const B = HWPX_BASE;
+  let header = B['Contents/header.xml'];
+  const baseChar = header.match(/<hh:charPr id="0"[\s\S]*?<\/hh:charPr>/)[0];
+  const basePara = header.match(/<hh:paraPr id="0"[\s\S]*?<\/hh:paraPr>/)[0];
+  const chars = [baseChar], charKey = { '1000|0': 0 };
+  const paras = [basePara], paraKey = { 'J|0|0': 0 };
+  const charId = r => {
+    const h = Math.max(100, Math.round((r.sz || 10) * 2) * 50), k = h + '|' + (r.b ? 1 : 0);
+    if (charKey[k] == null) {
+      charKey[k] = chars.length;
+      let x = baseChar.replace('id="0"', `id="${chars.length}"`).replace('height="1000"', `height="${h}"`);
+      if (r.b) x = x.replace(/(<hh:offset [^>]*\/>)/, '$1<hh:bold/>');
+      chars.push(x);
+    }
+    return charKey[k];
+  };
+  const paraId = p => {
+    const al = { J: 'JUSTIFY', L: 'LEFT', C: 'CENTER', R: 'RIGHT' }[p.align || 'J'];
+    const ml = Math.max(0, Math.round((p.ml || 0) * PT2HU / 50) * 50), fi = Math.round((p.fi || 0) * PT2HU / 50) * 50;
+    const k = `${p.align || 'J'}|${ml}|${fi}`;
+    if (paraKey[k] == null) {
+      paraKey[k] = paras.length;
+      paras.push(basePara.replace('id="0"', `id="${paras.length}"`).replace('horizontal="JUSTIFY"', `horizontal="${al}"`)
+        .replace(/<hc:intent value="0"/g, `<hc:intent value="${fi}"`).replace(/<hc:left value="0"/g, `<hc:left value="${ml}"`));
+    }
+    return paraKey[k];
+  };
+  const runsXml = runs => runs.filter(r => r.t).map(r => `<hp:run charPrIDRef="${charId(r)}"><hp:t>${xesc(r.t)}</hp:t></hp:run>`).join('') || '<hp:run charPrIDRef="0"><hp:t/></hp:run>';
+  const pOpen = (p, pb) => `<hp:p id="0" paraPrIDRef="${paraId(p)}" styleIDRef="0" pageBreak="${pb ? 1 : 0}" columnBreak="0" merged="0">`;
+  let tblId = 1000000000;
+  const TEXT_W = 42520; // A4 본문 폭
+  function tableXml(t){
+    const totW = t.cols.reduce((a, b) => a + b, 0) * PT2HU, k = totW > TEXT_W ? TEXT_W / totW : 1;
+    const cw = t.cols.map(w => Math.max(400, Math.round(w * PT2HU * k)));
+    const rh = t.rows.map(h => Math.max(282, Math.round(h * PT2HU)));
+    const W = cw.reduce((a, b) => a + b, 0), H = rh.reduce((a, b) => a + b, 0);
+    const byRow = t.rows.map(() => []);
+    t.cells.forEach(c => byRow[c.r].push(c));
+    let x = `<hp:tbl id="${tblId++}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="1" rowCnt="${t.rows.length}" colCnt="${t.cols.length}" cellSpacing="0" borderFillIDRef="2" noAdjust="0">` +
+      `<hp:sz width="${W}" widthRelTo="ABSOLUTE" height="${H}" heightRelTo="ABSOLUTE" protect="0"/>` +
+      `<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>` +
+      `<hp:outMargin left="141" right="141" top="141" bottom="141"/><hp:inMargin left="510" right="510" top="141" bottom="141"/>`;
+    byRow.forEach(cells => {
+      x += '<hp:tr>';
+      cells.sort((a, b) => a.c - b.c).forEach(c => {
+        const w = cw.slice(c.c, c.c + c.cs).reduce((a, b) => a + b, 0), h = rh.slice(c.r, c.r + c.rs).reduce((a, b) => a + b, 0);
+        const ps = (c.paras.length ? c.paras : [{ runs: [], align: 'L' }]).map(p => pOpen(p) + runsXml(p.runs) + '</hp:p>').join('');
+        x += `<hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="2">` +
+          `<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${ps}</hp:subList>` +
+          `<hp:cellAddr colAddr="${c.c}" rowAddr="${c.r}"/><hp:cellSpan colSpan="${c.cs}" rowSpan="${c.rs}"/><hp:cellSz width="${w}" height="${h}"/>` +
+          `<hp:cellMargin left="510" right="510" top="141" bottom="141"/></hp:tc>`;
+      });
+      x += '</hp:tr>';
+    });
+    return x + '</hp:tbl>';
+  }
+  const body = [];
+  blocks.forEach((b, i) => {
+    const first = i === 0;
+    if (b.type === 'p') {
+      body.push(pOpen(b, b.pb && !first) + (first ? B._secPrRun : '') + runsXml(b.runs) + '</hp:p>');
+    } else {
+      body.push(pOpen({ align: 'L' }, b.pb && !first) + (first ? B._secPrRun : '') + `<hp:run charPrIDRef="0">${tableXml(b)}<hp:t/></hp:run></hp:p>`);
+    }
+  });
+  if (!body.length) body.push(`<hp:p id="0" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">${B._secPrRun}<hp:run charPrIDRef="0"><hp:t/></hp:run></hp:p>`);
+  // 머리(header.xml): 글자·문단 모양 목록 갱신
+  header = header.replace(/<hh:charProperties itemCnt="\d+">[\s\S]*?<\/hh:charProperties>/, `<hh:charProperties itemCnt="${chars.length}">${chars.join('')}</hh:charProperties>`)
+                 .replace(/<hh:paraProperties itemCnt="\d+">[\s\S]*?<\/hh:paraProperties>/, `<hh:paraProperties itemCnt="${paras.length}">${paras.join('')}</hh:paraProperties>`);
+  const section = B._sectionHead + body.join('') + '</hs:sec>';
+  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  const hpf = B['Contents/content.hpf'].replace('<opf:title/>', `<opf:title>${xesc(title || '')}</opf:title>`)
+    .replace(/(<opf:meta name="creator" content="text">)[^<]*/, '$1일상툴 PDF 변환').replace(/(<opf:meta name="CreatedDate" content="text">)[^<]*/, '$1' + now)
+    .replace(/(<opf:meta name="ModifiedDate" content="text">)[^<]*/, '$1' + now);
+  const preview = docPlainText(blocks).slice(0, 1000);
+  return zipStore([
+    ['mimetype', 'application/hwp+zip'],
+    ['version.xml', B['version.xml']],
+    ['Contents/header.xml', header],
+    ['Contents/section0.xml', section],
+    ['Preview/PrvText.txt', preview],
+    ['settings.xml', B['settings.xml']],
+    ['META-INF/container.rdf', B['META-INF/container.rdf']],
+    ['Contents/content.hpf', hpf],
+    ['META-INF/container.xml', B['META-INF/container.xml']],
+    ['META-INF/manifest.xml', B['META-INF/manifest.xml']]
+  ], 'application/hwp+zip');
+}
+
+/* ---- DOCX ---- */
+const PT2TW = 20; // 1pt = 20 twip
+function makeDocx(blocks, title){
+  const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const jc = { J: 'both', L: 'left', C: 'center', R: 'right' };
+  const pXml = (p, pb) => {
+    const ml = Math.max(0, Math.round((p.ml || 0) * PT2TW)), fi = Math.round((p.fi || 0) * PT2TW);
+    const ind = ml || fi ? `<w:ind w:left="${ml}"${fi < 0 ? ` w:hanging="${-fi}"` : fi > 0 ? ` w:firstLine="${fi}"` : ''}/>` : '';
+    const runs = p.runs.filter(r => r.t).map(r => {
+      const sz = Math.round((r.sz || 10) * 2);
+      return `<w:r><w:rPr>${r.b ? '<w:b/><w:bCs/>' : ''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/></w:rPr><w:t xml:space="preserve">${xesc(r.t)}</w:t></w:r>`;
+    }).join('');
+    return `<w:p><w:pPr>${pb ? '<w:pageBreakBefore/>' : ''}<w:spacing w:after="0" w:line="320" w:lineRule="auto"/>${ind}<w:jc w:val="${jc[p.align || 'J']}"/></w:pPr>${runs}</w:p>`;
+  };
+  const TEXT_W = 9638; // A4 - 좌우 2cm
+  function tblXml(t){
+    const totW = t.cols.reduce((a, b) => a + b, 0) * PT2TW, k = totW > TEXT_W ? TEXT_W / totW : 1;
+    const cw = t.cols.map(w => Math.max(200, Math.round(w * PT2TW * k)));
+    const owner = t.rows.map(() => t.cols.map(() => null));
+    t.cells.forEach(c => { for (let r = c.r; r < c.r + c.rs; r++) for (let q = c.c; q < c.c + c.cs; q++) owner[r][q] = c; });
+    const bd = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(s => `<w:${s} w:val="single" w:sz="4" w:space="0" w:color="000000"/>`).join('');
+    let x = `<w:tbl><w:tblPr><w:tblW w:w="${cw.reduce((a, b) => a + b, 0)}" w:type="dxa"/><w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="85" w:type="dxa"/><w:right w:w="85" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${cw.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
+    t.rows.forEach((h, r) => {
+      x += `<w:tr><w:trPr><w:trHeight w:val="${Math.max(200, Math.round(h * PT2TW))}"/></w:trPr>`;
+      for (let q = 0; q < t.cols.length;) {
+        const c = owner[r][q];
+        if (!c) { x += `<w:tc><w:tcPr><w:tcW w:w="${cw[q]}" w:type="dxa"/></w:tcPr><w:p/></w:tc>`; q++; continue; }
+        const span = c.cs, w = cw.slice(c.c, c.c + span).reduce((a, b) => a + b, 0);
+        const vm = c.rs > 1 ? (c.r === r ? '<w:vMerge w:val="restart"/>' : '<w:vMerge/>') : '';
+        const inner = c.r === r ? (c.paras.length ? c.paras.map(p => pXml(p)).join('') : '<w:p/>') : '<w:p/>';
+        x += `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${span > 1 ? `<w:gridSpan w:val="${span}"/>` : ''}${vm}<w:vAlign w:val="center"/></w:tcPr>${inner}</w:tc>`;
+        q += span;
+      }
+      x += '</w:tr>';
+    });
+    return x + '</w:tbl>';
+  }
+  let body = '';
+  blocks.forEach((b, i) => {
+    if (b.type === 'p') body += pXml(b, b.pb && i > 0);
+    else body += (b.pb && i > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '') + tblXml(b) + '<w:p/>';
+  });
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${W}><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${W}><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="맑은 고딕" w:eastAsia="맑은 고딕" w:hAnsi="맑은 고딕" w:cs="맑은 고딕"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:lang w:val="en-US" w:eastAsia="ko-KR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblCellMar><w:left w:w="108" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>`;
+  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  return zipStore([
+    ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>'],
+    ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>'],
+    ['word/_rels/document.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ['word/document.xml', doc],
+    ['word/styles.xml', styles],
+    ['docProps/core.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xesc(title || '')}</dc:title><dc:creator>일상툴 PDF 변환</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created></cp:coreProperties>`]
+  ], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+}
+
+/* ===== PDF 분석: 글자 줄 → 문단, 선 → 표 ===== */
+const LIST_RE = /^(?:\d{1,2}[.)]|[가-힣][.)](?=\s)|\(\d{1,2}\)|\([가-힣]\)|[①-⑳⑴-⒇㉠-㉭㉮-㉻]|[□■○●◦▪•·\-–※*◎◇◆▶►▷◁ㅇ]|[ⅰ-ⅻⅠ-Ⅻ]+[.)])/;
+const PAGE_NO_RE = /^[-–—\s]*(?:\d{1,4}|[ivxIVX]{1,6})\s*[-–—]?\s*(?:[\/|]\s*\d{1,4})?\s*(?:쪽|페이지|page)?[-–—\s]*$/i;
+// 줄이 낱말 중간에서 끊겼는지: 다음 줄이 조사·어미로 시작하면 붙여 씀
+const TAIL_RE = /^(?:습니다|읍니다|랍니다|합니다|입니다|됩니다|니다|시오|다|요|음|함|됨|임|을|를|은|는|이|가|의|에|에서|에게|으로|로|와|과|도|만|께|며|고|서|여|하여|하고|하며|한|할|된|될|되어|해|했|및)(?=[\s.,·)」』'"]|$)/;
+const median = a => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+
+/* 글자 조각(run): {t, x1, x2, yT, yB, sz, b} 좌표는 pt, 위쪽이 0 */
+function groupLines(runs){
+  runs = runs.filter(r => r.t !== '').sort((a, b) => (a.yT + a.yB) / 2 - (b.yT + b.yB) / 2 || a.x1 - b.x1);
+  const lines = [], byKey = {};
+  for (const r of runs) {
+    if (r.key) { // 스캔 글자 인식: 인식기가 정한 줄 그대로
+      const L = byKey[r.key];
+      if (L) { L.runs.push(r); L.yT = Math.min(L.yT, r.yT); L.yB = Math.max(L.yB, r.yB); }
+      else lines.push(byKey[r.key] = { runs: [r], yT: r.yT, yB: r.yB });
+      continue;
+    }
+    const yc = (r.yT + r.yB) / 2, h = r.yB - r.yT;
+    let best = null;
+    for (let i = lines.length - 1; i >= Math.max(0, lines.length - 6); i--) {
+      const L = lines[i], lc = (L.yT + L.yB) / 2;
+      if (Math.abs(lc - yc) < Math.min(h, L.yB - L.yT) * 0.5) { best = L; break; }
+    }
+    if (best) { best.runs.push(r); best.yT = Math.min(best.yT, r.yT); best.yB = Math.max(best.yB, r.yB); }
+    else lines.push({ runs: [r], yT: r.yT, yB: r.yB });
+  }
+  for (const L of lines) {
+    L.runs.sort((a, b) => a.x1 - b.x1);
+    // 겹치는 조각 정리(그림자·굵게 흉내로 같은 글자를 두 번 그린 경우)
+    const rs = [];
+    for (const r of L.runs) {
+      const p = rs[rs.length - 1];
+      if (p && r.t === p.t && Math.abs(r.x1 - p.x1) < r.sz * 0.3) { p.b = true; continue; }
+      rs.push(r);
+    }
+    L.runs = rs;
+    L.x1 = Math.min(...rs.map(r => r.x1)); L.x2 = Math.max(...rs.map(r => r.x2));
+    L.sz = median(rs.filter(r => r.t.trim()).map(r => r.sz)) || rs[0].sz;
+    // 띄어쓰기 복원 + 같은 모양끼리 묶기
+    const out = [];
+    let prev = null;
+    for (const r of rs) {
+      let t = r.t;
+      if (prev) {
+        const gap = r.x1 - prev.x2;
+        if (gap > Math.min(r.sz, prev.sz) * (r.ocr ? (/[A-Za-z0-9.,%)]$/.test(prev.t) && /^[A-Za-z0-9(]/.test(t) ? 0.12 : 0.4) : 0.22) && !/\s$/.test(prev.t) && !/^\s/.test(t)) t = ' ' + t;
+      }
+      const last = out[out.length - 1];
+      if (last && last.b === r.b && Math.abs(last.sz - r.sz) < 0.6) last.t += t;
+      else out.push({ t, b: r.b, sz: r.sz });
+      prev = r;
+    }
+    if (rs[0].ocr && out.length) out[0].t = out[0].t.replace(/^[Oo0]\s/, '○ ').replace(/^(?:ㅁ|\[|ㄷ|口)\s/, '□ ').replace(/^[ㆍ·•]\s?/, '· ');
+    L.parts = out;
+    L.text = out.map(p => p.t).join('').replace(/\s+/g, ' ').trim();
+    const bChars = out.filter(p => p.b).reduce((a, p) => a + p.t.trim().length, 0);
+    L.bold = bChars > L.text.replace(/\s/g, '').length * 0.6;
+  }
+  return lines.filter(L => L.text).sort((a, b) => a.yT - b.yT);
+}
+
+/* 줄 → 문단. area = {x1, x2} 본문(또는 칸) 가로 범위 */
+function buildParas(lines, area, opt){
+  if (!lines.length) return [];
+  lines = [...lines].sort((a, b) => a.yT - b.yT);
+  const body = opt.bodySz || median(lines.map(l => l.sz));
+  const left = area.x1, right = area.x2, span = Math.max(1, right - left), mid = (left + right) / 2;
+  const gaps = [];
+  for (let i = 1; i < lines.length; i++) { const g = lines[i].yT - lines[i - 1].yB; if (g > -2 && g < body * 2) gaps.push(g); }
+  const normGap = gaps.length ? median(gaps) : body * 0.6;
+  const fullW = lines.filter(l => l.x2 - l.x1 > span * 0.6).map(l => l.x2);
+  const rightEdge = fullW.length ? median(fullW) : right;
+  const alignOf = l => {
+    const w = l.x2 - l.x1, c = (l.x1 + l.x2) / 2;
+    const tol = opt.cell ? 0.12 : 0.06, ind = opt.cell ? 0.04 : 0.08;
+    if (w < span * 0.85 && Math.abs(c - mid) < span * tol && l.x1 > left + span * ind) return 'C';
+    if (w < span * 0.6 && Math.abs(l.x2 - right) < span * 0.04 && l.x1 > mid) return 'R';
+    return 'J';
+  };
+  const paras = [];
+  let cur = null;
+  for (const l of lines) {
+    const al = alignOf(l), big = l.sz > body * 1.12;
+    let isList = LIST_RE.test(l.text);
+    // '…바랍니 / 다.'처럼 앞줄이 문장 중간에서 끝났으면 목록 기호가 아니라 이어지는 글
+    if (isList && cur) { const pl = cur.lines[cur.lines.length - 1]; if (pl.x2 > rightEdge - body * 2.2 && /[가-힣A-Za-z0-9,]$/.test(pl.text)) isList = false; }
+    let cont = false;
+    if (cur) {
+      const p = cur.lines[cur.lines.length - 1];
+      const gap = l.yT - p.yB;
+      cont = gap < Math.max(normGap * 1.6, body * 0.35) && gap > -body * 0.5
+        && al === cur.align && al === 'J'
+        && Math.abs(l.sz - p.sz) < body * 0.15
+        && !isList
+        && p.x2 > rightEdge - Math.max(body * 2.2, span * 0.08)      // 앞줄이 끝까지 찼으면 이어지는 줄
+        && l.x1 < p.x1 + body * 1.5 + (cur.lines.length === 1 ? body * 3 : 0);
+    }
+    if (cont) cur.lines.push(l);
+    else { cur = { lines: [l], align: al }; paras.push(cur); }
+  }
+  return paras.map(P => {
+    const f = P.lines[0], s = P.lines[1];
+    const parts = [];
+    P.lines.forEach((l, i) => {
+      l.parts.forEach((pp, j) => {
+        let t = pp.t;
+        if (j === 0) t = t.replace(/^\s+/, '');
+        if (i > 0 && j === 0) {
+          const prevT = parts.length ? parts[parts.length - 1].t : '';
+          // 줄바꿈 이음: 영어 하이픈이면 붙이고, 아니면 띄어 씀
+          if (/[A-Za-z]-$/.test(prevT)) parts[parts.length - 1].t = prevT.slice(0, -1);
+          else if (!/\s$/.test(prevT) && !(/[가-힣A-Za-z0-9]$/.test(prevT) && TAIL_RE.test(t))) t = ' ' + t;
+        }
+        const last = parts[parts.length - 1];
+        if (last && last.b === pp.b && Math.abs(last.sz - pp.sz) < 0.6) last.t += t; else parts.push({ t, b: pp.b, sz: pp.sz });
+      });
+    });
+    parts.forEach(r => r.t = r.t.replace(/\s{2,}/g, ' '));
+    if (parts.length) parts[parts.length - 1].t = parts[parts.length - 1].t.replace(/\s+$/, '');
+    let ml = 0, fi = 0;
+    if (P.align === 'J') {
+      const fx = f.x1 - left, sx = s ? s.x1 - left : fx;
+      ml = Math.max(0, Math.min(fx, sx)); fi = fx - ml;
+      if (s && sx > fx + body * 0.4) { ml = sx; fi = fx - sx; } // 내어쓰기(목록 기호)
+      if (ml < body * 0.4) ml = 0;
+      if (Math.abs(fi) < body * 0.4) fi = 0;
+    }
+    const single = P.lines.length === 1;
+    return { type: 'p', runs: parts.map(r => ({ t: r.t, b: r.b, sz: Math.round(r.sz * 2) / 2 })), align: single && P.align === 'J' && !ml ? 'J' : P.align, ml, fi, yT: f.yT, yB: P.lines[P.lines.length - 1].yB };
+  }).filter(p => p.runs.some(r => r.t.trim()));
+}
+
+/* ---- 선분 → 표 ---- */
+function clusterVals(vals, tol){
+  const s = [...vals].sort((a, b) => a - b), out = [];
+  for (const v of s) { const L = out[out.length - 1]; if (L && v - L.max <= tol) { L.max = v; L.sum += v; L.n++; } else out.push({ min: v, max: v, sum: v, n: 1 }); }
+  return out.map(c => c.sum / c.n);
+}
+function mergeIntervals(list, tol){ // [{p, a, b}] 같은 p(위치) 위의 구간 합치기
+  const groups = {};
+  const keys = clusterVals(list.map(s => s.p), 1.5);
+  const keyOf = p => keys.reduce((best, k) => Math.abs(k - p) < Math.abs(best - p) ? k : best, keys[0]);
+  list.forEach(s => (groups[keyOf(s.p)] = groups[keyOf(s.p)] || []).push(s));
+  const out = [];
+  for (const k in groups) {
+    const iv = groups[k].sort((x, y) => x.a - y.a);
+    let cur = null;
+    for (const s of iv) { if (cur && s.a <= cur.b + tol) cur.b = Math.max(cur.b, s.b); else { cur = { p: +k, a: s.a, b: s.b }; out.push(cur); } }
+  }
+  return out;
+}
+function buildTables(segs, page){
+  const H = [], V = [];
+  for (const s of segs) {
+    const dx = Math.abs(s.x2 - s.x1), dy = Math.abs(s.y2 - s.y1);
+    if (dy <= 1.2 && dx >= 4) H.push({ p: (s.y1 + s.y2) / 2, a: Math.min(s.x1, s.x2), b: Math.max(s.x1, s.x2) });
+    else if (dx <= 1.2 && dy >= 4) V.push({ p: (s.x1 + s.x2) / 2, a: Math.min(s.y1, s.y2), b: Math.max(s.y1, s.y2) });
+  }
+  if (H.length < 2 || V.length < 2) return [];
+  const hs = mergeIntervals(H, 2.5), vs = mergeIntervals(V, 2.5);
+  // 서로 닿는 선끼리 묶기
+  const all = [...hs.map(h => ({ k: 'h', ...h })), ...vs.map(v => ({ k: 'v', ...v }))];
+  const par = all.map((_, i) => i), find = i => par[i] === i ? i : (par[i] = find(par[i]));
+  const T = 2.5;
+  all.forEach((a, i) => { if (a.k !== 'h') return; all.forEach((b, j) => {
+    if (b.k !== 'v') return;
+    if (b.p >= a.a - T && b.p <= a.b + T && a.p >= b.a - T && a.p <= b.b + T) par[find(i)] = find(j);
+  }); });
+  const comps = {};
+  all.forEach((s, i) => (comps[find(i)] = comps[find(i)] || []).push(s));
+  const tables = [];
+  for (const k in comps) {
+    const c = comps[k], ch = c.filter(s => s.k === 'h'), cv = c.filter(s => s.k === 'v');
+    if (ch.length < 2 || cv.length < 2) continue;
+    let ys = clusterVals(ch.map(s => s.p), 2.5), xs = clusterVals(cv.map(s => s.p), 2.5);
+    const x1 = xs[0], x2 = xs[xs.length - 1], y1 = ys[0], y2 = ys[ys.length - 1];
+    if (x2 - x1 < 20 || y2 - y1 < 8) continue;
+    // 두 줄 테두리(간격 3pt 이하)는 하나로
+    ys = ys.filter((y, i) => i === 0 || y - ys[i - 1] > 3); xs = xs.filter((x, i) => i === 0 || x - xs[i - 1] > 3);
+    const R = ys.length - 1, C = xs.length - 1;
+    if (R < 1 || C < 1) continue;
+    const near = (a, b) => Math.abs(a - b) <= 2.5;
+    const hasH = (y, xa, xb) => ch.some(s => near(s.p, y) && s.a <= xa + 1 && s.b >= xb - 1);
+    const hasV = (x, ya, yb) => cv.some(s => near(s.p, x) && s.a <= ya + 1 && s.b >= yb - 1);
+    // 칸 병합: 경계선이 없으면 이웃 칸과 합침
+    const id = Array.from({ length: R }, (_, r) => Array.from({ length: C }, (_, q) => r * C + q));
+    const P2 = id.flat(), f2 = i => P2[i] === i ? i : (P2[i] = f2(P2[i]));
+    for (let r = 0; r < R; r++) for (let q = 0; q < C; q++) {
+      const ym = (ys[r] + ys[r + 1]) / 2, xm = (xs[q] + xs[q + 1]) / 2;
+      if (q + 1 < C && !hasV(xs[q + 1], ym - (ys[r + 1] - ys[r]) * 0.25, ym + (ys[r + 1] - ys[r]) * 0.25)) P2[f2(r * C + q + 1)] = f2(r * C + q);
+      if (r + 1 < R && !hasH(ys[r + 1], xm - (xs[q + 1] - xs[q]) * 0.25, xm + (xs[q + 1] - xs[q]) * 0.25)) P2[f2((r + 1) * C + q)] = f2(r * C + q);
+    }
+    const groups = {};
+    for (let r = 0; r < R; r++) for (let q = 0; q < C; q++) { const g = f2(r * C + q); (groups[g] = groups[g] || []).push([r, q]); }
+    const cells = [], used = Array.from({ length: R }, () => Array(C).fill(false));
+    Object.values(groups).sort((a, b) => a[0][0] - b[0][0] || a[0][1] - b[0][1]).forEach(g => {
+      const r0 = Math.min(...g.map(v => v[0])), r1 = Math.max(...g.map(v => v[0])), c0 = Math.min(...g.map(v => v[1])), c1 = Math.max(...g.map(v => v[1]));
+      for (let r = r0; r <= r1; r++) for (let q = c0; q <= c1; q++) if (used[r][q]) return; // 겹침 방지
+      for (let r = r0; r <= r1; r++) for (let q = c0; q <= c1; q++) used[r][q] = true;
+      cells.push({ r: r0, c: c0, rs: r1 - r0 + 1, cs: c1 - c0 + 1, x1: xs[c0], x2: xs[c1 + 1], y1: ys[r0], y2: ys[r1 + 1], lines: [] });
+    });
+    for (let r = 0; r < R; r++) for (let q = 0; q < C; q++) if (!used[r][q]) cells.push({ r, c: q, rs: 1, cs: 1, x1: xs[q], x2: xs[q + 1], y1: ys[r], y2: ys[r + 1], lines: [] });
+    tables.push({ x1, x2, y1, y2, xs, ys, cells, R, C });
+  }
+  // 쪽 전체를 두른 테두리 같은 큰 상자 1칸은 표로 보지 않음
+  return tables.filter(t => !(t.cells.length === 1 && (t.x2 - t.x1) * (t.y2 - t.y1) > page.W * page.H * 0.35));
+}
+
+/* ---- 한 쪽의 글자·선 → 블록 ---- */
+function layoutPage(runs, segs, page, opt){
+  let tables = opt.tables ? buildTables(segs, page) : [];
+  const inT = (r, t) => { const cx = (r.x1 + r.x2) / 2, cy = (r.yT + r.yB) / 2; return cx > t.x1 && cx < t.x2 && cy > t.y1 && cy < t.y2; };
+  const free = [];
+  for (const r of runs) {
+    const t = tables.find(t => inT(r, t));
+    if (!t) { free.push(r); continue; }
+    const cx = (r.x1 + r.x2) / 2, cy = (r.yT + r.yB) / 2;
+    const c = t.cells.find(c => cx >= c.x1 - 0.5 && cx <= c.x2 + 0.5 && cy >= c.y1 - 0.5 && cy <= c.y2 + 0.5);
+    (c ? c.lines : free).push(r);
+  }
+  // 글자가 하나도 없는 1칸 상자(장식 선)는 버림
+  tables = tables.filter(t => t.cells.some(c => c.lines.length));
+  let lines = groupLines(free);
+  return { lines, tables };
+}
+
+function finishPage(pl, page, opt, bodySz){
+  const blocks = [];
+  const area = { x1: Math.min(...pl.lines.map(l => l.x1), page.W * 0.12), x2: Math.max(...pl.lines.map(l => l.x2), page.W * 0.88) };
+  if (pl.lines.length) { area.x1 = Math.min(...pl.lines.map(l => l.x1)); area.x2 = Math.max(...pl.lines.map(l => l.x2)); }
+  // 표 위아래로 본문을 나눠 문단을 만든 뒤 위치 순으로 합침
+  const tables = [...pl.tables].sort((a, b) => a.y1 - b.y1);
+  for (let i = 0; i <= tables.length; i++) {
+    const top = i ? tables[i - 1].y2 - 1 : -Infinity, bottom = i < tables.length ? tables[i].y1 : Infinity;
+    const seg = pl.lines.filter(l => l.yT >= top && l.yT < bottom);
+    buildParas(seg, area, { bodySz }).forEach(p => blocks.push(p));
+    if (i < tables.length) {
+      const t = tables[i];
+      const cells = t.cells.map(c => {
+        const ls = groupLines(c.lines);
+        return { r: c.r, c: c.c, rs: c.rs, cs: c.cs, paras: buildParas(ls, { x1: c.x1 + 2, x2: c.x2 - 2 }, { bodySz, cell: true }).map(p => ({ ...p, ml: 0, fi: 0, align: p.align === 'J' ? 'L' : p.align })) };
+      });
+      blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1 });
+    }
+  }
+  return blocks;
+}
+
+/* 머리말·꼬리말·쪽번호 찾기: 여러 쪽에서 같은 위치에 반복되는 줄 */
+function stripRepeats(pages){
+  const key = l => l.text.replace(/\d+/g, '#').replace(/\s/g, '');
+  const cnt = {};
+  pages.forEach(p => {
+    const seen = new Set();
+    p.layout.lines.forEach(l => {
+      const edge = l.yB < p.H * 0.1 || l.yT > p.H * 0.9;
+      if (!edge) return;
+      const k = key(l) + '@' + (l.yT < p.H / 2 ? 't' : 'b');
+      if (!seen.has(k)) { seen.add(k); cnt[k] = (cnt[k] || 0) + 1; }
+    });
+  });
+  let removed = 0;
+  pages.forEach(p => {
+    p.layout.lines = p.layout.lines.filter(l => {
+      const edge = l.yB < p.H * 0.1 || l.yT > p.H * 0.9;
+      if (!edge) return true;
+      const k = key(l) + '@' + (l.yT < p.H / 2 ? 't' : 'b');
+      const rep = pages.length >= 3 && cnt[k] >= Math.max(2, pages.length * 0.5);
+      if (rep || PAGE_NO_RE.test(l.text)) { removed++; return false; }
+      return true;
+    });
+  });
+  return removed;
+}
+
+/* ===== PDF 읽기(pdf.js) · 스캔 글자 인식(Tesseract) — 모두 이 기기 안에서 처리 ===== */
+const VENDOR = new URL('../vendor/', location.href).href;
+let pdfjsReady = null;
+function loadPdfjs(){
+  if (pdfjsReady) return pdfjsReady;
+  pdfjsReady = new Promise((ok, no) => {
+    const s = document.createElement('script');
+    s.src = VENDOR + 'pdfjs/pdf.min.js';
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = VENDOR + 'pdfjs/pdf.worker.min.js'; ok(window.pdfjsLib); };
+    s.onerror = () => { pdfjsReady = null; no(new Error('PDF 읽기 도구를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.')); };
+    document.head.appendChild(s);
+  });
+  return pdfjsReady;
+}
+
+const BOLD_NAME = /bold|black|heavy|extrabold|semibold|demibold|[-_,]B$|[-_]Bd|굵은|견고딕|헤드라인|중고딕/i;
+async function pageTextRuns(page, vp){
+  const lib = window.pdfjsLib;
+  const tc = await page.getTextContent();
+  const runs = [];
+  for (const it of tc.items) {
+    if (!it.str || !it.transform) continue;
+    const m = lib.Util.transform(vp.transform, it.transform);
+    if (Math.abs(m[1]) > Math.abs(m[0]) * 0.5 + 0.01) continue; // 세로·회전 글자는 건너뜀
+    const sz = Math.hypot(m[2], m[3]) || Math.abs(m[0]);
+    if (sz < 1) continue;
+    let bold = false;
+    try { const f = page.commonObjs.get(it.fontName); bold = !!(f && (f.bold || f.black || BOLD_NAME.test(f.name || '') || BOLD_NAME.test(f.loadedName || ''))); } catch (_) {}
+    const w = it.width * vp.scale;
+    runs.push({ t: it.str.replace(/\u00a0/g, ' ').replace(/[\uE000-\uF8FF\uFFFD\u200B-\u200D\uFEFF]/g, ''), x1: m[4], x2: m[4] + w, yT: m[5] - sz * 0.88, yB: m[5] + sz * 0.18, sz, b: bold });
+  }
+  return runs;
+}
+
+function pageSegments(opList, vp){
+  const lib = window.pdfjsLib, O = lib.OPS, U = lib.Util;
+  const segs = [];
+  let ctm = [1, 0, 0, 1, 0, 0]; const stack = [];
+  let path = [];
+  const dev = (x, y) => U.applyTransform([x, y], U.transform(vp.transform, ctm));
+  const flushStroke = () => { path.forEach(s => segs.push(s)); path = []; };
+  const { fnArray, argsArray } = opList;
+  for (let i = 0; i < fnArray.length; i++) {
+    const fn = fnArray[i], a = argsArray[i];
+    if (fn === O.save) stack.push(ctm);
+    else if (fn === O.restore) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+    else if (fn === O.transform) ctm = U.transform(ctm, a);
+    else if (fn === O.paintFormXObjectBegin) { stack.push(ctm); if (a && a[0]) ctm = U.transform(ctm, a[0]); }
+    else if (fn === O.paintFormXObjectEnd) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+    else if (fn === O.constructPath) {
+      const ops = a[0], co = a[1]; let k = 0, cur = null, start = null;
+      for (const op of ops) {
+        if (op === O.rectangle) {
+          const x = co[k], y = co[k + 1], w = co[k + 2], h = co[k + 3]; k += 4;
+          const p = [dev(x, y), dev(x + w, y), dev(x + w, y + h), dev(x, y + h)];
+          const xs = p.map(q => q[0]), ys = p.map(q => q[1]);
+          const X1 = Math.min(...xs), X2 = Math.max(...xs), Y1 = Math.min(...ys), Y2 = Math.max(...ys);
+          path.push({ rect: true, x1: X1, y1: Y1, x2: X2, y2: Y2 });
+        } else if (op === O.moveTo) { cur = dev(co[k], co[k + 1]); start = cur; k += 2; }
+        else if (op === O.lineTo) { const p = dev(co[k], co[k + 1]); k += 2; if (cur) path.push({ x1: cur[0], y1: cur[1], x2: p[0], y2: p[1] }); cur = p; }
+        else if (op === O.curveTo) { const p = dev(co[k + 4], co[k + 5]); k += 6; cur = p; }
+        else if (op === O.curveTo2 || op === O.curveTo3) { const p = dev(co[k + 2], co[k + 3]); k += 4; cur = p; }
+        else if (op === O.closePath) { if (cur && start) path.push({ x1: cur[0], y1: cur[1], x2: start[0], y2: start[1] }); cur = start; }
+      }
+    } else if (fn === O.stroke || fn === O.closeStroke || fn === O.fillStroke || fn === O.eoFillStroke || fn === O.closeFillStroke || fn === O.closeEOFillStroke) {
+      path.forEach(s => {
+        if (s.rect) segs.push({ x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y1 }, { x1: s.x1, y1: s.y2, x2: s.x2, y2: s.y2 }, { x1: s.x1, y1: s.y1, x2: s.x1, y2: s.y2 }, { x1: s.x2, y1: s.y1, x2: s.x2, y2: s.y2 });
+        else segs.push(s);
+      });
+      path = [];
+    } else if (fn === O.fill || fn === O.eoFill) {
+      // 가는 사각형을 채워 그린 선(한글·워드 PDF 표 테두리에 흔함)
+      path.forEach(s => {
+        if (!s.rect) return;
+        const w = s.x2 - s.x1, h = s.y2 - s.y1;
+        if (h <= 2.5 && w >= 3) segs.push({ x1: s.x1, y1: (s.y1 + s.y2) / 2, x2: s.x2, y2: (s.y1 + s.y2) / 2 });
+        else if (w <= 2.5 && h >= 3) segs.push({ x1: (s.x1 + s.x2) / 2, y1: s.y1, x2: (s.x1 + s.x2) / 2, y2: s.y2 });
+      });
+      path = [];
+    } else if (fn === O.endPath) path = [];
+  }
+  return segs;
+}
+
+function countImages(opList){
+  const O = window.pdfjsLib.OPS;
+  return opList.fnArray.filter(f => f === O.paintImageXObject || f === O.paintJpegXObject || f === O.paintInlineImageXObject || f === O.paintImageMaskXObject).length;
+}
+
+/* ---- 스캔 글자 인식 ---- */
+const SIMD_TEST = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
+const OCR_WORKER_SRC = `
+let M = null, api = null;
+self.onmessage = async (e) => {
+  const m = e.data;
+  try {
+    if (m.cmd === 'init') {
+      importScripts(m.base + (m.simd ? 'tesseract-core-simd-lstm.js' : 'tesseract-core-lstm.js'));
+      M = await TesseractCore({ locateFile: (f) => m.base + f, TesseractProgress: (p) => self.postMessage({ type: 'prog', p }) });
+      for (const lang of ['kor', 'eng']) {
+        const r = await fetch(m.base + lang + '.traineddata');
+        if (!r.ok) throw new Error('언어 자료를 받지 못했습니다');
+        M.FS.writeFile('./' + lang + '.traineddata', new Uint8Array(await r.arrayBuffer()));
+        self.postMessage({ type: 'load', lang });
+      }
+      api = new M.TessBaseAPI();
+      if (api.Init(null, 'kor+eng', 1) === -1) throw new Error('글자 인식기를 시작하지 못했습니다');
+      api.SetVariable('tessedit_pageseg_mode', '3');
+      api.SetVariable('preserve_interword_spaces', '0');
+      self.postMessage({ type: 'ready' });
+    } else if (m.cmd === 'ocr') {
+      M.FS.writeFile('/input', new Uint8Array(m.png));
+      if (api.SetImageFile(1, 0) === 1) throw new Error('그림을 읽지 못했습니다');
+      api.Recognize(null);
+      let tsv; try { tsv = api.GetTSVText(); } catch (_) { tsv = api.GetTSVText(0); }
+      self.postMessage({ type: 'done', id: m.id, tsv });
+    }
+  } catch (err) { self.postMessage({ type: 'error', id: m.id, msg: String(err && err.message || err) }); }
+};`;
+class OCR {
+  constructor(onProg){ this.onProg = onProg; this.w = null; this.ready = null; this.wait = {}; this.n = 0; }
+  start(){
+    if (this.ready) return this.ready;
+    const url = URL.createObjectURL(new Blob([OCR_WORKER_SRC], { type: 'text/javascript' }));
+    this.w = new Worker(url);
+    this.ready = new Promise((ok, no) => {
+      this.w.onmessage = e => {
+        const m = e.data;
+        if (m.type === 'ready') ok();
+        else if (m.type === 'load') this.onProg && this.onProg({ stage: 'load', lang: m.lang });
+        else if (m.type === 'prog') this.onProg && this.onProg({ stage: 'ocr', p: m.p });
+        else if (m.type === 'done') { this.wait[m.id].ok(m.tsv); delete this.wait[m.id]; }
+        else if (m.type === 'error') { if (m.id != null && this.wait[m.id]) { this.wait[m.id].no(new Error(m.msg)); delete this.wait[m.id]; } else no(new Error(m.msg)); }
+      };
+      this.w.onerror = e => no(new Error('글자 인식기를 불러오지 못했습니다'));
+    });
+    this.w.postMessage({ cmd: 'init', base: VENDOR + 'tesseract/', simd: WebAssembly.validate(SIMD_TEST) });
+    return this.ready;
+  }
+  async recognize(png){
+    await this.start();
+    const id = ++this.n;
+    return new Promise((ok, no) => { this.wait[id] = { ok, no }; this.w.postMessage({ cmd: 'ocr', id, png }, [png]); });
+  }
+  stop(){ if (this.w) this.w.terminate(); this.w = null; this.ready = null; }
+}
+
+async function renderPage(page, maxSide){
+  const vp1 = page.getViewport({ scale: 1 });
+  const s = Math.min(3, maxSide / Math.max(vp1.width, vp1.height));
+  const vp = page.getViewport({ scale: s });
+  const cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  return { cv, s };
+}
+
+/* 스캔 그림에서 표 선 찾기: 길게 이어진 어두운 픽셀 */
+function imageSegments(cv, s){
+  const w = cv.width, h = cv.height, d = cv.getContext('2d').getImageData(0, 0, w, h).data;
+  const dark = new Uint8Array(w * h);
+  for (let i = 0, j = 0; i < d.length; i += 4, j++) dark[j] = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) < 140 ? 1 : 0;
+  const minH = Math.max(60, w * 0.05), minV = Math.max(30, h * 0.015), maxThick = Math.max(5, Math.round(s * 2));
+  // 한 방향으로 길게 이어진 어두운 줄을 찾고, 옆 줄과 겹쳐 두꺼우면(글자 획·색칠 막대) 버림
+  function scan(len, cross, at, minLen){
+    const rows = [];
+    for (let a = 0; a < cross; a++) {
+      const list = []; let run = 0, gap = 0;
+      for (let b = 0; b <= len; b++) {
+        const v = b < len && at(a, b);
+        if (v) { run += 1 + gap; gap = 0; }
+        else if (run && gap < 2) gap++;
+        else { if (run >= minLen) list.push([b - gap - run, b - gap]); run = 0; gap = 0; }
+      }
+      rows.push(list);
+    }
+    const out = [], open = [];
+    for (let a = 0; a <= cross; a++) {
+      const list = a < cross ? rows[a] : [];
+      for (let k = open.length - 1; k >= 0; k--) {
+        const g = open[k], m = list.findIndex(r => Math.abs(r[0] - g.s) < 4 && Math.abs(r[1] - g.e) < 4 && !r.used);
+        if (m >= 0) { list[m].used = true; g.n++; }
+        else { open.splice(k, 1); if (g.n <= maxThick) out.push({ s: g.s, e: g.e, at: g.a + (g.n - 1) / 2 }); }
+      }
+      list.forEach(r => { if (!r.used) open.push({ s: r[0], e: r[1], a, n: 1 }); });
+    }
+    return out;
+  }
+  const segs = [];
+  scan(w, h, (y, x) => dark[y * w + x], minH).forEach(g => segs.push({ x1: g.s / s, x2: g.e / s, y1: g.at / s, y2: g.at / s }));
+  scan(h, w, (x, y) => dark[y * w + x], minV).forEach(g => segs.push({ x1: g.at / s, x2: g.at / s, y1: g.s / s, y2: g.e / s }));
+  return segs;
+}
+
+/* 표 선을 지워 글자 인식이 칸 속 글자를 놓치지 않게 함 */
+function eraseLines(cv, segs, s){
+  const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff';
+  for (const g of segs) {
+    const x1 = Math.min(g.x1, g.x2) * s, x2 = Math.max(g.x1, g.x2) * s, y1 = Math.min(g.y1, g.y2) * s, y2 = Math.max(g.y1, g.y2) * s;
+    const t = Math.max(5, s * 2.2); if (y2 - y1 < 1) ctx.fillRect(x1 - 1, y1 - t / 2, x2 - x1 + 2, t); else ctx.fillRect(x1 - t / 2, y1 - 1, t, y2 - y1 + 2);
+  }
+}
+function tsvRuns(tsv, s){
+  const runs = [], confs = [];
+  for (const line of tsv.split('\n')) {
+    const c = line.split('\t');
+    if (c.length < 12 || c[0] !== '5') continue;
+    const conf = +c[10], t = (c[11] || '').trim();
+    if (!t || conf < 10 || /^[|ㅣl_—\-=]+$/.test(t)) continue;
+    const L = +c[6] / s, T = +c[7] / s, W = +c[8] / s, H = +c[9] / s;
+    confs.push(conf);
+    runs.push({ t, x1: L, x2: L + W, yT: T, yB: T + H, sz: Math.max(6, H / 0.92), b: false, ocr: true, key: c[2] + '-' + c[3] + '-' + c[4] });
+  }
+  // 같은 줄 글자 크기 맞추기(단어마다 높이가 달라 생기는 흔들림 제거)
+  const lines = groupLines(runs.map(r => ({ ...r })));
+  for (const L of lines) {
+    const sz = Math.round(median(L.runs.map(r => r.yB - r.yT)) / 0.92 * 2) / 2;
+    L.runs.forEach(r => { const o = runs.find(x => x.x1 === r.x1 && x.yT === r.yT && x.t === r.t); if (o) o.sz = sz; });
+  }
+  return { runs, conf: confs.length ? confs.reduce((a, b) => a + b, 0) / confs.length : 0 };
+}
+
+const KEY = 'ilsang_pdf2hwp_v1';
+let pdf = null, fileName = '', result = null, busy = false, stopFlag = false, ocr = null;
+
+const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange'];
+function opts(){
+  return { tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, range: val('optRange') };
+}
+function saveOpts(){ const o = opts(); delete o.range; store.set(KEY, o); }
+(() => { const o = store.get(KEY); if (!o) return; $('#optTables').checked = o.tables !== false; $('#optStrip').checked = o.strip !== false; $('#optBreak').checked = !!o.pagebreak; if (o.ocr) $('#optOcr').value = o.ocr; })();
+OPT_IDS.forEach(id => $('#' + id).addEventListener('change', saveOpts));
+
+function setStatus(msg, pct){
+  $('#status').textContent = msg || '';
+  $('#bar').style.width = (pct == null ? 0 : Math.max(2, Math.min(100, pct))) + '%';
+  $('#progress').classList.toggle('hidden', pct == null && !msg);
+}
+function parseRange(s, n){
+  if (!s.trim()) return Array.from({ length: n }, (_, i) => i + 1);
+  const set = new Set();
+  s.split(/[,\s]+/).filter(Boolean).forEach(p => {
+    const m = p.match(/^(\d+)(?:[-~](\d+))?$/); if (!m) return;
+    let a = +m[1], b = m[2] ? +m[2] : a; if (a > b) [a, b] = [b, a];
+    for (let i = Math.max(1, a); i <= Math.min(n, b); i++) set.add(i);
+  });
+  return [...set].sort((x, y) => x - y);
+}
+const pwWait = () => new Promise(ok => {
+  $('#pwBox').classList.remove('hidden'); $('#pw').value = ''; $('#pw').focus();
+  const go = () => { $('#pwBox').classList.add('hidden'); $('#pwGo').removeEventListener('click', go); ok($('#pw').value); };
+  $('#pwGo').addEventListener('click', go);
+  $('#pw').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } };
+});
+
+async function openFile(f){
+  if (!f) return;
+  if (!/pdf$/i.test(f.type) && !/\.pdf$/i.test(f.name)) { toast('PDF 파일만 넣을 수 있습니다'); return; }
+  if (busy) return;
+  resetResult();
+  fileName = f.name.replace(/\.pdf$/i, '');
+  $('#fileInfo').textContent = '불러오는 중…';
+  $('#fileCard').classList.remove('hidden');
+  try {
+    const lib = await loadPdfjs();
+    const data = new Uint8Array(await f.arrayBuffer());
+    const task = lib.getDocument({ data, cMapUrl: VENDOR + 'pdfjs/cmaps/', cMapPacked: true, standardFontDataUrl: VENDOR + 'pdfjs/standard_fonts/', isEvalSupported: false });
+    task.onPassword = async (cb, reason) => { $('#pwMsg').textContent = reason === 2 ? '비밀번호가 틀렸습니다. 다시 입력하세요.' : '비밀번호가 걸린 PDF입니다.'; cb(await pwWait()); };
+    if (pdf) pdf.destroy();
+    pdf = await task.promise;
+    $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${(f.size / 1048576).toFixed(1)}MB`;
+    $('#optRange').placeholder = `전체 (1-${pdf.numPages})`;
+    $('#convert').disabled = false;
+    $('#convert').focus();
+  } catch (e) {
+    pdf = null; $('#convert').disabled = true;
+    $('#fileInfo').textContent = /Invalid PDF|InvalidPDF/i.test(String(e)) ? '손상됐거나 PDF가 아닌 파일입니다.' : ('열 수 없습니다: ' + (e.message || e));
+  }
+}
+
+function resetResult(){ result = null; $('#resultCard').classList.add('hidden'); setStatus('', null); }
+
+async function convert(){
+  if (!pdf || busy) return;
+  busy = true; stopFlag = false;
+  $('#convert').disabled = true; $('#stop').classList.remove('hidden');
+  resetResult();
+  const o = opts(), list = parseRange(o.range, pdf.numPages);
+  if (!list.length) { toast('페이지 범위를 확인해 주세요'); busy = false; $('#convert').disabled = false; $('#stop').classList.add('hidden'); return; }
+  const pages = [];
+  let ocrPages = 0, confSum = 0;
+  try {
+    for (let i = 0; i < list.length; i++) {
+      if (stopFlag) throw new Error('STOP');
+      const n = list[i], base = i / list.length * 100;
+      setStatus(`${n}쪽 읽는 중 (${i + 1}/${list.length})`, base);
+      const page = await pdf.getPage(n);
+      const vp = page.getViewport({ scale: 1 });
+      const opList = await page.getOperatorList();
+      let runs = await pageTextRuns(page, vp), segs = pageSegments(opList, vp);
+      const chars = runs.reduce((a, r) => a + r.t.replace(/\s/g, '').length, 0);
+      const needOcr = o.ocr === 'always' || (o.ocr === 'auto' && chars < 15 && countImages(opList) > 0);
+      let kind = chars ? 'text' : 'empty', conf = 0;
+      if (needOcr) {
+        if (!ocr) ocr = new OCR(p => {
+          if (p.stage === 'load') setStatus(`글자 인식기 준비 중 (${p.lang === 'kor' ? '한국어' : '영어'} 자료 받음)…`, base);
+          else setStatus(`${n}쪽 스캔 글자 인식 중 ${Math.round(p.p)}% (${i + 1}/${list.length})`, base + (100 / list.length) * Math.min(1, p.p / 100));
+        });
+        setStatus(ocr.ready ? `${n}쪽 스캔 글자 인식 준비` : '처음 한 번 글자 인식기를 받는 중입니다 (약 7MB)…', base);
+        const { cv, s } = await renderPage(page, 3200);
+        const lineSegs = imageSegments(cv, s);
+        eraseLines(cv, lineSegs, s);
+        const png = await new Promise(ok => cv.toBlob(b => b.arrayBuffer().then(ok), 'image/png'));
+        const tsv = await ocr.recognize(png);
+        const r = tsvRuns(tsv, s);
+        runs = r.runs; conf = r.conf; segs = o.tables ? lineSegs : [];
+        kind = 'ocr'; ocrPages++; confSum += conf;
+      }
+      const layout = layoutPage(runs, segs, { W: vp.width, H: vp.height }, o);
+      pages.push({ n, W: vp.width, H: vp.height, layout, kind, conf });
+      page.cleanup();
+      await new Promise(r => setTimeout(r));
+    }
+    setStatus('문서로 정리하는 중…', 99);
+    const removed = o.strip ? stripRepeats(pages) : 0;
+    const allSz = [];
+    pages.forEach(p => p.layout.lines.forEach(l => { for (let k = 0; k < Math.min(40, l.text.length); k++) allSz.push(l.sz); }));
+    const bodySz = median(allSz) || 10;
+    const blocks = [];
+    pages.forEach((p, i) => {
+      const bl = finishPage(p.layout, p, o, bodySz);
+      if (o.pagebreak && i > 0 && bl.length) bl[0].pb = true;
+      blocks.push(...bl);
+    });
+    result = { blocks, pages, removed, ocrPages, conf: ocrPages ? confSum / ocrPages : 0 };
+    showResult();
+    setStatus('', null);
+  } catch (e) {
+    if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
+    else { console.error(e); setStatus('변환 중 문제가 생겼습니다: ' + (e.message || e), null); }
+  } finally {
+    busy = false; $('#convert').disabled = !pdf; $('#stop').classList.add('hidden');
+  }
+}
+
+function showResult(){
+  const r = result, tables = r.blocks.filter(b => b.type === 'table').length, paras = r.blocks.filter(b => b.type === 'p').length;
+  const chars = docPlainText(r.blocks).replace(/\s/g, '').length;
+  const empty = r.pages.filter(p => p.kind === 'empty').length;
+  $('#stats').innerHTML =
+    `<div><small>변환한 쪽</small><b>${r.pages.length}쪽</b></div>` +
+    `<div><small>문단</small><b>${paras.toLocaleString()}개</b></div>` +
+    `<div><small>표</small><b>${tables}개</b></div>` +
+    `<div><small>글자 수</small><b>${chars.toLocaleString()}자</b></div>`;
+  const notes = [];
+  if (r.ocrPages) notes.push(`스캔 쪽 ${r.ocrPages}개는 글자 인식으로 변환했습니다 (평균 정확도 ${Math.round(r.conf)}%). 숫자·이름은 원본과 꼭 대조해 주세요.`);
+  if (empty) notes.push(`글자가 없는 쪽 ${empty}개는 비어 있습니다. 스캔본이면 '스캔 글자 인식'을 '항상'으로 바꿔 다시 변환하세요.`);
+  if (r.removed) notes.push(`머리말·꼬리말·쪽번호 ${r.removed}줄을 뺐습니다.`);
+  if (!chars) notes.push('읽을 수 있는 글자가 없습니다. 그림으로만 된 PDF라면 스캔 글자 인식을 켜 주세요.');
+  $('#notes').innerHTML = notes.map(t => `<li>${esc(t)}</li>`).join('');
+  $('#notes').classList.toggle('hidden', !notes.length);
+  $('#resultCard').classList.remove('hidden');
+  $('#preview').innerHTML = previewHtml(r.blocks);
+  $('#resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function previewHtml(blocks){
+  const k = Math.min(1.33, Math.max(0.9, ($('#preview').clientWidth || 600) / 520)); // 화면 폭에 맞춘 미리보기 배율
+  const pHtml = p => {
+    const st = [`text-align:${{ J: 'justify', L: 'left', C: 'center', R: 'right' }[p.align || 'J']}`];
+    if (p.ml) st.push(`padding-left:${(p.ml * k).toFixed(0)}px`);
+    if (p.fi) st.push(`text-indent:${(p.fi * k).toFixed(0)}px`);
+    return `<p style="${st.join(';')}">${p.runs.map(r => `<span style="font-size:${(r.sz * k).toFixed(1)}px${r.b ? ';font-weight:700' : ''}">${esc(r.t)}</span>`).join('') || '&nbsp;'}</p>`;
+  };
+  let h = '';
+  for (const b of blocks) {
+    if (b.pb) h += '<hr class="pg">';
+    if (b.type === 'p') { h += pHtml(b); continue; }
+    const tot = b.cols.reduce((a, c) => a + c, 0);
+    h += `<div class="tw"><table><colgroup>${b.cols.map(c => `<col style="width:${(c / tot * 100).toFixed(2)}%">`).join('')}</colgroup>`;
+    b.rows.forEach((_, r) => {
+      h += '<tr>' + b.cells.filter(c => c.r === r).sort((x, y) => x.c - y.c).map(c => `<td${c.rs > 1 ? ` rowspan="${c.rs}"` : ''}${c.cs > 1 ? ` colspan="${c.cs}"` : ''}>${c.paras.map(pHtml).join('')}</td>`).join('') + '</tr>';
+    });
+    h += '</table></div>';
+  }
+  return h || '<p class="hint">변환된 내용이 없습니다.</p>';
+}
+
+/* ---- 이벤트 ---- */
+const drop = $('#drop');
+$('#file').addEventListener('change', e => { openFile(e.target.files[0]); e.target.value = ''; });
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => openFile(e.dataTransfer.files[0]));
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
+$('#convert').addEventListener('click', convert);
+$('#stop').addEventListener('click', () => { stopFlag = true; if (ocr) { ocr.stop(); ocr = null; } setStatus('멈추는 중…', 0); });
+$('#saveHwpx').addEventListener('click', () => result && download(makeHwpx(result.blocks, fileName), fileName + '.hwpx'));
+$('#saveDocx').addEventListener('click', () => result && download(makeDocx(result.blocks, fileName), fileName + '.docx'));
+$('#saveTxt').addEventListener('click', () => result && download(new Blob(['﻿' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt'));
+$('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
+
+})();
+</script>
+<!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
+<script async src="https://gurifire.github.io/orbit/track.js"></script>
+</body>
+</html>
