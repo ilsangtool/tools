@@ -1,0 +1,119 @@
+  <div class="steps" id="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+
+  <!-- 1단계: 입력 -->
+  <div data-step="1">
+    <section class="card">
+      <h2><span class="num">1</span>영상 크기</h2>
+      <div class="radio-group ratio">
+        <label><input type="radio" name="ratio" value="9:16" checked><span><b>9:16 세로</b><small>쇼츠·릴스·틱톡</small></span></label>
+        <label><input type="radio" name="ratio" value="16:9"><span><b>16:9 가로</b><small>일반 영상·유튜브</small></span></label>
+        <label><input type="radio" name="ratio" value="1:1"><span><b>1:1 정사각</b><small>인스타 피드</small></span></label>
+      </div>
+    </section>
+    <section class="card">
+      <h2><span class="num">2</span>어떤 영상인가요</h2>
+      <div class="radio-group" id="types"></div>
+      <p class="hint" style="margin:8px 0 0" id="typeHint"></p>
+    </section>
+    <section class="card">
+      <h2><span class="num">3</span>알리고 싶은 내용</h2>
+      <textarea id="text" rows="5" placeholder="예: 온기베이커리 겨울 신메뉴 밤 크림빵 출시. 국산 밤을 아침마다 직접 졸여서 크림에 넣음. 12월 1일부터 판매, 1개 3500원."></textarea>
+      <p class="hint" style="margin:4px 0 0" id="textHint">짧게 써도 됩니다. 가격·날짜·시간·위치·전화번호는 자동으로 찾아 다음 단계에 채워 둡니다.</p>
+      <label class="f">사진·영상 <span class="opt">선택, 최대 8개</span></label>
+      <div class="media" id="mediaList"></div>
+      <label class="addm"><input type="file" id="mediaIn" accept="image/*,video/*" multiple><span>+ 사진·영상 넣기</span></label>
+      <p class="hint" style="margin:6px 0 0">넣지 않으면 가격표·달력·시계·지도 핀 같은 그림을 내용에 맞춰 그려 넣습니다.</p>
+      <label class="f">길이</label>
+      <div class="radio-group">
+        <label><input type="radio" name="len" value="30" checked><span>30초</span></label>
+        <label><input type="radio" name="len" value="45"><span>45초</span></label>
+        <label><input type="radio" name="len" value="60"><span>60초</span></label>
+      </div>
+    </section>
+  </div>
+
+  <!-- 2단계: 빠진 내용 확인 -->
+  <div data-step="2" class="hidden">
+    <section class="card">
+      <h2>빠진 내용 확인</h2>
+      <p class="hint" id="askHint"></p>
+      <div id="fieldList"></div>
+    </section>
+    <section class="card">
+      <h2 id="featTitle">강조할 문장</h2>
+      <p class="hint" id="featHint">한 줄이 장면 하나가 됩니다. 고치거나 지워도 됩니다.</p>
+      <textarea id="feats" rows="4"></textarea>
+    </section>
+    <section class="card">
+      <h2>분위기</h2>
+      <div class="radio-group">
+        <label><input type="radio" name="mood" value="bright"><span>밝게</span></label>
+        <label><input type="radio" name="mood" value="calm" checked><span>차분하게</span></label>
+        <label><input type="radio" name="mood" value="strong"><span>힘 있게</span></label>
+      </div>
+      <p class="hint" style="margin:8px 0 0">장면 넘김 속도와 첫·마지막 문구가 달라집니다.</p>
+    </section>
+  </div>
+
+  <!-- 3단계: 구성안·색 -->
+  <div data-step="3" class="hidden">
+    <section class="card">
+      <h2>색 조합</h2>
+      <div class="pals" id="pals"></div>
+    </section>
+    <section class="card">
+      <h2>구성안 고르기</h2>
+      <p class="hint">같은 내용을 세 가지 순서로 짰습니다. 미리보기를 누르면 재생됩니다.</p>
+      <div class="plans" id="plans"></div>
+    </section>
+  </div>
+
+  <!-- 4단계: 다듬기·저장 -->
+  <div data-step="4" class="hidden">
+    <div class="edit">
+      <section class="card pv">
+        <div class="stagebox"><canvas id="stage" aria-label="영상 미리보기"></canvas></div>
+        <div class="ctl">
+          <button type="button" class="sm" id="play">재생</button>
+          <input type="range" id="seek" min="0" max="30" step="0.05" value="0" aria-label="재생 위치">
+          <span id="tm">0:00 / 0:30</span>
+        </div>
+      </section>
+      <div>
+        <section class="card">
+          <h2>장면</h2>
+          <p class="hint">글을 고치면 바로 미리보기에 반영됩니다.</p>
+          <div id="sceneList"></div>
+          <div class="actions" style="margin-top:8px">
+            <button type="button" class="ghost sm" id="addScene">+ 글 장면 추가</button>
+            <button type="button" class="ghost sm" id="hookAlt">첫 문구 바꾸기</button>
+            <button type="button" class="ghost sm" id="endAlt">끝 문구 바꾸기</button>
+          </div>
+        </section>
+        <section class="card">
+          <h2>소리 <span class="opt">선택</span></h2>
+          <div class="srow"><span>배경음</span><label class="addm sm2"><input type="file" id="bgmIn" accept="audio/*"><span id="bgmName">음악 파일 넣기</span></label><button type="button" class="ghost sm hidden" id="bgmDel">빼기</button></div>
+          <p class="hint" style="margin:0 0 8px">저작권이 해결된 음악만 넣으세요. (유튜브 오디오 보관함·공유마당 등)</p>
+          <div class="srow"><span>내 목소리</span><button type="button" class="ghost sm" id="recBtn">녹음하기</button><button type="button" class="ghost sm hidden" id="recDel">지우기</button></div>
+          <p class="hint" style="margin:0" id="recHint">녹음을 누르면 3초 뒤 미리보기가 처음부터 재생되고, 끝날 때까지 녹음합니다.</p>
+        </section>
+        <section class="card">
+          <h2>저장</h2>
+          <div class="srow"><span>화질</span>
+            <div class="radio-group"><label><input type="radio" name="q" value="1"><span>고화질 1080p</span></label><label><input type="radio" name="q" value="0.6667"><span>보통 720p</span></label></div></div>
+          <button type="button" id="exportBtn" class="big">영상 만들기</button>
+          <div id="exp" class="hidden"><div class="bar"><div id="expBar"></div></div><p class="hint" id="expMsg" style="margin:6px 0 0"></p></div>
+          <div id="outBox" class="hidden">
+            <video id="outVideo" controls playsinline></video>
+            <div class="actions"><button type="button" id="dl">파일 저장</button></div>
+          </div>
+          <p class="hint" style="margin:8px 0 0">영상은 재생 시간만큼 걸려 만들어집니다. 만드는 동안 화면을 켜 두고 다른 앱으로 넘어가지 마세요.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button type="button" class="ghost" id="prev">이전</button>
+    <button type="button" id="next">다음</button>
+  </div>

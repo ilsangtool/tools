@@ -17,6 +17,7 @@ TOOLS = [
     ('image-resize', '사진 도구', '사진 용량 줄이기·HEIC 변환'),
     ('id-photo', '사진 도구', '증명사진 규격 자르기'),
     ('pdf-to-hwp', '문서 도구', 'PDF → 한글·워드 변환'),
+    ('short-video', '영상 도구', '숏폼 영상 만들기'),
 ]
 
 def read(p, default=''):
