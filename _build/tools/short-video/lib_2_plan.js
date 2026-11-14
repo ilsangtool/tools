@@ -101,8 +101,10 @@ function buildPlans(type, f, feats, nMedia, mood, ph){
   const endT = endTopic(type, topic);
   // 사진이 없는 자리는 주제 그림으로: 첫 장면은 전체, 특징 장면은 가까이(이름표 붙임), 끝 장면은 가게·건물·장터
   Object.values(out).forEach(list => {
-    let shot = 1;
+    let shot = 1, det = 0;
     list.forEach(sc => {
+      // 넣은 사진·영상이 모자라면 그림 대신 넣은 사진의 다른 부분을 가까이 보여 줌 (내 사진이 더 정확하므로)
+      if (nMedia && sc.role !== 'end' && (!sc.visual ? sc.role === 'hook' : sc.visual.g === 'poster')) { sc.visual = { media: det % nMedia, detail: det }; det++; return; }
       const v = sc.visual;
       if (v && v.g === 'poster' && topic) sc.visual = sc.role === 'subject' ? { g: 'hero', topic, shot: 0 } : { g: 'hero', topic, shot: (shot++ % 2) + 1, chip: String(v.text || '').split(/\s+/).every(w => w.length >= 2) ? v.text : '' };
       else if (!v && sc.role === 'hook') sc.visual = { g: 'hero', topic: topic || endT, shot: 3 };
