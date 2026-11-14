@@ -500,7 +500,8 @@ function groupLines(runs){
       rs.push(r);
     }
     L.runs = rs;
-    L.x1 = Math.min(...rs.map(r => r.x1)); L.x2 = Math.max(...rs.map(r => r.x2));
+    const vis = rs.filter(r => r.t.trim()); // 공백 조각은 위치 계산에서 뺌(칸 사이를 잇는 긴 공백이 흔함)
+    L.x1 = Math.min(...(vis.length ? vis : rs).map(r => r.x1)); L.x2 = Math.max(...(vis.length ? vis : rs).map(r => r.x2));
     L.sz = median(rs.filter(r => r.t.trim()).map(r => r.sz)) || rs[0].sz;
     // 띄어쓰기 복원 + 같은 모양끼리 묶기
     const out = [];
@@ -540,6 +541,7 @@ function buildParas(lines, area, opt){
     const w = l.x2 - l.x1, c = (l.x1 + l.x2) / 2;
     const tol = opt.cell ? 0.12 : 0.06, ind = opt.cell ? 0.04 : 0.08;
     if (w < span * 0.85 && Math.abs(c - mid) < span * tol && l.x1 > left + span * ind) return 'C';
+    if (opt.cell) { const gl = l.x1 - left, gr = right - l.x2; if (gl > 2 && gr > 2 && Math.abs(gl - gr) <= Math.max(3, Math.max(gl, gr) * 0.3)) return 'C'; }
     if (w < span * 0.6 && Math.abs(l.x2 - right) < span * 0.04 && l.x1 > mid) return 'R';
     return 'J';
   };
@@ -696,17 +698,31 @@ function finishPage(pl, page, opt, bodySz){
   if (pl.lines.length) { area.x1 = Math.min(...pl.lines.map(l => l.x1)); area.x2 = Math.max(...pl.lines.map(l => l.x2)); }
   // 표 위아래로 본문을 나눠 문단을 만든 뒤 위치 순으로 합침
   const tables = [...pl.tables].sort((a, b) => a.y1 - b.y1);
+  const blank = () => ({ type: 'p', runs: [], align: 'J', ml: 0, fi: 0, blank: true });
+  let lastY = null; // 바로 앞 블록의 아래쪽 위치
+  const gapNeeded = y => lastY != null && y - lastY > bodySz * 0.9;
   for (let i = 0; i <= tables.length; i++) {
     const top = i ? tables[i - 1].y2 - 1 : -Infinity, bottom = i < tables.length ? tables[i].y1 : Infinity;
     const seg = pl.lines.filter(l => l.yT >= top && l.yT < bottom);
-    buildParas(seg, area, { bodySz }).forEach(p => blocks.push(p));
+    const ps = buildParas(seg, area, { bodySz });
+    if (ps.length && i > 0 && gapNeeded(ps[0].yT)) blocks.push(blank()); // 표 다음 띄운 줄
+    ps.forEach(p => blocks.push(p));
+    if (ps.length) lastY = ps[ps.length - 1].yB;
     if (i < tables.length) {
       const t = tables[i];
+      if (blocks.length && gapNeeded(t.y1)) blocks.push(blank()); // 표 앞 띄운 줄
       const cells = t.cells.map(c => {
         const ls = groupLines(c.lines);
         return { r: c.r, c: c.c, rs: c.rs, cs: c.cs, paras: buildParas(ls, { x1: c.x1 + 2, x2: c.x2 - 2 }, { bodySz, cell: true }).map(p => ({ ...p, ml: 0, fi: 0, align: p.align === 'J' ? 'L' : p.align })) };
       });
+      // 같은 열 칸이 대부분 가운데 정렬이면 그 열은 모두 가운데로 (숫자·짧은 글 칸의 흔들림 정리)
+      for (let q = 0; q < t.C; q++) {
+        const col = cells.filter(c => c.c === q && c.cs === 1 && c.paras.length);
+        const cen = col.filter(c => c.paras.every(p => p.align === 'C')).length;
+        if (col.length >= 2 && cen / col.length >= 0.5) col.forEach(c => c.paras.forEach(p => { if (p.align === 'L') p.align = 'C'; }));
+      }
       blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1 });
+      lastY = t.y2;
     }
   }
   return blocks;
@@ -1086,7 +1102,7 @@ async function convert(){
 }
 
 function showResult(){
-  const r = result, tables = r.blocks.filter(b => b.type === 'table').length, paras = r.blocks.filter(b => b.type === 'p').length;
+  const r = result, tables = r.blocks.filter(b => b.type === 'table').length, paras = r.blocks.filter(b => b.type === 'p' && !b.blank).length;
   const chars = docPlainText(r.blocks).replace(/\s/g, '').length;
   const empty = r.pages.filter(p => p.kind === 'empty').length;
   $('#stats').innerHTML =

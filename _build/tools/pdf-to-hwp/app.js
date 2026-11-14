@@ -122,7 +122,7 @@ async function convert(){
 }
 
 function showResult(){
-  const r = result, tables = r.blocks.filter(b => b.type === 'table').length, paras = r.blocks.filter(b => b.type === 'p').length;
+  const r = result, tables = r.blocks.filter(b => b.type === 'table').length, paras = r.blocks.filter(b => b.type === 'p' && !b.blank).length;
   const chars = docPlainText(r.blocks).replace(/\s/g, '').length;
   const empty = r.pages.filter(p => p.kind === 'empty').length;
   $('#stats').innerHTML =
