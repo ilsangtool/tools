@@ -22,7 +22,7 @@
       <label class="f">사진·영상 <span class="opt">선택, 최대 8개</span></label>
       <div class="media" id="mediaList"></div>
       <label class="addm"><input type="file" id="mediaIn" accept="image/*,video/*" multiple><span>+ 사진·영상 넣기</span></label>
-      <p class="hint" style="margin:6px 0 0">넣지 않으면 가격표·달력·시계·지도 핀 같은 그림을 내용에 맞춰 그려 넣습니다.</p>
+      <p class="hint" style="margin:6px 0 0" id="mediaHint">넣지 않으면 업종 그림과 가격표·달력·시계·지도 그림을 내용에 맞춰 그려 넣습니다. 휴대폰 화면 캡처를 넣으면 손에 든 휴대폰 장면을 만들고, 화면 속 글자를 읽어 장면 글에 맞는 부분을 가까이 보여 줍니다.</p>
       <label class="f">길이</label>
       <div class="radio-group">
         <label><input type="radio" name="len" value="30" checked><span>30초</span></label>
@@ -117,6 +117,13 @@
     </div>
   </div>
 
+  <div class="pick hidden" id="pick" role="dialog" aria-label="가까이 볼 위치 고르기">
+    <div class="pbox">
+      <p><b>가까이 볼 곳을 누르세요</b></p>
+      <div class="pimg"><img id="pickImg" alt=""><i id="pickDot"></i></div>
+      <div class="actions"><button type="button" class="ghost sm" id="pickAll">전체 보기로</button><button type="button" class="ghost sm" id="pickHand">손에 든 휴대폰으로</button><button type="button" class="sm" id="pickClose">닫기</button></div>
+    </div>
+  </div>
   <div class="nav">
     <button type="button" class="ghost" id="prev">이전</button>
     <button type="button" id="next">다음</button>

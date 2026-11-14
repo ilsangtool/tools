@@ -67,3 +67,11 @@
   .srow select{flex:1;min-width:0;width:auto;height:36px;padding:0 8px}
   .srow input[type=range]{flex:1;max-width:240px}
   #bgmVolV{background:none;color:var(--ink);font-weight:600;min-width:2em;text-align:right;font-variant-numeric:tabular-nums}
+  .pick{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .pick.hidden{display:none}
+  .pbox{background:#fff;border-radius:6px;padding:16px;max-width:520px;width:100%;max-height:92vh;display:flex;flex-direction:column;gap:8px}
+  .pbox p{margin:0}
+  .pimg{position:relative;overflow:auto;flex:1;min-height:0;cursor:crosshair}
+  .pimg img{display:block;width:100%;height:auto}
+  .pimg i{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border:3px solid #C8102E;border-radius:50%;pointer-events:none}
+  .hd .aim{min-width:auto;padding:0 8px;font-size:13px}

@@ -33,11 +33,46 @@ $('#mediaIn').addEventListener('change', async e => {
     ST.media.push({ name: f.name, type, url, el });
   }
   e.target.value = ''; mediaHtml(); ST.plans = null;
+  readAllText();
 });
 $('#mediaList').addEventListener('click', e => {
   const i = e.target.dataset.del; if (i == null) return;
   URL.revokeObjectURL(ST.media[i].url); ST.media.splice(+i, 1); mediaHtml(); ST.plans = null;
 });
+
+/* 사진 속 글자 읽기: 순서대로 하나씩, 끝나면 구성안을 다시 짬 */
+let reading = false;
+async function readAllText(){
+  if (reading) return; reading = true;
+  const todo = () => ST.media.filter(m => m.type === 'image' && !m.lines && !m.failed);
+  let m;
+  while ((m = todo()[0])) {
+    $('#mediaHint').textContent = `사진 속 글자를 읽는 중입니다 (${ST.media.indexOf(m) + 1}번). 처음에는 글자 인식 자료를 받느라 조금 걸립니다.`;
+    try { m.lines = await readMediaText(m); } catch (_) { m.failed = true; }
+    if (ST.step < 4) ST.plans = null;
+  }
+  const n = ST.media.filter(x => x.lines && x.lines.length).length;
+  $('#mediaHint').textContent = n ? `사진 ${n}장에서 글자를 읽었습니다. 장면 글과 같은 낱말이 있는 곳을 가까이 보여 줍니다.` : '사진을 넣었습니다.';
+  reading = false;
+}
+/* 사진을 넣었을 때 구성안 손보기
+   - 휴대폰 화면 캡처가 있으면 첫 장면과 누리집 주소 장면을 '손에 든 휴대폰'으로
+   - 사진을 가까이 보여 주는 장면은 장면 글과 같은 낱말이 있는 곳으로 */
+const bgOf = () => /소방|화재|119|출동|구조|구급|안전/.test(val('text') + ' ' + Object.values(ST.fields).join(' ')) ? 'fire' : 'city';
+const sceneText = sc => sc.kind === 'list' ? '' : sc.lines.map(l => l.t).join(' ');
+function adaptToMedia(list){
+  const tall = ST.media.map((m, i) => isTallShot(m) ? i : -1).filter(i => i >= 0), used = [];
+  list.forEach(sc => {
+    const urlish = sc.lines && sc.lines.some(l => /https?:|\.(io|com|kr|net|org|me)(\/|$|\s)/.test(l.t));
+    if (tall.length && sc.role === 'hook') { sc.visual = { g: 'handheld', media: tall[0], bg: bgOf() }; return; }
+    if (tall.length && urlish) { sc.visual = { g: 'handheld', media: tall[tall.length - 1], bg: bgOf() }; return; }
+    if (sc.visual && sc.visual.detail != null) {
+      const a = aimAt(sceneText(sc), ST.media, used);
+      if (a) { Object.assign(sc.visual, { media: a.k, fx: a.fx, fy: a.fy }); used.push(a); }
+    }
+  });
+  return list;
+}
 
 /* ---- 2단계: 항목 확인 ---- */
 function buildFieldForm(){
@@ -70,7 +105,7 @@ $$('input[name=mood]').forEach(r => r.addEventListener('change', () => { ST.plan
 function makePlans(){
   const raw = buildPlans(ST.type, ST.fields, ST.feats, ST.media.length, mood(), ST.ph);
   ST.plans = {};
-  for (const k of ['A', 'B', 'C']) ST.plans[k] = fitDurations(raw[k], len(), mood(), k, false);
+  for (const k of ['A', 'B', 'C']) ST.plans[k] = fitDurations(adaptToMedia(raw[k]), len(), mood(), k, false);
 }
 $('#pals').innerHTML = PAL_GROUPS.map(([g]) => `<p class="pg">${g}</p><div class="pgl">` + PALETTES.filter(p => p.group === g).map(p => `<button type="button" data-pal="${p.id}"><i><em style="background:${p.bg}"></em><em style="background:${p.fg}"></em><em style="background:${p.ac}"></em></i>${p.name}</button>`).join('') + '</div>').join('') +
   `<p class="pg">직접 고르기</p><div class="custom"><button type="button" data-pal="custom">직접 만든 색 쓰기</button><label>배경<input type="color" id="cBg" value="#151515"></label><label>글자<input type="color" id="cFg" value="#FFFFFF"></label><label>강조<input type="color" id="cAc" value="#E8B04B"></label></div><p class="warn-line hidden" id="cWarn"></p>`;
@@ -153,8 +188,8 @@ $('#seek').addEventListener('input', () => { pause(); player.t = +$('#seek').val
 
 function visOptions(s){
   const auto = s.autoVisual ? '<option value="auto">자동 그림</option>' : '';
-  const media = ST.media.map((m, i) => `<option value="m${i}">${m.type === 'video' ? '영상' : '사진'} ${i + 1}</option>`).join('');
-  const cur = !s.visual ? 'none' : s.visual.media != null ? 'm' + s.visual.media : 'auto';
+  const media = ST.media.map((m, i) => `<option value="m${i}">${m.type === 'video' ? '영상' : '사진'} ${i + 1}</option>` + (isTallShot(m) ? `<option value="h${i}">손에 든 휴대폰 ${i + 1}</option>` : '')).join('');
+  const cur = !s.visual ? 'none' : s.visual.g === 'handheld' ? 'h' + s.visual.media : s.visual.media != null ? 'm' + s.visual.media : 'auto';
   return `<select data-k="vis" aria-label="그림">${auto}${media}<option value="none">그림 없음</option></select>`.replace(`value="${cur}"`, `value="${cur}" selected`);
 }
 function sumInfo(){
@@ -171,7 +206,7 @@ function renderScenes(){
     const inputs = s.kind === 'list'
       ? s.rows.map((r, j) => `<input type="text" data-row="${j}" value="${esc(r[0] + ' | ' + r[1])}" aria-label="정보 ${j + 1}">`).join('') + '<p class="hint" style="margin:0">"이름 | 내용" 형식</p>'
       : s.lines.map((l, j) => `<input type="text" data-line="${j}" value="${esc(l.t)}" aria-label="장면 ${i + 1} 글 ${j + 1}">`).join('');
-    return `<div class="sc" data-i="${i}"><div class="hd"><b>장면 ${i + 1}</b><span class="dur"><button type="button" data-a="dm" aria-label="짧게">−</button>${s.d.toFixed(1)}초<button type="button" data-a="dp" aria-label="길게">+</button></span><span class="sp"></span>${s.kind === 'list' ? '' : visOptions(s)}<button type="button" data-a="up" aria-label="위로">↑</button><button type="button" data-a="dn" aria-label="아래로">↓</button><button type="button" data-a="del" aria-label="삭제">×</button></div>${inputs}</div>`;
+    return `<div class="sc" data-i="${i}"><div class="hd"><b>장면 ${i + 1}</b><span class="dur"><button type="button" data-a="dm" aria-label="짧게">−</button>${s.d.toFixed(1)}초<button type="button" data-a="dp" aria-label="길게">+</button></span><span class="sp"></span>${s.kind === 'list' ? '' : visOptions(s)}${s.visual && s.visual.media != null && ST.media[s.visual.media] && ST.media[s.visual.media].type === 'image' ? '<button type="button" class="aim" data-a="aim">위치</button>' : ''}<button type="button" data-a="up" aria-label="위로">↑</button><button type="button" data-a="dn" aria-label="아래로">↓</button><button type="button" data-a="del" aria-label="삭제">×</button></div>${inputs}</div>`;
   }).join('');
   player.lastI = -1; drawAt(Math.min(player.t, totalOf(ST.scenes) - 0.01)); sumInfo();
   save();
@@ -185,12 +220,13 @@ $('#sceneList').addEventListener('input', e => {
 $('#sceneList').addEventListener('change', e => {
   if (e.target.dataset.k !== 'vis') return;
   const s = ST.scenes[+e.target.closest('.sc').dataset.i], v = e.target.value;
-  s.visual = v === 'none' ? null : v === 'auto' ? s.autoVisual : { media: +v.slice(1) };
-  if (!player.playing) drawAt(player.t); save();
+  s.visual = v === 'none' ? null : v === 'auto' ? s.autoVisual : v[0] === 'h' ? { g: 'handheld', media: +v.slice(1), bg: bgOf() } : { media: +v.slice(1) };
+  renderScenes();
 });
 $('#sceneList').addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) { const box = e.target.closest('.sc'); if (box && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { pause(); let acc = 0; for (let k = 0; k < +box.dataset.i; k++) acc += ST.scenes[k].d; player.t = acc + Math.min(1.6, ST.scenes[+box.dataset.i].d - 0.1); drawAt(player.t); } return; }
   const i = +b.closest('.sc').dataset.i, S0 = ST.scenes, a = b.dataset.a;
+  if (a === 'aim') { openPick(i); return; }
   if (a === 'dm') S0[i].d = Math.max(1.5, S0[i].d - 0.5);
   if (a === 'dp') S0[i].d = Math.min(15, S0[i].d + 0.5);
   if (a === 'up' && i > 0) [S0[i - 1], S0[i]] = [S0[i], S0[i - 1]];
@@ -404,3 +440,22 @@ function save(){
 $$('input[name=ratio], input[name=len]').forEach(r => r.addEventListener('change', () => { ST.plans = null; save(); }));
 if (document.fonts) document.fonts.load(`700 40px "Noto Sans KR"`).then(() => document.fonts.load(`400 40px "Noto Sans KR"`)).catch(() => {});
 go(1);
+
+/* ---- 가까이 볼 위치 고르기 ---- */
+let pickI = -1;
+function openPick(i){
+  const v = ST.scenes[i].visual, m = ST.media[v.media]; pickI = i;
+  $('#pickImg').src = m.url; $('#pickHand').classList.toggle('hidden', !isTallShot(m));
+  const dot = $('#pickDot'); dot.style.display = v.fx != null ? '' : 'none'; if (v.fx != null) { dot.style.left = v.fx * 100 + '%'; dot.style.top = v.fy * 100 + '%'; }
+  $('#pick').classList.remove('hidden'); pause();
+}
+$('#pickImg').addEventListener('click', e => {
+  const r = e.target.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height, sc = ST.scenes[pickI];
+  sc.visual = { media: sc.visual.media, detail: sc.visual.detail || 0, fx, fy };
+  const dot = $('#pickDot'); dot.style.display = ''; dot.style.left = fx * 100 + '%'; dot.style.top = fy * 100 + '%';
+  let acc = 0; for (let k = 0; k < pickI; k++) acc += ST.scenes[k].d; player.t = acc + Math.min(1.6, sc.d - 0.1); drawAt(player.t); save();
+});
+$('#pickAll').addEventListener('click', () => { const sc = ST.scenes[pickI]; sc.visual = { media: sc.visual.media }; $('#pick').classList.add('hidden'); renderScenes(); });
+$('#pickHand').addEventListener('click', () => { const sc = ST.scenes[pickI]; sc.visual = { g: 'handheld', media: sc.visual.media, bg: bgOf() }; $('#pick').classList.add('hidden'); renderScenes(); });
+$('#pickClose').addEventListener('click', () => { $('#pick').classList.add('hidden'); renderScenes(); });
+$('#pick').addEventListener('click', e => { if (e.target.id === 'pick') { $('#pick').classList.add('hidden'); renderScenes(); } });

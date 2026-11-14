@@ -151,13 +151,14 @@ class Stage {
     x.clip();
     x.fillStyle = P.stage; x.fillRect(px, py, pw, ph);
     const z = 1 + 0.06 * Math.min(1, local / Math.max(1, d)); // 장면 내내 아주 느리게 다가감
-    if (v.media != null && this.media[v.media]) {
+    if (v.g === 'handheld') Graphics.handheld(x, px, py, pw, ph, v, P, local, this.media[v.media]);
+    else if (v.media != null && this.media[v.media]) {
       const m = this.media[v.media], el = m.el;
       const iw = m.type === 'video' ? el.videoWidth : el.naturalWidth, ih = m.type === 'video' ? el.videoHeight : el.naturalHeight;
       if (iw && ih && v.detail != null) {
         // 같은 사진의 다른 부분을 가까이: 긴 화면 캡처는 폭의 1.5배, 보통 사진은 1.6배로 키우고 초점을 바꿔 가며 천천히 이동
         const tall = ih / iw > (ph / pw) * 1.5, sc0 = tall ? pw * 1.5 / iw : Math.max(pw / iw, ph / ih) * 1.6, w = iw * sc0, h = ih * sc0;
-        const F = [[0.5, 0.5], [0.3, 0.32], [0.7, 0.72], [0.45, 0.25]][v.detail % 4], mv = 0.04 * Math.min(1, local / Math.max(1, d));
+        const F = v.fx != null ? [v.fx, v.fy] : [[0.5, 0.5], [0.3, 0.32], [0.7, 0.72], [0.45, 0.25]][v.detail % 4], mv = 0.04 * Math.min(1, local / Math.max(1, d));
         const cx = Math.min(w - pw, Math.max(0, w * (F[0] + mv) - pw / 2)), cy = Math.min(h - ph, Math.max(0, h * (F[1] + mv) - ph / 2));
         x.drawImage(el, px - cx, py - cy, w, h);
       } else if (iw && ih && ih / iw > (ph / pw) * 1.5) {
