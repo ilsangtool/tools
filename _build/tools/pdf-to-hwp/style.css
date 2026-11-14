@@ -14,3 +14,11 @@
   .pv td{border:1px solid #444;padding:3px 5px;vertical-align:middle}
   .pv td p{margin:0}
   .pv hr.pg{border:0;border-top:2px dashed #c9ccd1;margin:16px 0}
+  .flist{list-style:none;margin:0 0 8px;padding:0}
+  .flist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:0 0 6px;background:#fff;font-size:14px}
+  .flist .nm{flex:1 1 calc(100% - 40px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flist .nm small{display:block;color:var(--sub);font-size:12px}
+  .flist input{width:110px;padding:6px 8px}
+  .flist button{padding:6px 10px;min-width:auto;font-size:13px}
+  #modes>.tabs button{font-size:15px;padding:10px 14px}
+  #mList input{flex:1 1 90px}

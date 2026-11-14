@@ -66,3 +66,23 @@ function onRulesLoaded(fn){
     .then(j => { if (j && JSON.stringify(j) !== JSON.stringify(RULES)) { RULES = j; show(); fn(); } else show(); })
     .catch(() => {});
 }
+
+/* 함께 쓰면 좋은 도구: 실제 이용 기기 수(오비트 집계) 순으로 다시 정렬. 하루 한 번만 받아 이 기기에 보관 */
+(function(){
+  const box = document.getElementById('related'); if (!box) return;
+  const KEY = 'ilsang_pop_v1', DB = 'https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_orbit/apps.json';
+  const apply = counts => {
+    const ol = box.querySelector('ol'), li = Array.from(ol.children);
+    const sc = el => { const c = counts['tools~' + el.dataset.slug] || {}; return (c.u || 0) * 1000 + (c.v || 0) / 1000; };
+    li.map((el, i) => [el, sc(el), i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).forEach(([el]) => ol.appendChild(el));
+  };
+  let c = null; try { c = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e) {}
+  if (c && c.d) apply(c.d);
+  if (c && Date.now() - c.t < 12 * 3600e3) return;
+  setTimeout(() => fetch(DB).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) return; const keep = {};
+    Object.keys(d).forEach(k => { if (k.indexOf('tools~') === 0) keep[k] = { u: d[k].u || 0, v: d[k].v || 0 }; });
+    try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: keep })); } catch(e) {}
+    apply(keep);
+  }).catch(() => {}), 2500);
+})();

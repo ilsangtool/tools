@@ -16,7 +16,7 @@ TOOLS = [
     ('date-calc', '생활 계산', 'D-day·전역일·만나이 계산기'),
     ('image-resize', '사진 도구', '사진 용량 줄이기·HEIC 변환'),
     ('id-photo', '사진 도구', '증명사진 규격 자르기'),
-    ('pdf-to-hwp', '문서 도구', 'PDF → 한글·워드 변환'),
+    ('pdf-to-hwp', '문서 도구', 'PDF 한글 변환·나누기·합치기'),
     ('short-video', '영상 도구', '숏폼 영상 만들기'),
 ]
 
@@ -62,10 +62,16 @@ def tpl(s):
 
 ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
 
+# 이용자 수를 받기 전(첫 방문·통신 실패)에 쓰는 순서: 검색 수요가 많은 도구부터
+POP_FALLBACK = ['pdf-to-hwp', 'image-resize', 'weekly-pay', 'date-calc', 'id-photo', 'dutch-pay',
+                'short-video', 'refund-policy', 'review-policy', 'noshow-policy', 'closed-notice']
+
 def related(slug):
-    items = ''.join(
-        f'<li><a href="../{s}/"><span>{c}</span>{n}</a></li>' for s, c, n in TOOLS if s != slug)
-    return f'<nav class="related" aria-label="다른 도구"><h2>함께 쓰면 좋은 무료 도구</h2><ul>{items}</ul></nav>'
+    rank = {s: i for i, s in enumerate(POP_FALLBACK)}
+    tools = sorted([t for t in TOOLS if t[0] != slug], key=lambda t: rank.get(t[0], 99))
+    items = ''.join(f'<li data-slug="{s}"><a href="../{s}/"><i><span>{c}</span>{n}</i></a></li>' for s, c, n in tools)
+    return (f'<details class="related" id="related"><summary>함께 쓰면 좋은 무료 도구 <small>{len(tools)}개 · 많이 쓰는 순</small></summary>'
+            f'<ol>{items}</ol></details>')
 
 def build(slug):
     d = os.path.join(ROOT, 'tools', slug)

@@ -177,3 +177,148 @@ $('#saveHwpx').addEventListener('click', () => result && download(makeHwpx(resul
 $('#saveDocx').addEventListener('click', () => result && download(makeDocx(result.blocks, fileName), fileName + '.docx'));
 $('#saveTxt').addEventListener('click', () => result && download(new Blob(['﻿' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt'));
 $('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
+
+/* =========================================================
+   PDF 나누기·합치기 (pdf-lib, 이 기기 안에서)
+   ========================================================= */
+bindTabs($('#modes'));
+let pdfLibP = null;
+function loadPdfLib(){
+  return pdfLibP || (pdfLibP = new Promise((ok, no) => {
+    if (window.PDFLib) return ok(window.PDFLib);
+    const s = document.createElement('script'); s.src = VENDOR + 'pdf-lib/pdf-lib.min.js';
+    s.onload = () => ok(window.PDFLib); s.onerror = () => { pdfLibP = null; no(new Error('PDF 도구를 불러오지 못했습니다')); };
+    document.head.appendChild(s);
+  }));
+}
+// 적은 순서 그대로 (같은 쪽을 두 번 적어도 그대로)
+function parseOrder(s, n){
+  const out = [];
+  String(s || '').split(/[,\s]+/).filter(Boolean).forEach(p => {
+    const m = p.match(/^(\d+)(?:[-~](\d+))?$/); if (!m) return;
+    const a = +m[1], b = m[2] ? +m[2] : a, step = a <= b ? 1 : -1;
+    for (let i = a; step > 0 ? i <= b : i >= b; i += step) if (i >= 1 && i <= n) out.push(i);
+  });
+  return out;
+}
+const isPdf = f => /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name);
+const mb = b => b < 102400 ? Math.max(1, Math.round(b / 1024)) + 'KB' : (b / 1048576).toFixed(1) + 'MB';
+const pagesLabel = list => { // [1,2,3,5] → "1-3, 5"
+  const out = []; let a = list[0], prev = list[0];
+  for (let i = 1; i <= list.length; i++) { const c = list[i]; if (c === prev + 1) { prev = c; continue; } out.push(a === prev ? `${a}` : `${a}-${prev}`); a = prev = c; }
+  return out.join(', ');
+};
+async function loadForEdit(f){
+  const { PDFDocument } = await loadPdfLib();
+  const bytes = new Uint8Array(await f.arrayBuffer());
+  let doc;
+  try { doc = await PDFDocument.load(bytes, { ignoreEncryption: true }); }
+  catch (e) { throw new Error('손상됐거나 PDF가 아닌 파일입니다'); }
+  if (doc.isEncrypted) throw new Error('보안(암호)이 걸린 PDF는 나누거나 합칠 수 없습니다. 만든 프로그램에서 보안을 풀고 다시 저장해 주세요');
+  return doc;
+}
+async function buildPdf(parts){ // parts: [[doc, [쪽번호…]]]
+  const { PDFDocument } = await loadPdfLib(), out = await PDFDocument.create();
+  for (const [doc, list] of parts) (await out.copyPages(doc, list.map(n => n - 1))).forEach(p => out.addPage(p));
+  return out.save();
+}
+
+/* ---- 나누기 ---- */
+let sDoc = null, sName = '', sResults = [];
+async function sOpen(f){
+  if (!f) return; if (!isPdf(f)) { toast('PDF 파일만 넣을 수 있습니다'); return; }
+  $('#sCard').classList.remove('hidden'); $('#sOut').classList.add('hidden'); $('#sInfo').textContent = '불러오는 중…'; $('#sGo').disabled = true;
+  try {
+    sDoc = await loadForEdit(f); sName = f.name.replace(/\.pdf$/i, '');
+    $('#sInfo').innerHTML = `<b>${esc(f.name)}</b> · ${sDoc.getPageCount()}쪽 · ${mb(f.size)}`;
+    $('#sGo').disabled = false; sPlan();
+  } catch (e) { sDoc = null; $('#sInfo').textContent = e.message; }
+}
+function sGroups(){
+  if (!sDoc) return [];
+  const n = sDoc.getPageCount(), way = radio('sway');
+  if (way === 'each') return Array.from({ length: n }, (_, i) => [i + 1]);
+  if (way === 'every') { const k = Math.max(1, Math.floor(+val('sEvery') || 1)), g = []; for (let i = 1; i <= n; i += k) g.push(Array.from({ length: Math.min(k, n - i + 1) }, (_, j) => i + j)); return g; }
+  if (way === 'ranges') return val('sRanges').split(',').map(p => parseOrder(p, n)).filter(g => g.length);
+  const g = parseOrder(val('sPick'), n); return g.length ? [g] : [];
+}
+function sPlan(){
+  const way = radio('sway');
+  $('#sRangesBox').classList.toggle('hidden', way !== 'ranges'); $('#sEveryBox').classList.toggle('hidden', way !== 'every'); $('#sPickBox').classList.toggle('hidden', way !== 'pick');
+  if (!sDoc) return;
+  const g = sGroups();
+  $('#sPlan').textContent = !g.length ? '쪽 번호를 적어 주세요.' : `PDF ${g.length}개가 만들어집니다: ` + g.slice(0, 6).map(x => pagesLabel(x) + '쪽').join(' / ') + (g.length > 6 ? ` 외 ${g.length - 6}개` : '');
+  $('#sGo').disabled = !g.length;
+}
+$('#sWay').addEventListener('change', sPlan); ['sRanges', 'sEvery', 'sPick'].forEach(id => $('#' + id).addEventListener('input', sPlan));
+$('#sGo').addEventListener('click', async () => {
+  const g = sGroups(); if (!g.length) return;
+  const btn = $('#sGo'); btn.disabled = true; sResults = [];
+  try {
+    for (let i = 0; i < g.length; i++) {
+      btn.textContent = `나누는 중 ${i + 1}/${g.length}`;
+      const bytes = await buildPdf([[sDoc, g[i]]]);
+      sResults.push({ name: `${sName}_${pagesLabel(g[i]).replace(/, /g, '_')}쪽.pdf`, bytes, pages: g[i].length });
+      await new Promise(r => setTimeout(r));
+    }
+    $('#sOutInfo').textContent = `PDF ${sResults.length}개를 만들었습니다 (합계 ${mb(sResults.reduce((a, r) => a + r.bytes.length, 0))}).`;
+    $('#sList').innerHTML = sResults.map((r, i) => `<li><span class="nm">${esc(r.name)}<small>${r.pages}쪽 · ${mb(r.bytes.length)}</small></span><button type="button" class="ghost" data-i="${i}">받기</button></li>`).join('');
+    $('#sZip').classList.toggle('hidden', sResults.length < 2);
+    $('#sOut').classList.remove('hidden'); $('#sOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) { console.error(e); toast('나누는 중 문제가 생겼습니다: ' + (e.message || e)); }
+  btn.textContent = '나누기'; btn.disabled = false;
+});
+$('#sList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const r = sResults[+b.dataset.i]; download(new Blob([r.bytes], { type: 'application/pdf' }), r.name); });
+$('#sZip').addEventListener('click', () => sResults.length && download(zipStore(sResults.map(r => [r.name, r.bytes]), 'application/zip'), sName + '_나눔.zip'));
+$('#sFile').addEventListener('change', e => { sOpen(e.target.files[0]); e.target.value = ''; });
+
+/* ---- 합치기 ---- */
+const mFiles = [];
+async function mAdd(files){
+  const list = [...files].filter(isPdf); if (!list.length) { toast('PDF 파일만 넣을 수 있습니다'); return; }
+  $('#mCard').classList.remove('hidden');
+  for (const f of list) {
+    try { const doc = await loadForEdit(f); mFiles.push({ name: f.name, size: f.size, doc, n: doc.getPageCount(), range: '' }); }
+    catch (e) { toast(`${f.name}: ${e.message}`); }
+  }
+  mRender();
+}
+function mRender(){
+  $('#mList').innerHTML = mFiles.map((m, i) => `<li><b>${i + 1}</b><span class="nm">${esc(m.name)}<small>${m.n}쪽 · ${mb(m.size)}</small></span>
+    <input type="text" data-i="${i}" value="${esc(m.range)}" placeholder="전체" aria-label="${i + 1}번 파일에서 넣을 쪽" inputmode="numeric">
+    <button type="button" class="ghost" data-a="up" data-i="${i}" aria-label="위로" ${i ? '' : 'disabled'}>위</button><button type="button" class="ghost" data-a="dn" data-i="${i}" aria-label="아래로" ${i < mFiles.length - 1 ? '' : 'disabled'}>아래</button><button type="button" class="ghost" data-a="del" data-i="${i}">빼기</button></li>`).join('');
+  mInfo();
+  $('#mCard').classList.toggle('hidden', !mFiles.length);
+}
+function mPages(m){ return m.range.trim() ? parseOrder(m.range, m.n) : Array.from({ length: m.n }, (_, i) => i + 1); }
+function mInfo(){
+  const tot = mFiles.reduce((a, m) => a + mPages(m).length, 0), bad = mFiles.filter(m => m.range.trim() && !mPages(m).length).length;
+  $('#mInfo').textContent = mFiles.length < 2 ? 'PDF를 2개 이상 넣어 주세요. (1개만 넣으면 고른 쪽만 뽑아 새 파일로 만듭니다)' : `PDF ${mFiles.length}개, 모두 ${tot}쪽을 합칩니다.` + (bad ? ` 쪽 번호가 맞지 않는 파일 ${bad}개는 빠집니다.` : '');
+  $('#mGo').disabled = !tot;
+}
+$('#mList').addEventListener('input', e => { if (e.target.dataset.i != null) { mFiles[+e.target.dataset.i].range = e.target.value; mInfo(); } });
+$('#mList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; const i = +b.dataset.i;
+  if (b.dataset.a === 'del') mFiles.splice(i, 1);
+  else { const j = b.dataset.a === 'up' ? i - 1 : i + 1; [mFiles[i], mFiles[j]] = [mFiles[j], mFiles[i]]; }
+  mRender();
+});
+$('#mGo').addEventListener('click', async () => {
+  const parts = mFiles.map(m => [m.doc, mPages(m)]).filter(p => p[1].length); if (!parts.length) return;
+  const btn = $('#mGo'); btn.disabled = true; btn.textContent = '합치는 중…';
+  try {
+    const bytes = await buildPdf(parts), name = (val('mName').trim() || '합친문서').replace(/[\\/:*?"<>|]/g, '_');
+    download(new Blob([bytes], { type: 'application/pdf' }), name + '.pdf');
+    toast(`${parts.reduce((a, p) => a + p[1].length, 0)}쪽 PDF를 저장했습니다 (${mb(bytes.length)})`);
+  } catch (e) { console.error(e); toast('합치는 중 문제가 생겼습니다: ' + (e.message || e)); }
+  btn.textContent = '합치기'; btn.disabled = false;
+});
+$('#mClear').addEventListener('click', () => { mFiles.length = 0; mRender(); });
+$('#mFile').addEventListener('change', e => { mAdd(e.target.files); e.target.value = ''; });
+[['sDrop', 'sFile', f => sOpen(f[0])], ['mDrop', 'mFile', f => mAdd(f)]].forEach(([d, inp, fn]) => {
+  const el = $('#' + d);
+  ['dragenter', 'dragover'].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.remove('over'); }));
+  el.addEventListener('drop', e => fn(e.dataTransfer.files));
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#' + inp).click(); } });
+});

@@ -1,6 +1,14 @@
   <div class="notice ok">
-    PDF는 <b>이 기기 안에서만</b> 변환됩니다. 서버로 올라가지 않아 공문·계약서·개인정보가 담긴 문서도 안심하고 쓸 수 있습니다.
+    PDF는 <b>이 기기 안에서만</b> 변환·분할·합치기가 됩니다. 서버로 올라가지 않아 공문·계약서·개인정보가 담긴 문서도 안심하고 쓸 수 있습니다.
   </div>
+
+<div id="modes">
+  <div class="tabs" id="modeTabs" role="tablist">
+    <button type="button" class="on" data-tab="convert">한글·워드로 변환</button>
+    <button type="button" data-tab="split">PDF 나누기</button>
+    <button type="button" data-tab="merge">PDF 합치기</button>
+  </div>
+<div data-pane="convert">
 
   <section class="card">
     <label class="drop" id="drop" tabindex="0">
@@ -64,4 +72,69 @@
       <tr><td>스캔·사진 PDF</td><td>글자 인식으로 변환. 선명할수록 정확하며, 숫자·이름은 대조 필요</td></tr>
       <tr><td>2단 편집, 도형·그림이 많은 문서</td><td>글자는 살지만 배치가 달라질 수 있음. 그림은 넣지 않습니다</td></tr>
     </table>
+    <h2 style="margin-top:16px">한글로 변환이 안 되거나 결과가 나쁜 PDF</h2>
+    <table class="t" style="margin-top:8px">
+      <tr><th>PDF 종류</th><th>왜, 어떻게</th></tr>
+      <tr><td>여는 비밀번호를 모르는 PDF</td><td>열 수 없습니다. 비밀번호를 알면 입력해서 변환됩니다</td></tr>
+      <tr><td>손상된 파일, PDF가 아닌 파일(이름만 .pdf)</td><td>열리지 않습니다. 원본을 다시 받거나 다시 PDF로 저장하세요</td></tr>
+      <tr><td>글자를 그림(윤곽선)으로 바꿔 만든 PDF<br><small>디자인 프로그램 포스터·전단·인쇄용 PDF</small></td><td>글자 정보가 없어 빈 쪽이 됩니다. '스캔 글자 인식'을 <b>항상</b>으로 바꾸면 인식은 되지만 정확도가 떨어집니다</td></tr>
+      <tr><td>복사하면 이상한 글자가 나오는 PDF<br><small>글꼴 정보가 깨졌거나 일부러 막은 문서</small></td><td>글자가 깨져 나옵니다. '스캔 글자 인식'을 <b>항상</b>으로 바꿔 다시 변환하세요</td></tr>
+      <tr><td>손글씨, 흐리거나 기울어진 스캔, 도장·서명 위 글자</td><td>글자 인식 정확도가 낮습니다. 300dpi 이상으로 다시 스캔하면 나아집니다</td></tr>
+      <tr><td>세로쓰기, 한자·옛한글이 많은 문서</td><td>세로 글은 순서가 섞이고, 한자 인식은 지원하지 않습니다(글자 PDF의 한자는 그대로 옮겨짐)</td></tr>
+      <tr><td>그림·사진·도표 속 글자</td><td>그림은 문서에 넣지 않고, 그림 속 글자도 옮기지 않습니다</td></tr>
+      <tr><td>수백 쪽짜리 큰 파일</td><td>휴대폰에서는 메모리가 모자라 멈출 수 있습니다. '변환할 쪽'을 나눠 변환하거나 PC에서 하세요</td></tr>
+    </table>
   </section>
+</div>
+<div data-pane="split" class="hidden">
+  <section class="card">
+    <label class="drop" id="sDrop" tabindex="0">
+      <input type="file" id="sFile" accept="application/pdf,.pdf">
+      <b>나눌 PDF를 끌어 놓거나 눌러서 고르세요</b>
+      <span>PDF 1개</span>
+    </label>
+  </section>
+  <section class="card hidden" id="sCard">
+    <h2><span class="num">1</span>파일</h2>
+    <p class="hint" id="sInfo" style="margin:4px 0 0"></p>
+    <h2 style="margin-top:16px"><span class="num">2</span>나누는 방법</h2>
+    <div class="radio-group" id="sWay">
+      <label><input type="radio" name="sway" value="each" checked><span>한 쪽씩 모두</span></label>
+      <label><input type="radio" name="sway" value="ranges"><span>범위대로 여러 파일</span></label>
+      <label><input type="radio" name="sway" value="every"><span>몇 쪽씩</span></label>
+      <label><input type="radio" name="sway" value="pick"><span>고른 쪽만 한 파일</span></label>
+    </div>
+    <div id="sRangesBox" class="hidden"><label class="f" for="sRanges">범위 <span class="opt">쉼표마다 파일 하나</span></label><input type="text" id="sRanges" placeholder="예: 1-3, 4-10, 11-12"></div>
+    <div id="sEveryBox" class="hidden"><label class="f" for="sEvery">몇 쪽씩</label><input type="number" id="sEvery" min="1" value="5" inputmode="numeric"></div>
+    <div id="sPickBox" class="hidden"><label class="f" for="sPick">뽑을 쪽 <span class="opt">적은 순서대로 담김</span></label><input type="text" id="sPick" placeholder="예: 1, 3, 5-7"></div>
+    <p class="hint" id="sPlan" style="margin:8px 0 0"></p>
+    <div class="actions"><button type="button" id="sGo" disabled>나누기</button></div>
+    <p class="hint">보안(암호)이 걸린 PDF는 나눌 수 없습니다. 쪽을 나눠도 글자·그림 화질은 그대로입니다.</p>
+  </section>
+  <section class="card hidden" id="sOut">
+    <h2><span class="num">3</span>결과</h2>
+    <p class="hint" id="sOutInfo" style="margin:4px 0 8px"></p>
+    <div class="actions"><button type="button" id="sZip">모두 받기 (ZIP)</button></div>
+    <ul class="flist" id="sList"></ul>
+  </section>
+</div>
+<div data-pane="merge" class="hidden">
+  <section class="card">
+    <label class="drop" id="mDrop" tabindex="0">
+      <input type="file" id="mFile" accept="application/pdf,.pdf" multiple>
+      <b>합칠 PDF를 끌어 놓거나 눌러서 고르세요</b>
+      <span>여러 개를 한 번에 골라도 되고, 나눠서 더 넣어도 됩니다</span>
+    </label>
+  </section>
+  <section class="card hidden" id="mCard">
+    <h2><span class="num">1</span>순서 정하기</h2>
+    <p class="hint" style="margin:4px 0 8px">위에서부터 차례로 합칩니다. 쪽 칸을 비우면 그 파일 전체가 들어갑니다.</p>
+    <ul class="flist" id="mList"></ul>
+    <label class="f" for="mName">저장할 이름</label><input type="text" id="mName" value="합친문서">
+    <p class="hint" id="mInfo" style="margin:8px 0 0"></p>
+    <div class="actions"><button type="button" id="mGo">합치기</button><button type="button" class="ghost" id="mClear">모두 빼기</button></div>
+    <p class="hint">보안(암호)이 걸린 PDF는 합칠 수 없습니다. 크기가 다른 쪽(A4·B5·가로)도 원래 크기 그대로 들어갑니다.</p>
+  </section>
+</div>
+</div>
+
