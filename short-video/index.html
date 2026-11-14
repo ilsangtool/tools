@@ -176,6 +176,8 @@
   .hd .aim{min-width:auto;padding:0 8px;font-size:13px}
   .guide-chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);margin-top:8px;cursor:pointer}
   .guide-chk small{font-size:12px}
+  .vibe{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+  .vibe .hint{flex-basis:100%;margin:0}
   .review{border:1px solid #cfd3d8;border-radius:4px;padding:8px 12px;margin:0 0 8px;font-size:14px}
   .review b{display:block;margin-bottom:4px}
   .review ul{margin:0;padding:0 0 0 18px}
@@ -276,6 +278,12 @@
           <span id="tm">0:00 / 0:30</span>
         </div>
         <label class="guide-chk"><input type="checkbox" id="safeGuide" checked> 쇼츠·릴스에서 가려지는 곳 보기 <small>(저장 영상에는 안 들어감)</small></label>
+        <div class="vibe">
+          <button type="button" class="ghost sm" id="reroll">🎲 다른 느낌으로</button>
+          <button type="button" class="ghost sm hidden" id="unroll">↩ 이전 느낌</button>
+          <label class="guide-chk" style="margin:0"><input type="checkbox" id="lockStyle"> 이 느낌 고정</label>
+          <p class="hint" id="vibeInfo"></p>
+        </div>
       </section>
       <div>
         <section class="card">
@@ -455,11 +463,37 @@ function makePalette(id, name, bg, fg, ac){
 const PALETTES = [];
 PAL_GROUPS.forEach(([g, list]) => list.forEach(([n, bg, fg, ac]) => PALETTES.push(Object.assign(makePalette('p' + PALETTES.length, n, bg, fg, ac), { group: g }))));
 
+/* ===== 매번 다른 느낌: 씨앗(seed) 하나로 색·음악·장면 전환·글 등장·배치·사진 순서를 정함
+   같은 씨앗이면 미리보기와 저장 영상이 똑같고, 새로 만들 때마다 씨앗이 바뀜 ===== */
+function rngOf(seed, salt){
+  let h = ((seed >>> 0) ^ Math.imul((salt | 0) + 1, 0x9E3779B1)) >>> 0;
+  return () => { h = Math.imul(h ^ h >>> 15, h | 1); h ^= h + Math.imul(h ^ h >>> 7, h | 61); return ((h ^ h >>> 14) >>> 0) / 4294967296; };
+}
+const pickR = (r, arr) => arr[Math.floor(r() * arr.length) % arr.length];
+const newSeed = () => (Math.random() * 4294967296) >>> 0;
+const STYLE_NAMES = { layout: { top: '그림 위', alt: '번갈아', bottom: '글 위' }, trans: { wipe: '밀어 열기', fade: '서서히', zoom: '다가오기', slide: '올라오기', iris: '동그랗게' }, text: { rise: '아래에서', fade: '서서히', pop: '톡 튀어나오기', slide: '옆에서' } };
+function styleOf(seed){
+  const r = rngOf(seed, 1);
+  return {
+    layout: pickR(r, ['top', 'top', 'alt', 'bottom']),
+    trans: pickR(r, ['wipe', 'fade', 'zoom', 'slide', 'iris']),   // 장면 전환 기본값 (장면마다 가끔 섞음)
+    text: pickR(r, ['rise', 'rise', 'fade', 'pop', 'slide']),
+    bar: pickR(r, ['bar', 'bar', 'dot', 'none']),
+    center: r() < 0.3,
+    kb: r() < 0.5 ? 1 : -1                                       // 사진이 천천히 다가오기(1) / 물러나기(-1)
+  };
+}
+// 장면별: 기본 전환을 쓰되 셋 중 하나는 다른 전환으로 (단조롭지 않게)
+function sceneStyle(seed, idx){
+  const S = styleOf(seed), r = rngOf(seed, 1000 + idx);
+  return { ...S, trans: r() < 0.33 ? pickR(r, ['wipe', 'fade', 'zoom', 'slide', 'iris']) : S.trans, pan: r() < 0.5 ? 1 : -1 };
+}
 const FONT = '"Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
 const easeOut = k => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
 
 class Stage {
   constructor(canvas){ this.cv = canvas; this.x = canvas.getContext('2d'); this.media = []; }
+  sd(){ return this.seed != null ? this.seed : (ST.seed || 0); }
   setup(ratio, scale){
     const [W, H] = RATIOS[ratio]; this.ratio = ratio;
     this.cv.width = Math.round(W * scale); this.cv.height = Math.round(H * scale);
@@ -474,7 +508,9 @@ class Stage {
   }
   /* 그림이 있는 장면: 그림은 화면 끝까지 꽉 채우고 글은 남은 칸에. 첫·끝 장면은 위아래(좌우)를 바꿔 단조롭지 않게 */
   frame(sc){
-    const W = this.W, H = this.H, r = this.ratio, flip = sc.role === 'hook' || sc.role === 'end';
+    const W = this.W, H = this.H, r = this.ratio, L = styleOf(this.sd()).layout;
+    const inv = L === 'bottom' || (L === 'alt' && (this.idx || 0) % 2 === 1);
+    const flip = (sc.role === 'hook' || sc.role === 'end') !== inv;
     if (r === '16:9') return flip ? { art: [0, 0, W * 0.5, H], text: [W * 0.56, H * 0.14, W * 0.38, H * 0.72] } : { art: [W * 0.5, 0, W * 0.5, H], text: [W * 0.06, H * 0.14, W * 0.38, H * 0.72] };
     if (r === '9:16') return flip ? { art: [0, H * 0.48, W, H * 0.52], text: [W * 0.08, H * 0.1, W * 0.84, H * 0.34], top: true }
       : { art: [0, 0, W, H * 0.54], text: [W * 0.08, H * 0.58, W * 0.84, H * 0.24] };
@@ -547,7 +583,8 @@ class Stage {
     return { res, h: res.reduce((a, r) => Math.max(a, r.top + r.rows.length * r.sz * 1.3), 0) };
   }
   // 점검용: 글이 칸에 들어가는지, 얼마나 줄였는지
-  measure(sc){
+  measure(sc, idx){
+    if (idx != null) this.idx = idx;
     if (sc.kind === 'list') { const n = sc.rows.length; return { fit: n <= 7, k: 1 }; }
     const box = this.isFull(sc) ? this.fullFrame().text : sc.visual ? this.frame(sc).text : this.geo().textOnly, r = this.layoutText(sc.lines, box, sc.kind, sc.align, !!sc.visual);
     return { fit: r.h <= box[3] + 1 && !r.res.some(x => x.rows.length > 4), k: this._k };
@@ -565,7 +602,8 @@ class Stage {
     const box = hasVis ? F.text : g.textOnly;
     if (sc.kind === 'list') { this.drawList(sc, box, local, P, g); return this.drawProg(P); }
     const { res, h } = this.layoutText(sc.lines, box, sc.kind, sc.align, hasVis);
-    const center = sc.align === 'center';
+    const SS = sceneStyle(this.sd(), this.idx || 0);
+    const center = sc.align ? sc.align === 'center' : (SS.center && sc.kind !== 'list');
     const vertical = full ? 1 : hasVis ? (F.top ? 0.6 : this.ratio === '16:9' ? 0.5 : 0.35) : 0.5;
     if (full) { x.shadowColor = 'rgba(0,0,0,0.55)'; x.shadowBlur = g.u * 2.2 * this.s; x.shadowOffsetY = g.u * 0.3 * this.s; }
     const y0 = box[1] + (box[3] - h) * vertical;
@@ -573,7 +611,9 @@ class Stage {
     // 글 위 짧은 강조선
     const bar = easeOut((local - 0.15) / 0.5), bw = g.u * 10, bh = Math.max(4, g.u * 0.7);
     const gap = Math.max(g.u * 4, (res[0] ? res[0].sz : 0) * 0.42); // 큰 글자일수록 강조선을 더 위로 (글자와 닿지 않게)
-    x.fillStyle = P.ac; x.fillRect(center ? tx - bw * bar / 2 : tx, y0 - gap, bw * bar, bh);
+    x.fillStyle = P.ac;
+    if (SS.bar === 'bar') x.fillRect(center ? tx - bw * bar / 2 : tx, y0 - gap, bw * bar, bh);
+    else if (SS.bar === 'dot') { x.beginPath(); x.arc(center ? tx : tx + g.u * 1.1, y0 - gap - g.u * 1.2, g.u * 1.1 * bar, 0, Math.PI * 2); x.fill(); }
     // 줄마다 아래에서 밀려 올라오며 나타남 (가림막 안에서)
     let n = 0;
     res.forEach(r => {
@@ -583,8 +623,12 @@ class Stage {
       r.rows.forEach((row, j) => {
         const lh = r.sz * 1.3, y = y0 + r.top + j * lh, a = easeOut((local - 0.2 - n++ * 0.09) / 0.45);
         if (a <= 0) return;
-        x.save(); x.beginPath(); x.rect(0, y - lh * 0.1, W, lh * 1.12); x.clip();
-        x.globalAlpha = Math.min(1, a * 1.4); x.fillText(row, tx, y + (1 - a) * lh * 0.9); x.restore();
+        x.save();
+        if (SS.text === 'rise') { x.beginPath(); x.rect(0, y - lh * 0.1, W, lh * 1.12); x.clip(); x.globalAlpha = Math.min(1, a * 1.4); x.fillText(row, tx, y + (1 - a) * lh * 0.9); }
+        else if (SS.text === 'fade') { x.globalAlpha = a; x.fillText(row, tx, y + (1 - a) * lh * 0.12); }
+        else if (SS.text === 'pop') { const k2 = 0.86 + 0.14 * (1 - Math.pow(1 - a, 2)) + 0.04 * Math.sin(Math.min(1, a) * Math.PI); x.globalAlpha = Math.min(1, a * 1.6); x.translate(tx, y + lh / 2); x.scale(k2, k2); x.fillText(row, 0, -lh / 2); }
+        else { x.globalAlpha = Math.min(1, a * 1.3); x.fillText(row, tx - (1 - a) * g.u * 8, y); }
+        x.restore();
       });
     });
     x.globalAlpha = 1; x.textAlign = 'left'; x.shadowColor = 'transparent'; x.shadowBlur = 0; x.shadowOffsetY = 0;
@@ -647,13 +691,19 @@ class Stage {
     x.globalAlpha = 1;
   }
   drawVisual(v, p, local, d, P){
-    const x = this.x, [px, py, pw, ph] = p, k = easeOut(local / 0.5), dir = (this.idx || 0) % 2;
+    const x = this.x, [px, py, pw, ph] = p, k = easeOut(local / 0.5), dir = (this.idx || 0) % 2, SS = sceneStyle(this.sd(), this.idx || 0), tr = SS.trans;
     x.save();
-    x.beginPath(); // 장면이 바뀔 때 그림 칸이 옆에서 밀려 열림
-    if (dir) x.rect(px + pw * (1 - k), py, pw * k, ph); else x.rect(px, py, pw * k, ph);
+    x.beginPath(); // 장면이 바뀔 때 그림 칸이 열리는 방식 (밀어 열기·서서히·다가오기·올라오기·동그랗게)
+    if (tr === 'wipe') { if (dir) x.rect(px + pw * (1 - k), py, pw * k, ph); else x.rect(px, py, pw * k, ph); }
+    else if (tr === 'iris') { x.rect(px, py, pw, ph); x.clip(); x.beginPath(); x.arc(px + pw / 2, py + ph / 2, Math.hypot(pw, ph) / 2 * k + 1, 0, Math.PI * 2); }
+    else x.rect(px, py, pw, ph);
     x.clip();
+    if (tr === 'fade') x.globalAlpha = k;
+    if (tr === 'zoom') { const zz = 1.18 - 0.18 * k; x.globalAlpha = Math.min(1, k * 1.5); x.translate(px + pw / 2, py + ph / 2); x.scale(zz, zz); x.translate(-(px + pw / 2), -(py + ph / 2)); }
+    if (tr === 'slide') { x.globalAlpha = Math.min(1, k * 1.4); x.translate(0, (1 - k) * ph * 0.18); }
     x.fillStyle = P.stage; x.fillRect(px, py, pw, ph);
-    const z = 1 + 0.06 * Math.min(1, local / Math.max(1, d)); // 장면 내내 아주 느리게 다가감
+    const pr = Math.min(1, local / Math.max(1, d)), z = SS.kb > 0 ? 1 + 0.06 * pr : 1.06 - 0.06 * pr; // 장면 내내 아주 느리게 다가가거나 물러남
+    const panX = SS.pan * pw * 0.025 * (pr - 0.5);
     if (v.g === 'handheld') Graphics.handheld(x, px, py, pw, ph, v, P, local, this.media[v.media]);
     else if (v.media != null && this.media[v.media]) {
       const m = this.media[v.media], el = m.el;
@@ -661,7 +711,7 @@ class Stage {
       if (iw && ih && v.detail != null) {
         // 같은 사진의 다른 부분을 가까이: 긴 화면 캡처는 폭의 1.5배, 보통 사진은 1.6배로 키우고 초점을 바꿔 가며 천천히 이동
         const tall = ih / iw > (ph / pw) * 1.5, sc0 = tall ? pw * 1.5 / iw : Math.max(pw / iw, ph / ih) * 1.6, w = iw * sc0, h = ih * sc0;
-        const F = v.fx != null ? [v.fx, v.fy] : [[0.5, 0.5], [0.3, 0.32], [0.7, 0.72], [0.45, 0.25]][v.detail % 4], mv = 0.04 * Math.min(1, local / Math.max(1, d));
+        const F = v.fx != null ? [v.fx, v.fy] : [[0.5, 0.5], [0.3, 0.32], [0.7, 0.72], [0.45, 0.25], [0.62, 0.4], [0.38, 0.62]][v.detail % 6], mv = 0.04 * SS.pan * Math.min(1, local / Math.max(1, d));
         const cx = Math.min(w - pw, Math.max(0, w * (F[0] + mv) - pw / 2)), cy = Math.min(h - ph, Math.max(0, h * (F[1] + mv) - ph / 2));
         x.drawImage(el, px - cx, py - cy, w, h);
       } else if (iw && ih && ih / iw > (ph / pw) * 1.5) {
@@ -672,14 +722,14 @@ class Stage {
         x.fillStyle = P.floor; x.fillRect(l + 10, top + 10, w, h);
         x.drawImage(el, l, top, w, h);
         x.strokeStyle = P.line; x.lineWidth = 2; x.strokeRect(l, top, w, h);
-      } else if (iw && ih) { const s = Math.max(pw / iw, ph / ih) * z, w = iw * s, h = ih * s; x.drawImage(el, px + (pw - w) / 2, py + (ph - h) / 2, w, h); }
+      } else if (iw && ih) { const s = Math.max(pw / iw, ph / ih) * Math.max(z, 1.05), w = iw * s, h = ih * s; x.drawImage(el, px + (pw - w) / 2 + panX, py + (ph - h) / 2, w, h); }
     } else if (Graphics[v.g]) {
       x.translate(px + pw / 2, py + ph / 2); x.scale(z, z); x.translate(-(px + pw / 2), -(py + ph / 2));
       Graphics[v.g](x, px, py, pw, ph, v, P, local);
     }
     x.restore();
     // 열리는 가장자리를 따라가는 강조색 띠
-    if (k < 1) { const ew = Math.max(8, pw * 0.02) * (1 - k); x.fillStyle = P.ac; x.fillRect(dir ? px + pw * (1 - k) - ew : px + pw * k, py, ew, ph); }
+    if (k < 1 && tr === 'wipe') { const ew = Math.max(8, pw * 0.02) * (1 - k); x.fillStyle = P.ac; x.fillRect(dir ? px + pw * (1 - k) - ew : px + pw * k, py, ew, ph); }
   }
 }
 
@@ -1226,7 +1276,7 @@ function josa(s){
 }
 // 고를 수 있는 첫·끝 문구. 첫 장면은 혜택이 있으면 혜택이, 새로 문을 열면 '오픈'이 가장 먼저 눈에 들어와야 함
 function phraseList(type, which, mood, f){
-  const base = PHRASES[type][which][mood].map(x => fillPhrase(x, f));
+  const base = PHRASES[type][which][mood].map(x => fillPhrase(x, f)).filter(t => f.contact || !/문의/.test(t)); // 연락처가 없으면 '문의' 문구는 빼기
   if (which !== 'hook' || type === 'free') return base;
   const opening = type === 'promo' && f.name && /오픈|개업|문을?\s*열/.test(ST.lastText || '');
   const extra = [];
@@ -1269,7 +1319,7 @@ const S = (lines, extra) => Object.assign({ d: 0, kind: 'text', lines: lines.fil
 const T = (t, role) => ({ t, role: role || 'main' });
 
 /* 구성안 만들기. f: 항목, feats: 특징 문장, media: 사진·영상 수, ph: 고른 문구 번호 */
-function buildPlans(type, f, feats, nMedia, mood, ph){
+function buildPlans(type, f, feats, nMedia, mood, ph, seed){
   const out = buildPlansRaw(type, f, feats, nMedia, mood, ph);
   const topic = artTopic([f.item, f.name, feats.join(' '), f.target, f.apply].filter(Boolean).join(' ')) || (type === 'org' ? 'building' : type === 'recruit' ? 'badge' : type === 'event' ? 'market' : null);
   const endT = endTopic(type, topic);
@@ -1285,7 +1335,25 @@ function buildPlans(type, f, feats, nMedia, mood, ph){
       else if (!v && sc.role === 'end') sc.visual = nMedia ? { media: nMedia - 1 } : { g: 'hero', topic: endT, shot: 0, label: f.name || '' };
     });
   });
+  Object.entries(out).forEach(([k, list]) => spreadMedia(list, nMedia, rngOf(seed || 0, 300 + k.charCodeAt(0))));
   return out;
+}
+/* 사진·영상 나눠 쓰기: 사진이 들어갈 장면마다 다른 사진을 차례로 (시작 사진은 매번 다르게)
+   - 붙어 있는 두 장면에 같은 사진이 오지 않게, 끝 장면은 첫 장면과 다른 사진으로
+   - 사진이 모자라 다시 쓰면 그 사진의 다른 부분을 가까이 */
+function spreadMedia(list, n, r){
+  const slots = list.filter(sc => sc.visual && sc.visual.media != null && sc.visual.g !== 'handheld');
+  if (!n || !slots.length) return;
+  const start = n > 1 ? Math.floor(r() * n) : 0, uses = new Array(n).fill(0), first = start;
+  let prev = -1;
+  slots.forEach((sc, j) => {
+    let k = (start + j) % n;
+    if (n > 1 && k === prev) k = (k + 1) % n;
+    if (n > 2 && sc.role === 'end' && (k === first || k === prev)) { k = [...Array(n).keys()].filter(q => q !== first && q !== prev).sort((a, b) => uses[a] - uses[b])[0]; }
+    sc.visual = { media: k };
+    if (uses[k] > 0 || (n === 1 && sc.role !== 'hook' && sc.role !== 'end')) sc.visual.detail = uses[k] + Math.floor(r() * 6);
+    uses[k]++; prev = k;
+  });
 }
 function buildPlansRaw(type, f, feats, nMedia, mood, ph){
   const lab = k => (LABEL_BY_TYPE[type] || {})[k] || LABEL[k];
@@ -1300,20 +1368,20 @@ function buildPlansRaw(type, f, feats, nMedia, mood, ph){
   // 가격 장면: 그림(가격표)은 가격, 글은 무엇의 가격인지 → 같은 내용을 두 번 쓰지 않음. 여러 개면 메뉴판 목록
   const priceScene = (align) => prices.length >= 2
     ? S([], { kind: 'list', role: 'list', p: 1, align, rows: prices.slice(0, 3) })
-    : S([T(type === 'promo' ? (f.item ? '대표 메뉴' : '가격') : lab('price'), 'sub'), T(prices[0] ? prices[0][0] || f.item || f.price : f.item || f.price, 'accent')], { kind: 'text', visual: vis({ g: 'price', text: prices[0] ? prices[0][1] : f.price }), align, role: 'info', p: 1 });
+    : S([T(type === 'promo' ? (f.item ? '대표 메뉴' : '가격') : lab('price'), 'sub'), T(prices[0] ? prices[0][0] || f.item || f.price : f.item || f.price, 'accent')], { kind: 'text', visual: { g: 'price', text: prices[0] ? prices[0][1] : f.price }, align, role: 'info', p: 1 });
   const dealScene = (align) => S([T(lab('deal'), 'sub'), T(f.deal)], { visual: vis({ g: 'burst', text: f.deal }), align, role: 'feat', p: 1 });
   // 날짜+시간, 장소+연락처를 한 장면에: 그림은 날짜(달력)·장소(지도), 글은 그림에 없는 시간·주소
   const whenScene = (align) => {
     if (!f.date && !f.hours) return null;
     const v = f.date ? visualFor('date', f.date, f) : visualFor('hours', f.hours, f); if (v && v.label) v.label = '';
     const lines = f.date && f.hours ? [T(f.date, 'sub'), T(f.hours)] : [T(f.date || f.hours)];
-    return S(lines, { visual: vis(v), align, role: 'info', p: 1 });
+    return S(lines, { visual: v, align, role: 'info', p: 1 }); // 정보 장면은 사진이 많아도 달력·시계 그림 (정보가 한눈에)
   };
   const whereScene = (align) => {
     if (!f.place && !f.contact) return null;
     const v = f.place ? visualFor('place', f.place, f) : visualFor('contact', f.contact, f); if (v && v.label) v.label = '';
     const lines = f.place ? [T(f.place), T(f.contact ? lab('contact') + ' ' + f.contact : '', 'sub')] : [T(lab('contact'), 'sub'), T(f.contact, 'accent')];
-    return S(lines, { visual: vis(v), align, role: 'info', p: f.place ? 1 : 2 });
+    return S(lines, { visual: v, align, role: 'info', p: f.place ? 1 : 2 });
   };
 
   if (type === 'free') {
@@ -1520,7 +1588,14 @@ const PLAN_INFO = {
 const DEF_PAL = { A: 'p0', B: 'p8', C: 'p9' }; // 먹색·크림·흰색
 const fmt = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 const ratio = () => radio('ratio'), len = () => +radio('len'), mood = () => radio('mood');
-const pal = () => ST.pal === 'custom' && ST.custom ? makePalette('custom', '직접', ST.custom.bg, ST.custom.fg, ST.custom.ac) : (PALETTES.find(p => p.id === (ST.pal || DEF_PAL[ST.plan])) || PALETTES[0]);
+// 색을 직접 고르지 않았으면: 구성안 기본색과 같은 묶음(어두운·밝은 바탕) 안에서 씨앗으로 고름. 사진 위주 영상은 어두운 바탕
+function autoPalId(){
+  const base = PALETTES.find(p => p.id === DEF_PAL[ST.plan]) || PALETTES[0];
+  const group = ST.media.length >= 2 ? PALETTES[0].group : base.group;
+  const list = PALETTES.filter(p => p.group === group && contrast(p.bg, p.fg) >= 4.5);
+  return ST.seed ? pickR(rngOf(ST.seed, 50 + ST.plan.charCodeAt(0)), list).id : base.id;
+}
+const pal = () => ST.pal === 'custom' && ST.custom ? makePalette('custom', '직접', ST.custom.bg, ST.custom.fg, ST.custom.ac) : (PALETTES.find(p => p.id === (ST.pal || autoPalId())) || PALETTES[0]);
 
 /* ---- 1단계 ---- */
 $('#types').innerHTML = Object.entries(TYPES).map(([k, v]) => `<label><input type="radio" name="type" value="${k}"${k === 'promo' ? ' checked' : ''}><span>${v.name}</span></label>`).join('');
@@ -1615,7 +1690,11 @@ $$('input[name=mood]').forEach(r => r.addEventListener('change', () => { ST.plan
 
 /* ---- 3단계: 구성안 ---- */
 function makePlans(){
-  const raw = buildPlans(ST.type, ST.fields, ST.feats, ST.media.length, mood(), ST.ph);
+  if (!ST.lockStyle || !ST.seed) ST.seed = newSeed();
+  const r = rngOf(ST.seed, 9), H = phraseList(ST.type, 'hook', mood(), ST.fields), E = phraseList(ST.type, 'end', mood(), ST.fields);
+  const fixedHook = ST.type !== 'free' && H.length > PHRASES[ST.type].hook[mood()].length; // 혜택·오픈 문구가 맨 앞
+  if (!ST.lockStyle) ST.ph = { hook: fixedHook ? 0 : Math.floor(r() * H.length), end: Math.floor(r() * E.length) };
+  const raw = buildPlans(ST.type, ST.fields, ST.feats, ST.media.length, mood(), ST.ph, ST.seed);
   ST.plans = {};
   for (const k of ['A', 'B', 'C']) ST.plans[k] = fitDurations(adaptToMedia(raw[k]), len(), mood(), k, false);
 }
@@ -1651,7 +1730,7 @@ $('#plans').addEventListener('click', e => {
   Object.values(thumbs).forEach(t => t.playing = false);
   const th = thumbs[k]; th.playing = true; const t0 = performance.now();
   cancelAnimationFrame(thumbRAF);
-  const loop = () => { if (!th.playing) return; th.t = (performance.now() - t0) / 1000; if (th.t > totalOf(ST.plans[k])) { th.playing = false; th.t = 0; } drawPlanThumbs(); thumbRAF = requestAnimationFrame(loop); };
+  const loop = () => { if (!th.playing || !ST.plans) return; th.t = (performance.now() - t0) / 1000; if (th.t > totalOf(ST.plans[k])) { th.playing = false; th.t = 0; } drawPlanThumbs(); thumbRAF = requestAnimationFrame(loop); };
   loop();
 });
 $('#pals').addEventListener('click', () => ST.palPicked = true);
@@ -1699,6 +1778,32 @@ function pause(){ player.playing = false; cancelAnimationFrame(player.raf); $('#
 $('#play').addEventListener('click', () => player.playing ? pause() : play(player.t >= totalOf(ST.scenes) - 0.05 ? 0 : player.t));
 $('#seek').addEventListener('input', () => { pause(); player.t = +$('#seek').value; drawAt(player.t); });
 $('#safeGuide').addEventListener('change', () => drawAt(player.t));
+/* 다른 느낌으로: 글은 그대로 두고 씨앗만 바꿔 색·음악·전환·글 등장·배치·사진 순서를 새로 */
+function vibeInfo(){
+  const S = styleOf(ST.seed || 0), N = STYLE_NAMES, t = TRACKS.find(x => x.id === ST.track);
+  $('#vibeInfo').textContent = `지금 느낌: ${pal().name} · ${N.trans[S.trans]} 전환 · 글 ${N.text[S.text]} · ${N.layout[S.layout]}${t ? ' · ♪ ' + t.title : ''}` + (ST.lockStyle ? ' (고정됨)' : ' — 영상을 만들 때마다 다음 느낌이 새로 정해집니다');
+}
+function reroll(seed){
+  ST.prev = { seed: ST.seed, track: ST.track, scenes: JSON.stringify(ST.scenes.map(sc => sc.visual)) };
+  ST.seed = seed || newSeed();
+  $('#unroll').classList.remove('hidden');
+  if (!ST.palPicked) ST.pal = null;
+  if (!ST.trackPicked) { autoTrack(); fillBgm(); }
+  const free = ST.scenes.filter(sc => !sc.userVis);
+  spreadMedia(free, ST.media.length, rngOf(ST.seed, 300 + ST.plan.charCodeAt(0)));
+  adaptToMedia(free);
+  markPal(); renderScenes(); drawAt(player.t); vibeInfo(); save();
+}
+$('#reroll').addEventListener('click', () => { pause(); reroll(); toast('다른 느낌으로 바꿨습니다. 글은 그대로입니다'); });
+$('#unroll').addEventListener('click', () => {
+  const p = ST.prev; if (!p) return; pause();
+  const cur = { seed: ST.seed, track: ST.track, scenes: JSON.stringify(ST.scenes.map(sc => sc.visual)) };
+  ST.seed = p.seed; if (!ST.trackPicked) { ST.track = p.track; fillBgm(); }
+  const vs = JSON.parse(p.scenes); if (vs.length === ST.scenes.length) ST.scenes.forEach((sc, i) => { if (!sc.userVis) sc.visual = vs[i]; });
+  ST.prev = cur; if (!ST.palPicked) ST.pal = null;
+  markPal(); renderScenes(); drawAt(player.t); vibeInfo(); save(); toast('이전 느낌으로 되돌렸습니다');
+});
+$('#lockStyle').addEventListener('change', e => { ST.lockStyle = e.target.checked; vibeInfo(); save(); });
 
 function visOptions(s){
   const auto = s.autoVisual ? '<option value="auto">자동 그림</option>' : '';
@@ -1714,7 +1819,7 @@ function reviewIssues(){
   S.forEach((s, i) => {
     const n = i + 1;
     if (s.kind !== 'list' && !s.lines.some(l => l.t.trim())) out.push({ i, bad: 1, m: `${n}번 장면에 글이 없습니다.` });
-    const r = stage.measure(s);
+    const r = stage.measure(s, i);
     if (!r.fit) out.push({ i, bad: 1, m: `${n}번 장면: 글이 칸을 넘쳐 잘립니다. 글을 줄이세요.` });
     else if (r.k < 0.6) out.push({ i, m: `${n}번 장면: 글이 길어 글자가 작게 나옵니다. 줄이면 더 잘 보입니다.` });
     const need = needOf(s) * 0.8; if (s.d < need) out.push({ i, bad: 1, m: `${n}번 장면: ${s.d}초는 글을 다 읽기에 짧습니다 (${need.toFixed(1)}초 이상).` });
@@ -1764,6 +1869,7 @@ $('#sceneList').addEventListener('change', e => {
   if (e.target.dataset.k !== 'vis') return;
   const s = ST.scenes[+e.target.closest('.sc').dataset.i], v = e.target.value;
   s.visual = v === 'none' ? null : v === 'auto' ? s.autoVisual : v[0] === 'h' ? { g: 'handheld', media: +v.slice(1), bg: bgOf() } : { media: +v.slice(1) };
+  s.userVis = true; // 직접 고른 그림은 '다른 느낌으로'를 눌러도 그대로
   renderScenes();
 });
 $('#sceneList').addEventListener('click', e => {
@@ -1807,7 +1913,7 @@ function autoTrack(){
   if (ST.trackPicked) return;
   const winter = /(^|[^0-9])(12|1|2)월/.test(ST.fields.date || '') && /성탄|크리스마스|연말/.test(val('text'));
   const list = TRACKS.filter(t => t.mood === (winter ? 'season' : mood()));
-  ST.track = (list[(ST.plan.charCodeAt(0) - 65) % list.length] || TRACKS[0]).id;
+  ST.track = (ST.seed ? pickR(rngOf(ST.seed, 77), list) : list[(ST.plan.charCodeAt(0) - 65) % list.length] || TRACKS[0]).id;
 }
 let bgmAudio = null;
 function stopBgm(){ if (bgmAudio) { bgmAudio.pause(); bgmAudio = null; } $('#bgmPlay').textContent = '듣기'; }
@@ -2068,6 +2174,8 @@ function finishExport(blob, tot, took){
   $('#expMsg').textContent = `완성했습니다 (${(outBlob.size / 1048576).toFixed(1)}MB, ${outBlob.type.includes('mp4') ? 'MP4' : 'WebM'}${took ? `, ${Math.max(1, Math.round(took))}초 걸림` : ''})`;
   $('#expBar').style.width = '100%';
   $('#outBox').classList.remove('hidden'); btn.disabled = false; btn.textContent = '다시 만들기';
+  // 다음에 만들 영상은 다른 느낌으로 (고정하지 않았으면). 미리보기에도 바로 보여 줌
+  if (!ST.lockStyle) { reroll(); toast('다음 영상은 다른 느낌으로 바뀌었습니다 (미리보기에 반영). 방금 느낌으로 또 만들려면 \'↩ 이전 느낌\''); }
   // 만든 영상 점검: 길이가 맞는지, 비어 있지 않은지
   const ov = $('#outVideo'); ov.onloadedmetadata = () => {
     const d = ov.duration, probs = [];
@@ -2104,7 +2212,7 @@ function go(n){
       ST.sceneFrom = ST.plan + JSON.stringify(ST.plans[ST.plan].map(s => s.lines));
     }
     autoTrack(); fillBgm(); $('#bgmVol').value = ST.vol ?? 60; $('#bgmVolV').textContent = $('#bgmVol').value;
-    stageSetup(); player.t = 1.6; renderScenes();
+    stageSetup(); player.t = 1.6; renderScenes(); vibeInfo();
     if (!radio('q')) $$('input[name=q]').forEach(r => r.checked = r.value === (innerWidth < 760 ? '0.6667' : '1'));
   }
   Object.values(thumbs).forEach(t => t.playing = false);
@@ -2130,7 +2238,7 @@ $('#plans').addEventListener('click', () => { if (ST.step === 3) $('#next').text
 
 /* ---- 저장해 두기 (사진·영상·소리 파일은 저장하지 않음) ---- */
 function save(){
-  store.set(KEY, { ratio: ratio(), type: radio('type'), text: val('text'), len: radio('len'), mood: mood(), fields: ST.fields, feats: ST.feats, featsTouched: ST.featsTouched, plan: ST.plan, pal: ST.pal, palPicked: ST.palPicked, custom: ST.custom, track: ST.track, trackPicked: ST.trackPicked, vol: ST.vol, ph: ST.ph });
+  store.set(KEY, { ratio: ratio(), type: radio('type'), text: val('text'), len: radio('len'), mood: mood(), fields: ST.fields, feats: ST.feats, featsTouched: ST.featsTouched, plan: ST.plan, pal: ST.pal, palPicked: ST.palPicked, custom: ST.custom, track: ST.track, trackPicked: ST.trackPicked, vol: ST.vol, ph: ST.ph, seed: ST.seed, lockStyle: ST.lockStyle });
 }
 (() => {
   const s = store.get(KEY); if (!s) { showTypeHint(); return; }
@@ -2139,6 +2247,8 @@ function save(){
   $$('input[name=len]').forEach(r => r.checked = r.value === s.len);
   $$('input[name=mood]').forEach(r => r.checked = r.value === s.mood);
   $('#text').value = s.text || '';
+  Object.assign(ST, { seed: s.seed || 0, lockStyle: !!s.lockStyle });
+  $('#lockStyle').checked = !!s.lockStyle;
   Object.assign(ST, { fields: s.fields || {}, feats: s.feats || [], featsTouched: s.featsTouched, plan: s.plan || 'A', pal: s.pal || null, palPicked: s.palPicked, ph: s.ph || { hook: 0, end: 0 }, lastText: s.text, type: s.type || 'promo', custom: s.custom, track: s.track === 'file' ? null : s.track, trackPicked: s.track !== 'file' && s.trackPicked, vol: s.vol });
   if (ST.custom) { $('#cBg').value = ST.custom.bg; $('#cFg').value = ST.custom.fg; $('#cAc').value = ST.custom.ac; readCustom(); }
   if (ST.pal && ST.pal !== 'custom' && !PALETTES.some(p => p.id === ST.pal)) ST.pal = null;
