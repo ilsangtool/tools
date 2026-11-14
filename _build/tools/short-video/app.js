@@ -92,7 +92,7 @@ function renderPlans(){
   drawPlanThumbs(); markPal();
 }
 function drawPlanThumbs(){
-  ['A', 'B', 'C'].forEach(k => { const th = thumbs[k]; if (!th) return; const sc = ST.plans[k], { i, local } = sceneAt(sc, th.t || 0.9); th.st.draw(sc[i], th.playing ? local : 0.9, pal()); });
+  ['A', 'B', 'C'].forEach(k => { const th = thumbs[k]; if (!th) return; const sc = ST.plans[k], { i, local } = sceneAt(sc, th.t || 0.9); th.st.idx = i; th.st.draw(sc[i], th.playing ? local : 1.6, pal()); });
 }
 let thumbRAF = null;
 $('#plans').addEventListener('click', e => {
@@ -131,7 +131,7 @@ function drawAt(t){
   const { i, local } = sceneAt(sc, t);
   if (i !== player.lastI) { $$('#sceneList .sc').forEach((el, k) => el.classList.toggle('cur', k === i)); player.lastI = i; }
   syncMedia(sc[i], local, player.playing);
-  stage.draw(sc[i], local, pal());
+  stage.idx = i; stage.prog = t / totalOf(sc); stage.draw(sc[i], local, pal());
   const tot = totalOf(sc);
   $('#seek').max = tot; $('#seek').value = t; $('#tm').textContent = `${fmt(t)} / ${fmt(tot)}`;
 }
@@ -189,7 +189,7 @@ $('#sceneList').addEventListener('change', e => {
   if (!player.playing) drawAt(player.t); save();
 });
 $('#sceneList').addEventListener('click', e => {
-  const b = e.target.closest('[data-a]'); if (!b) { const box = e.target.closest('.sc'); if (box && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { pause(); let acc = 0; for (let k = 0; k < +box.dataset.i; k++) acc += ST.scenes[k].d; player.t = acc + 0.6; drawAt(player.t); } return; }
+  const b = e.target.closest('[data-a]'); if (!b) { const box = e.target.closest('.sc'); if (box && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { pause(); let acc = 0; for (let k = 0; k < +box.dataset.i; k++) acc += ST.scenes[k].d; player.t = acc + Math.min(1.6, ST.scenes[+box.dataset.i].d - 0.1); drawAt(player.t); } return; }
   const i = +b.closest('.sc').dataset.i, S0 = ST.scenes, a = b.dataset.a;
   if (a === 'dm') S0[i].d = Math.max(1.5, S0[i].d - 0.5);
   if (a === 'dp') S0[i].d = Math.min(15, S0[i].d + 0.5);
@@ -297,7 +297,7 @@ $('#exportBtn').addEventListener('click', async () => {
       dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
     }
   } catch (_) { toast('소리 파일을 읽지 못해 소리 없이 만듭니다'); }
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: scale >= 1 ? 8000000 : 5000000, audioBitsPerSecond: 128000 });
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: scale >= 1 ? 16000000 : 9000000, audioBitsPerSecond: 128000 });
   const chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
   const done = new Promise(r => rec.onstop = r);
   const sc = ST.scenes, tot = totalOf(sc);
@@ -310,10 +310,10 @@ $('#exportBtn').addEventListener('click', async () => {
   await new Promise(resolve => {
     const tick = () => {
       const t = (performance.now() - t0) / 1000;
-      if (t >= tot) { st.draw(sc[sc.length - 1], sc[sc.length - 1].d, pal()); resolve(); return; }
+      if (t >= tot) { st.prog = 1; st.draw(sc[sc.length - 1], sc[sc.length - 1].d, pal()); resolve(); return; }
       const { i, local } = sceneAt(sc, t);
       if (i !== lastI) { ST.media.forEach((m, k) => { if (m.type !== 'video') return; if (sc[i].visual && sc[i].visual.media === k) { m.el.currentTime = 0; m.el.play().catch(() => {}); } else m.el.pause(); }); lastI = i; }
-      st.draw(sc[i], local, pal());
+      st.idx = i; st.prog = t / tot; st.draw(sc[i], local, pal());
       $('#expBar').style.width = (t / tot * 100).toFixed(1) + '%';
       $('#expMsg').textContent = `영상 만드는 중 ${fmt(t)} / ${fmt(tot)}`;
       if (document.hidden) setTimeout(tick, 33); else requestAnimationFrame(tick);
@@ -359,7 +359,7 @@ function go(n){
       ST.sceneFrom = ST.plan + JSON.stringify(ST.plans[ST.plan].map(s => s.lines));
     }
     autoTrack(); fillBgm(); $('#bgmVol').value = ST.vol ?? 60; $('#bgmVolV').textContent = $('#bgmVol').value;
-    stageSetup(); player.t = 0.9; renderScenes();
+    stageSetup(); player.t = 1.6; renderScenes();
     if (!radio('q')) $$('input[name=q]').forEach(r => r.checked = r.value === (innerWidth < 760 ? '0.6667' : '1'));
   }
   Object.values(thumbs).forEach(t => t.playing = false);
@@ -376,7 +376,8 @@ function go(n){
 // 사진을 넣은 장면에서 '자동 그림'으로 되돌릴 때 쓸 그림
 function fallbackVisual(s){
   const t = (s.lines.find(l => l.role !== 'sub') || s.lines[0] || { t: '' }).t;
-  return { g: 'poster', text: keywordOf(t, ST.fields.item || ST.fields.name || '') };
+  const kw = keywordOf(t, ST.fields.item || ST.fields.name || ''), topic = artTopic([ST.fields.item, ST.fields.name, ST.feats.join(' ')].join(' '));
+  return topic ? { g: 'hero', topic, shot: 1, chip: kw } : { g: 'poster', text: kw };
 }
 $('#next').addEventListener('click', () => go(ST.step + 1));
 $('#prev').addEventListener('click', () => go(ST.step - 1));

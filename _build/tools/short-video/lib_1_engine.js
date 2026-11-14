@@ -12,7 +12,11 @@ function hex2rgb(h){ const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, 
 function mixHex(a, b, k){ const A = hex2rgb(a), B = hex2rgb(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); }
 function lum(h){ return hex2rgb(h).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0); }
 function contrast(a, b){ const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
-function makePalette(id, name, bg, fg, ac){ return { id, name, bg, fg, ac, panel: mixHex(bg, fg, 0.08), line: mixHex(bg, fg, 0.2) }; }
+function makePalette(id, name, bg, fg, ac){
+  // stage: 그림 칸 바탕(배경에 강조색을 조금), floor: 그림자
+  const dark = lum(bg) < 0.25;
+  return { id, name, bg, fg, ac, panel: mixHex(bg, fg, 0.08), line: mixHex(bg, fg, 0.2), stage: mixHex(bg, ac, dark ? 0.16 : 0.13), floor: mixHex(mixHex(bg, ac, dark ? 0.16 : 0.13), '#000000', dark ? 0.28 : 0.1) };
+}
 const PALETTES = [];
 PAL_GROUPS.forEach(([g, list]) => list.forEach(([n, bg, fg, ac]) => PALETTES.push(Object.assign(makePalette('p' + PALETTES.length, n, bg, fg, ac), { group: g }))));
 
@@ -28,9 +32,17 @@ class Stage {
   }
   geo(){
     const W = this.W, H = this.H, r = this.ratio;
-    if (r === '16:9') return { panel: [W * 0.06, H * 0.12, W * 0.46, H * 0.76], text: [W * 0.57, H * 0.1, W * 0.37, H * 0.8], textOnly: [W * 0.12, H * 0.1, W * 0.76, H * 0.8], u: H / 100 };
+    if (r === '16:9') return { panel: [W * 0.06, H * 0.12, W * 0.46, H * 0.76], text: [W * 0.57, H * 0.1, W * 0.37, H * 0.8], textOnly: [W * 0.1, H * 0.12, W * 0.8, H * 0.76], u: H / 100 };
     if (r === '1:1') return { panel: [W * 0.08, H * 0.08, W * 0.84, H * 0.48], text: [W * 0.08, H * 0.6, W * 0.84, H * 0.34], textOnly: [W * 0.09, H * 0.1, W * 0.82, H * 0.8], u: W / 100 };
-    return { panel: [W * 0.09, H * 0.12, W * 0.82, H * 0.42], text: [W * 0.09, H * 0.58, W * 0.82, H * 0.22], textOnly: [W * 0.09, H * 0.1, W * 0.82, H * 0.68], u: W / 100 };
+    return { panel: [W * 0.09, H * 0.12, W * 0.82, H * 0.42], text: [W * 0.09, H * 0.58, W * 0.82, H * 0.22], textOnly: [W * 0.09, H * 0.12, W * 0.82, H * 0.7], u: W / 100 };
+  }
+  /* 그림이 있는 장면: 그림은 화면 끝까지 꽉 채우고 글은 남은 칸에. 첫·끝 장면은 위아래(좌우)를 바꿔 단조롭지 않게 */
+  frame(sc){
+    const W = this.W, H = this.H, r = this.ratio, flip = sc.role === 'hook' || sc.role === 'end';
+    if (r === '16:9') return flip ? { art: [0, 0, W * 0.5, H], text: [W * 0.56, H * 0.14, W * 0.38, H * 0.72] } : { art: [W * 0.5, 0, W * 0.5, H], text: [W * 0.06, H * 0.14, W * 0.38, H * 0.72] };
+    const ah = r === '1:1' ? 0.56 : 0.56;
+    return flip ? { art: [0, H * (1 - ah), W, H * ah], text: [W * 0.08, H * 0.07, W * 0.84, H * (1 - ah) - H * 0.12], top: true }
+      : { art: [0, 0, W, H * ah], text: [W * 0.08, H * (ah + 0.05), W * 0.84, H * (1 - ah) - H * 0.11] };
   }
   /* 글자 줄바꿈: 띄어쓰기 기준, 넘치면 글자 기준 */
   wrap(text, maxW){
@@ -51,7 +63,7 @@ class Stage {
   }
   sizeOf(role, u, kind, vis){
     if (kind === 'big' && role === 'accent') return u * 15;
-    const k = vis ? 1.08 : 1.3; // 그림 없는 장면은 글자를 더 크게
+    const k = vis ? 1.22 : 1.3; // 그림 없는 장면은 글자를 더 크게
     return ({ main: u * 8.4, accent: u * 8.4, sub: u * 5.2, label: u * 4.2 }[role] || u * 6) * k;
   }
   /* 글 블록 배치: 넘치면 전체를 줄여 맞춤 */
@@ -75,24 +87,40 @@ class Stage {
     const x = this.x, W = this.W, H = this.H, g = this.geo();
     x.setTransform(this.s, 0, 0, this.s, 0, 0);
     x.fillStyle = P.bg; x.fillRect(0, 0, W, H);
-    const hasVis = !!sc.visual;
-    if (hasVis) this.drawVisual(sc.visual, g.panel, local, sc.d, P);
-    const box = hasVis ? g.text : g.textOnly;
-    if (sc.kind === 'list') return this.drawList(sc, box, local, P, g);
+    const hasVis = !!sc.visual, F = hasVis ? this.frame(sc) : null;
+    if (hasVis) this.drawVisual(sc.visual, F.art, local, sc.d, P);
+    const box = hasVis ? F.text : g.textOnly;
+    if (sc.kind === 'list') { this.drawList(sc, box, local, P, g); return this.drawProg(P); }
     const { res, h } = this.layoutText(sc.lines, box, sc.kind, sc.align, hasVis);
-    const vertical = hasVis && this.ratio !== '16:9' ? 0 : 0.5; // 사진 아래 글은 위에서부터, 나머지는 가운데
-    let y0 = box[1] + (box[3] - h) * vertical;
     const center = sc.align === 'center';
-    res.forEach((r, i) => {
-      const a = easeOut((local - 0.1 - i * 0.18) / 0.2); // 줄마다 0.18초 간격, 0.2초 동안 떠오름
-      x.globalAlpha = a;
+    const vertical = hasVis ? (F.top ? 0.6 : this.ratio === '16:9' ? 0.5 : 0.3) : 0.5;
+    const y0 = box[1] + (box[3] - h) * vertical;
+    const tx = center ? box[0] + box[2] / 2 : box[0];
+    // 글 위 짧은 강조선
+    const bar = easeOut((local - 0.15) / 0.5), bw = g.u * 10, bh = Math.max(4, g.u * 0.7);
+    x.fillStyle = P.ac; x.fillRect(center ? tx - bw * bar / 2 : tx, y0 - g.u * 4, bw * bar, bh);
+    // 줄마다 아래에서 밀려 올라오며 나타남 (가림막 안에서)
+    let n = 0;
+    res.forEach(r => {
       x.font = `${r.w} ${r.sz}px ${FONT}`;
-      x.fillStyle = r.l.role === 'accent' ? P.ac : r.l.role === 'label' ? P.ac : P.fg;
+      x.fillStyle = r.l.role === 'accent' || r.l.role === 'label' ? P.ac : P.fg;
       x.textBaseline = 'top'; x.textAlign = center ? 'center' : 'left';
-      const tx = center ? box[0] + box[2] / 2 : box[0];
-      r.rows.forEach((row, j) => x.fillText(row, tx, y0 + r.top + j * r.sz * 1.3 + (1 - a) * 18));
+      r.rows.forEach((row, j) => {
+        const lh = r.sz * 1.3, y = y0 + r.top + j * lh, a = easeOut((local - 0.2 - n++ * 0.09) / 0.45);
+        if (a <= 0) return;
+        x.save(); x.beginPath(); x.rect(0, y - lh * 0.1, W, lh * 1.12); x.clip();
+        x.globalAlpha = Math.min(1, a * 1.4); x.fillText(row, tx, y + (1 - a) * lh * 0.9); x.restore();
+      });
     });
     x.globalAlpha = 1; x.textAlign = 'left';
+    this.drawProg(P);
+  }
+  // 아래쪽 진행 막대 (전체 영상 기준)
+  drawProg(P){
+    if (this.prog == null) return;
+    const x = this.x, h = Math.max(6, this.H * 0.005);
+    x.globalAlpha = 0.25; x.fillStyle = P.fg; x.fillRect(0, this.H - h, this.W, h);
+    x.globalAlpha = 1; x.fillStyle = P.ac; x.fillRect(0, this.H - h, this.W * Math.min(1, this.prog), h);
   }
   drawList(sc, box, local, P, g){
     const x = this.x, rows = sc.rows || [];
@@ -116,22 +144,24 @@ class Stage {
     x.globalAlpha = 1;
   }
   drawVisual(v, p, local, d, P){
-    const x = this.x, [px, py, pw, ph] = p, a = easeOut(local / 0.2);
-    x.save(); x.globalAlpha = a;
-    x.beginPath(); x.rect(px, py, pw, ph); x.clip();
+    const x = this.x, [px, py, pw, ph] = p, k = easeOut(local / 0.5), dir = (this.idx || 0) % 2;
+    x.save();
+    x.beginPath(); // 장면이 바뀔 때 그림 칸이 옆에서 밀려 열림
+    if (dir) x.rect(px + pw * (1 - k), py, pw * k, ph); else x.rect(px, py, pw * k, ph);
+    x.clip();
+    x.fillStyle = P.stage; x.fillRect(px, py, pw, ph);
+    const z = 1 + 0.06 * Math.min(1, local / Math.max(1, d)); // 장면 내내 아주 느리게 다가감
     if (v.media != null && this.media[v.media]) {
       const m = this.media[v.media], el = m.el;
       const iw = m.type === 'video' ? el.videoWidth : el.naturalWidth, ih = m.type === 'video' ? el.videoHeight : el.naturalHeight;
-      if (iw && ih) {
-        const z = 1 + 0.04 * Math.min(1, local / Math.max(1, d)); // 아주 느린 확대
-        const s = Math.max(pw / iw, ph / ih) * z, w = iw * s, h = ih * s;
-        x.drawImage(el, px + (pw - w) / 2, py + (ph - h) / 2, w, h);
-      }
-    } else {
-      x.fillStyle = P.panel; x.fillRect(px, py, pw, ph);
-      Graphics[v.g] && Graphics[v.g](x, px, py, pw, ph, v, P, local);
+      if (iw && ih) { const s = Math.max(pw / iw, ph / ih) * z, w = iw * s, h = ih * s; x.drawImage(el, px + (pw - w) / 2, py + (ph - h) / 2, w, h); }
+    } else if (Graphics[v.g]) {
+      x.translate(px + pw / 2, py + ph / 2); x.scale(z, z); x.translate(-(px + pw / 2), -(py + ph / 2));
+      Graphics[v.g](x, px, py, pw, ph, v, P, local);
     }
     x.restore();
+    // 열리는 가장자리를 따라가는 강조색 띠
+    if (k < 1) { const ew = Math.max(8, pw * 0.02) * (1 - k); x.fillStyle = P.ac; x.fillRect(dir ? px + pw * (1 - k) - ew : px + pw * k, py, ew, ph); }
   }
 }
 
@@ -156,8 +186,10 @@ const Graphics = {
     if (v.sub) { const ss = this._fit(x, v.sub, 400, pw - m * 2.6, Math.min(sz * 0.32, ph * 0.07)); x.fillStyle = P.fg; x.globalAlpha *= 0.75; x.fillText(v.sub, px + pw / 2, py + ph - m * 1.3 - ss / 2); }
     x.textAlign = 'left';
   },
-  calendar(x, px, py, pw, ph, v, P){
-    const s = Math.min(pw, ph) * 0.74, cx = px + pw / 2, cy = py + ph / 2, w = s * 0.86, h = s, l = cx - w / 2, t = cy - h / 2, lw = this._lw(pw, ph);
+  calendar(x, px, py, pw, ph, v, P, tm){
+    const f = easeOut((tm - 0.2) / 0.5); if (f <= 0) return;
+    x.save(); x.translate(0, py + ph * 0.13); x.scale(1, 0.2 + 0.8 * f); x.translate(0, -(py + ph * 0.13));
+    const s = Math.min(pw, ph) * 0.66, cx = px + pw / 2, cy = py + ph / 2, w = s * 0.86, h = s, l = cx - w / 2, t = cy - h / 2, lw = this._lw(pw, ph);
     x.fillStyle = P.bg; x.fillRect(l, t, w, h);
     x.strokeStyle = P.fg; x.lineWidth = lw; x.strokeRect(l, t, w, h);
     x.fillStyle = P.ac; x.fillRect(l, t, w, h * 0.24);
@@ -166,70 +198,82 @@ const Graphics = {
     this._font(x, 700, h * 0.12); x.fillStyle = P.bg; x.fillText(v.month ? v.month + '월' : '', cx, t + h * 0.12);
     this._font(x, 700, h * 0.42); x.fillStyle = P.fg; x.fillText(v.day || '', cx, t + h * 0.56);
     if (v.week) { this._font(x, 400, h * 0.09); x.fillText(v.week, cx, t + h * 0.86); }
-    x.textAlign = 'left';
+    x.textAlign = 'left'; x.restore();
   },
-  clock(x, px, py, pw, ph, v, P){
+  clock(x, px, py, pw, ph, v, P, t){
     const r = Math.min(pw, ph) * 0.3, cx = px + pw / 2, cy = py + ph * 0.44, lw = this._lw(pw, ph);
     x.fillStyle = P.bg; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
     x.strokeStyle = P.fg; x.lineWidth = lw; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.stroke();
     for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; x.beginPath(); x.moveTo(cx + Math.sin(a) * r * 0.82, cy - Math.cos(a) * r * 0.82); x.lineTo(cx + Math.sin(a) * r * 0.92, cy - Math.cos(a) * r * 0.92); x.stroke(); }
-    const hh = (v.h || 9) % 12, mm = v.m || 0, ha = (hh + mm / 60) / 12 * Math.PI * 2, ma = mm / 60 * Math.PI * 2;
+    const hh = (v.h || 9) % 12, mm = v.m || 0, f = easeOut((t - 0.2) / 1.1), ha = (hh + mm / 60) / 12 * Math.PI * 2 * f, ma = (mm / 60 * Math.PI * 2 + Math.PI * 4 * (1 - f));
     x.lineCap = 'round';
     x.strokeStyle = P.fg; x.lineWidth = lw * 1.6; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.sin(ha) * r * 0.5, cy - Math.cos(ha) * r * 0.5); x.stroke();
     x.strokeStyle = P.ac; x.lineWidth = lw * 1.2; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.sin(ma) * r * 0.75, cy - Math.cos(ma) * r * 0.75); x.stroke();
     x.lineCap = 'butt';
     if (v.label) { const sz = this._fit(x, v.label, 700, pw * 0.86, ph * 0.09); x.fillStyle = P.fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.label, cx, py + ph * 0.88 - sz * 0.2); x.textAlign = 'left'; }
   },
-  pin(x, px, py, pw, ph, v, P){ // 위치: 길 두 줄 + 핀
-    const lw = this._lw(pw, ph);
-    x.strokeStyle = P.line; x.lineWidth = Math.min(pw, ph) * 0.07;
-    x.beginPath(); x.moveTo(px, py + ph * 0.68); x.lineTo(px + pw, py + ph * 0.52); x.stroke();
-    x.beginPath(); x.moveTo(px + pw * 0.32, py); x.lineTo(px + pw * 0.44, py + ph); x.stroke();
-    const r = Math.min(pw, ph) * 0.13, cx = px + pw * 0.58, cy = py + ph * 0.38;
+  pin(x, px, py, pw, ph, v, P, t){ // 위치: 길 + 블록 + 핀
+    const lw = this._lw(pw, ph), rw = Math.min(pw, ph) * 0.07;
+    x.fillStyle = mixHex(P.stage, P.fg, 0.06);
+    [[0.04, 0.06, 0.24, 0.48], [0.52, 0.04, 0.44, 0.36], [0.04, 0.74, 0.34, 0.24], [0.52, 0.66, 0.44, 0.32]].forEach(b => x.fillRect(px + pw * b[0], py + ph * b[1], pw * b[2], ph * b[3]));
+    x.strokeStyle = P.line; x.lineWidth = rw;
+    x.beginPath(); x.moveTo(px, py + ph * 0.66); x.lineTo(px + pw, py + ph * 0.56); x.stroke();
+    x.beginPath(); x.moveTo(px + pw * 0.36, py); x.lineTo(px + pw * 0.46, py + ph); x.stroke();
+    x.strokeStyle = mixHex(P.line, P.fg, 0.3); x.lineWidth = Math.max(2, rw * 0.08); x.setLineDash([rw * 0.5, rw * 0.5]);
+    x.beginPath(); x.moveTo(px, py + ph * 0.66); x.lineTo(px + pw, py + ph * 0.56); x.stroke(); x.setLineDash([]);
+    const r = Math.min(pw, ph) * 0.13, cx = px + pw * 0.6, base = py + ph * 0.38, f = easeOut((t - 0.25) / 0.45), cy = base - (1 - f) * ph * 0.4;
+    const rp = ((t - 0.7) % 1.6) / 1.6; // 꽂힌 자리 물결
+    if (t > 0.7) { x.strokeStyle = P.ac; x.lineWidth = lw; x.globalAlpha = (1 - rp) * 0.8; x.beginPath(); x.ellipse(cx, base + r * 2.2, r * (0.4 + rp * 1.4), r * (0.15 + rp * 0.5), 0, 0, Math.PI * 2); x.stroke(); x.globalAlpha = 1; }
+    x.fillStyle = P.floor; x.beginPath(); x.ellipse(cx, base + r * 2.2, r * 0.5 * f, r * 0.18 * f, 0, 0, Math.PI * 2); x.fill();
     x.fillStyle = P.ac; x.beginPath(); x.arc(cx, cy, r, Math.PI, 0); x.lineTo(cx, cy + r * 2.2); x.closePath(); x.fill();
-    x.fillStyle = P.panel; x.beginPath(); x.arc(cx, cy, r * 0.42, 0, Math.PI * 2); x.fill();
+    x.fillStyle = P.stage; x.beginPath(); x.arc(cx, cy, r * 0.42, 0, Math.PI * 2); x.fill();
     if (v.label) { const sz = this._fit(x, v.label, 700, pw * 0.86, ph * 0.09); const tw = x.measureText(v.label).width;
       x.fillStyle = P.bg; x.fillRect(px + pw / 2 - tw / 2 - sz * 0.5, py + ph * 0.86 - sz * 0.85, tw + sz, sz * 1.5);
       x.strokeStyle = P.fg; x.lineWidth = lw; x.strokeRect(px + pw / 2 - tw / 2 - sz * 0.5, py + ph * 0.86 - sz * 0.85, tw + sz, sz * 1.5);
       x.fillStyle = P.fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.label, px + pw / 2, py + ph * 0.86 - sz * 0.1); x.textAlign = 'left'; }
   },
-  price(x, px, py, pw, ph, v, P){ // 가격표
+  price(x, px, py, pw, ph, v, P, tm){ // 가격표
     const w = Math.min(pw * 0.78, ph * 1.2), h = w * 0.46, l = px + (pw - w) / 2, t = py + (ph - h) / 2, n = h * 0.5, lw = this._lw(pw, ph);
-    x.save(); x.translate(px + pw / 2, py + ph / 2); x.rotate(-0.06); x.translate(-(px + pw / 2), -(py + ph / 2));
+    x.save(); x.translate(px + pw / 2, py + ph / 2); x.rotate(-0.06 - 0.12 * (1 - easeOut(tm / 0.6))); x.translate(-(px + pw / 2), -(py + ph / 2));
     x.fillStyle = P.bg; x.strokeStyle = P.fg; x.lineWidth = lw;
     x.beginPath(); x.moveTo(l + n, t); x.lineTo(l + w, t); x.lineTo(l + w, t + h); x.lineTo(l + n, t + h); x.lineTo(l, t + h / 2); x.closePath(); x.fill(); x.stroke();
     x.beginPath(); x.arc(l + n * 0.62, t + h / 2, h * 0.08, 0, Math.PI * 2); x.stroke();
     const sz = this._fit(x, v.text || '', 700, w - n * 1.5, h * 0.42);
-    x.fillStyle = P.ac; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.text || '', l + n * 0.6 + (w - n * 0.6) / 2, t + h / 2 + sz * 0.04);
+    const num = +(String(v.text || '').match(/[\d,]+/) || [''])[0].replace(/,/g, ''), f = easeOut((tm - 0.2) / 0.8);
+    const shown = num && f < 1 ? String(v.text).replace(/[\d,]+/, Math.round(num * f / (num >= 1000 ? 100 : 1)) * (num >= 1000 ? 100 : 1) === 0 ? '0' : (Math.round(num * f / (num >= 1000 ? 100 : 1)) * (num >= 1000 ? 100 : 1)).toLocaleString('ko-KR')) : (v.text || '');
+    x.fillStyle = P.ac; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(shown, l + n * 0.6 + (w - n * 0.6) / 2, t + h / 2 + sz * 0.04);
     x.restore(); x.textAlign = 'left';
   },
-  phone(x, px, py, pw, ph, v, P){
-    const s = Math.min(pw, ph) * 0.36, cx = px + pw / 2, cy = py + ph * 0.4, lw = this._lw(pw, ph);
+  phone(x, px, py, pw, ph, v, P, t){
+    const s = Math.min(pw, ph) * 0.36, cx = px + pw / 2, cy = py + ph * 0.4, lw = this._lw(pw, ph), ring = (t % 1.6) < 0.5 && t > 0.3;
+    x.save(); x.translate(cx, cy); x.rotate(ring ? Math.sin(t * 40) * 0.06 : 0); x.translate(-cx, -cy);
     x.strokeStyle = P.fg; x.lineWidth = lw; x.fillStyle = P.bg;
     const w = s * 0.62, h = s * 1.1;
     x.beginPath(); x.roundRect ? x.roundRect(cx - w / 2, cy - h / 2, w, h, w * 0.14) : x.rect(cx - w / 2, cy - h / 2, w, h); x.fill(); x.stroke();
     x.fillStyle = P.ac; x.fillRect(cx - w * 0.12, cy + h * 0.36, w * 0.24, lw * 1.6);
-    x.strokeStyle = P.ac; for (let i = 1; i <= 2; i++) { x.beginPath(); x.arc(cx + w * 0.5, cy - h * 0.38, s * 0.16 * i, -Math.PI * 0.35, Math.PI * 0.05); x.stroke(); }
+    x.strokeStyle = P.ac; for (let i = 1; i <= 2; i++) { x.globalAlpha = ring || t < 0.3 ? 1 : 0.35; x.beginPath(); x.arc(cx + w * 0.5, cy - h * 0.38, s * 0.16 * i, -Math.PI * 0.35, Math.PI * 0.05); x.stroke(); } x.globalAlpha = 1; x.restore();
     if (v.label) { const sz = this._fit(x, v.label, 700, pw * 0.86, ph * 0.1); x.fillStyle = P.fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.label, cx, py + ph * 0.85); x.textAlign = 'left'; }
   },
-  people(x, px, py, pw, ph, v, P){ // 대상·인원
+  people(x, px, py, pw, ph, v, P, t){ // 대상·인원
     const n = Math.max(1, Math.min(5, v.n || 3)), r = Math.min(pw / (n * 3.2), ph * 0.12), cy = py + ph * 0.36, lw = this._lw(pw, ph);
     for (let i = 0; i < n; i++) {
       const cx = px + pw / 2 + (i - (n - 1) / 2) * r * 2.9;
-      x.fillStyle = i === Math.floor(n / 2) ? P.ac : P.fg;
-      x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
-      x.beginPath(); x.arc(cx, cy + r * 3.1, r * 1.6, Math.PI, 0); x.fill();
+      const f = easeOut((t - 0.2 - i * 0.12) / 0.4); if (f <= 0) continue;
+      x.fillStyle = i === Math.floor(n / 2) ? P.ac : P.fg; x.globalAlpha = f;
+      const dy = (1 - f) * r * 1.5;
+      x.beginPath(); x.arc(cx, cy + dy, r, 0, Math.PI * 2); x.fill();
+      x.beginPath(); x.arc(cx, cy + r * 3.1 + dy, r * 1.6, Math.PI, 0); x.fill(); x.globalAlpha = 1;
     }
     if (v.label) { const sz = this._fit(x, v.label, 700, pw * 0.86, ph * 0.09); x.fillStyle = P.fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.label, px + pw / 2, py + ph * 0.84); x.textAlign = 'left'; }
   },
-  form(x, px, py, pw, ph, v, P){ // 신청·지원: 서류와 체크
+  form(x, px, py, pw, ph, v, P, tm){ // 신청·지원: 서류와 체크
     const h = Math.min(ph * 0.66, pw * 0.8), w = h * 0.76, l = px + (pw - w) / 2, t = py + ph * 0.1, lw = this._lw(pw, ph);
     x.fillStyle = P.bg; x.strokeStyle = P.fg; x.lineWidth = lw; x.fillRect(l, t, w, h); x.strokeRect(l, t, w, h);
     for (let i = 0; i < 3; i++) {
       const yy = t + h * (0.24 + i * 0.24);
       x.strokeStyle = P.fg; x.strokeRect(l + w * 0.12, yy - w * 0.06, w * 0.12, w * 0.12);
       x.fillStyle = P.line; x.fillRect(l + w * 0.32, yy - lw / 2, w * 0.54, lw * 1.4);
-      if (i < 2) { x.strokeStyle = P.ac; x.lineWidth = lw * 1.4; x.beginPath(); x.moveTo(l + w * 0.13, yy); x.lineTo(l + w * 0.17, yy + w * 0.05); x.lineTo(l + w * 0.26, yy - w * 0.07); x.stroke(); x.lineWidth = lw; }
+      if (i < 2 && tm > 0.4 + i * 0.35) { x.strokeStyle = P.ac; x.lineWidth = lw * 1.4; x.beginPath(); x.moveTo(l + w * 0.13, yy); x.lineTo(l + w * 0.17, yy + w * 0.05); x.lineTo(l + w * 0.26, yy - w * 0.07); x.stroke(); x.lineWidth = lw; }
     }
     if (v.label) { const sz = this._fit(x, v.label, 700, pw * 0.86, ph * 0.09); x.fillStyle = P.fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.label, px + pw / 2, py + ph * 0.88); x.textAlign = 'left'; }
   }

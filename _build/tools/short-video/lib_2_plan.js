@@ -96,6 +96,22 @@ const T = (t, role) => ({ t, role: role || 'main' });
 
 /* 구성안 만들기. f: 항목, feats: 특징 문장, media: 사진·영상 수, ph: 고른 문구 번호 */
 function buildPlans(type, f, feats, nMedia, mood, ph){
+  const out = buildPlansRaw(type, f, feats, nMedia, mood, ph);
+  const topic = artTopic([f.item, f.name, feats.join(' '), f.target, f.apply].filter(Boolean).join(' ')) || (type === 'org' ? 'building' : type === 'recruit' ? 'badge' : type === 'event' ? 'market' : null);
+  const endT = endTopic(type, topic);
+  // 사진이 없는 자리는 주제 그림으로: 첫 장면은 전체, 특징 장면은 가까이(이름표 붙임), 끝 장면은 가게·건물·장터
+  Object.values(out).forEach(list => {
+    let shot = 1;
+    list.forEach(sc => {
+      const v = sc.visual;
+      if (v && v.g === 'poster' && topic) sc.visual = sc.role === 'subject' ? { g: 'hero', topic, shot: 0 } : { g: 'hero', topic, shot: (shot++ % 2) + 1, chip: String(v.text || '').split(/\s+/).every(w => w.length >= 2) ? v.text : '' };
+      else if (!v && sc.role === 'hook') sc.visual = { g: 'hero', topic: topic || endT, shot: 3 };
+      else if (!v && sc.role === 'end') sc.visual = { g: 'hero', topic: endT, shot: 0, label: f.name || '' };
+    });
+  });
+  return out;
+}
+function buildPlansRaw(type, f, feats, nMedia, mood, ph){
   const lab = k => (LABEL_BY_TYPE[type] || {})[k] || LABEL[k];
   const P = PHRASES[type], pick = (arr, i) => arr[(i || 0) % arr.length];
   const hook = fillPhrase(pick(P.hook[mood], ph.hook), f), end = fillPhrase(pick(P.end[mood], ph.end), f);
