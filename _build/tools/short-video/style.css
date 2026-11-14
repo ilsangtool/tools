@@ -75,3 +75,9 @@
   .pimg img{display:block;width:100%;height:auto}
   .pimg i{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border:3px solid #C8102E;border-radius:50%;pointer-events:none}
   .hd .aim{min-width:auto;padding:0 8px;font-size:13px}
+  .review{border:1px solid #cfd3d8;border-radius:4px;padding:8px 12px;margin:0 0 8px;font-size:14px}
+  .review b{display:block;margin-bottom:4px}
+  .review ul{margin:0;padding:0 0 0 18px}
+  .review li{margin:2px 0;cursor:pointer}
+  .review li.bad{color:#C8102E}
+  .review .ok{color:#2E7D4F}

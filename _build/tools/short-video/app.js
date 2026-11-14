@@ -192,6 +192,35 @@ function visOptions(s){
   const cur = !s.visual ? 'none' : s.visual.g === 'handheld' ? 'h' + s.visual.media : s.visual.media != null ? 'm' + s.visual.media : 'auto';
   return `<select data-k="vis" aria-label="그림">${auto}${media}<option value="none">그림 없음</option></select>`.replace(`value="${cur}"`, `value="${cur}" selected`);
 }
+/* ---- 만들기 전 점검: 글 넘침·읽을 시간·사진 위치·같은 그림 반복·색 대비·전체 길이 ---- */
+const sameVis = (a, b) => a && b && a.g === b.g && a.media === b.media && a.topic === b.topic && a.shot === b.shot && a.detail === b.detail && a.fx === b.fx;
+function reviewIssues(){
+  const out = [], P = pal(), S = ST.scenes;
+  const c = contrast(P.bg, P.fg); if (c < 4.5) out.push({ i: -1, bad: 1, m: `글자색과 배경색 차이가 작아 글이 잘 안 보입니다 (대비 ${c.toFixed(1)}). 색 조합을 바꾸세요.` });
+  S.forEach((s, i) => {
+    const n = i + 1;
+    if (s.kind !== 'list' && !s.lines.some(l => l.t.trim())) out.push({ i, bad: 1, m: `${n}번 장면에 글이 없습니다.` });
+    const r = stage.measure(s);
+    if (!r.fit) out.push({ i, bad: 1, m: `${n}번 장면: 글이 칸을 넘쳐 잘립니다. 글을 줄이세요.` });
+    else if (r.k < 0.6) out.push({ i, m: `${n}번 장면: 글이 길어 글자가 작게 나옵니다. 줄이면 더 잘 보입니다.` });
+    const need = needOf(s) * 0.8; if (s.d < need) out.push({ i, bad: 1, m: `${n}번 장면: ${s.d}초는 글을 다 읽기에 짧습니다 (${need.toFixed(1)}초 이상).` });
+    const v = s.visual, m = v && v.media != null ? ST.media[v.media] : null;
+    if (v && v.media != null && !m) out.push({ i, bad: 1, m: `${n}번 장면: 쓰던 사진이 빠졌습니다. 그림을 다시 고르세요.` });
+    if (m && m.type === 'image' && v.detail != null && v.fx == null) out.push({ i, m: `${n}번 장면: 사진의 어느 부분을 보여 줄지 자동으로 정하지 못했습니다. '위치'로 확인하세요.` });
+    if (i && sameVis(S[i - 1].visual, v)) out.push({ i, m: `${n}번 장면: 앞 장면과 같은 그림입니다.` });
+  });
+  const off = totalOf(S) - len(); if (Math.abs(off) >= 1.5) out.push({ i: -1, m: `전체 ${totalOf(S).toFixed(1)}초로 목표 ${len()}초와 ${Math.abs(off).toFixed(1)}초 차이 납니다. '시간 다시 나누기'를 누르세요.` });
+  return out;
+}
+function showReview(){
+  if (!ST.scenes.length) return;
+  const L = reviewIssues(), box = $('#review');
+  box.innerHTML = L.length ? `<b>만들기 전 점검 ${L.length}건</b><ul>` + L.map(x => `<li class="${x.bad ? 'bad' : ''}" data-i="${x.i}">${esc(x.m)}</li>`).join('') + '</ul>' : '<b class="ok">만들기 전 점검: 고칠 곳이 없습니다</b>';
+}
+$('#review').addEventListener('click', e => {
+  const li = e.target.closest('li'); if (!li || +li.dataset.i < 0) return;
+  const b = $(`#sceneList .sc[data-i="${li.dataset.i}"] .hd b`); if (b) { b.click(); b.closest('.sc').scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+});
 function sumInfo(){
   const tot = totalOf(ST.scenes), tg = len(), off = tot - tg;
   $('#sumInfo').textContent = `전체 ${tot.toFixed(1)}초 · 목표 ${tg}초` + (Math.abs(off) < 1 ? '' : off > 0 ? ` (${off.toFixed(1)}초 김)` : ` (${(-off).toFixed(1)}초 짧음)`) + (Math.abs(off) >= 1 ? ' · 시간 다시 나누기를 누르면 맞춰집니다' : '');
@@ -208,7 +237,7 @@ function renderScenes(){
       : s.lines.map((l, j) => `<input type="text" data-line="${j}" value="${esc(l.t)}" aria-label="장면 ${i + 1} 글 ${j + 1}">`).join('');
     return `<div class="sc" data-i="${i}"><div class="hd"><b>장면 ${i + 1}</b><span class="dur"><button type="button" data-a="dm" aria-label="짧게">−</button>${s.d.toFixed(1)}초<button type="button" data-a="dp" aria-label="길게">+</button></span><span class="sp"></span>${s.kind === 'list' ? '' : visOptions(s)}${s.visual && s.visual.media != null && ST.media[s.visual.media] && ST.media[s.visual.media].type === 'image' ? '<button type="button" class="aim" data-a="aim">위치</button>' : ''}<button type="button" data-a="up" aria-label="위로">↑</button><button type="button" data-a="dn" aria-label="아래로">↓</button><button type="button" data-a="del" aria-label="삭제">×</button></div>${inputs}</div>`;
   }).join('');
-  player.lastI = -1; drawAt(Math.min(player.t, totalOf(ST.scenes) - 0.01)); sumInfo();
+  player.lastI = -1; drawAt(Math.min(player.t, totalOf(ST.scenes) - 0.01)); sumInfo(); showReview();
   save();
 }
 $('#sceneList').addEventListener('input', e => {
@@ -365,6 +394,13 @@ $('#exportBtn').addEventListener('click', async () => {
   $('#expMsg').textContent = `완성했습니다 (${(outBlob.size / 1048576).toFixed(1)}MB, ${mime.startsWith('video/mp4') ? 'MP4' : 'WebM'})`;
   $('#expBar').style.width = '100%';
   $('#outBox').classList.remove('hidden'); btn.disabled = false; btn.textContent = '다시 만들기';
+  // 만든 영상 점검: 길이가 맞는지, 비어 있지 않은지
+  const ov = $('#outVideo'); ov.onloadedmetadata = () => {
+    const d = ov.duration, probs = [];
+    if (outBlob.size < 200000) probs.push('파일이 너무 작습니다');
+    if (isFinite(d) && Math.abs(d - tot) > 1) probs.push(`영상 길이가 ${d.toFixed(1)}초로 계획(${tot.toFixed(1)}초)과 다릅니다`);
+    $('#expMsg').textContent += probs.length ? ` · 확인 필요: ${probs.join(', ')}. 화면을 켜 둔 채 다시 만들어 보세요.` : ' · 길이 확인 완료';
+  };
   if (!mime.startsWith('video/mp4')) toast('이 브라우저는 WebM으로 저장합니다. 유튜브·인스타에 그대로 올릴 수 있습니다');
 });
 $('#dl').addEventListener('click', () => {

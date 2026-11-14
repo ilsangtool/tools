@@ -79,9 +79,16 @@ class Stage {
         res.push({ l, sz, w, rows, top: h });
         h += rows.length * sz * 1.3 + (i < lines.length - 1 ? sz * 0.35 : 0);
       });
+      this._k = k;
       if (h <= box[3] && res.every(r => r.rows.length <= 4) && (!this._broke || tries >= 8)) return { res, h }; // 낱말 중간이 잘리면 글자를 줄여 다시
     }
     return { res, h: res.reduce((a, r) => Math.max(a, r.top + r.rows.length * r.sz * 1.3), 0) };
+  }
+  // 점검용: 글이 칸에 들어가는지, 얼마나 줄였는지
+  measure(sc){
+    if (sc.kind === 'list') { const n = sc.rows.length; return { fit: n <= 7, k: 1 }; }
+    const box = sc.visual ? this.frame(sc).text : this.geo().textOnly, r = this.layoutText(sc.lines, box, sc.kind, sc.align, !!sc.visual);
+    return { fit: r.h <= box[3] + 1 && !r.res.some(x => x.rows.length > 4), k: this._k };
   }
   draw(sc, local, P){
     const x = this.x, W = this.W, H = this.H, g = this.geo();

@@ -41,19 +41,37 @@ Graphics.handheld = function(x, px, py, pw, ph, v, P, t, media){
     K.el(x, blink ? '#E63946' : '#3A6EA5', tl + tw * 0.82, tt - th * 0.02, th * 0.07, th * 0.05);
   }
   x.restore();
-  // 휴대폰 + 손
-  const rise = 1 - easeOut((t - 0.1) / 0.7);
-  const Hh = ph * (pw > ph * 1.3 ? 0.98 : 0.86), Ww = Hh * 0.47, cx = px + pw * (pw > ph * 1.3 ? 0.66 : 0.64), cy = py + ph * 0.58 + rise * ph * 0.25;
-  const skin = '#E6B190', skinD = '#CF9474', sleeve = fire ? '#3B3A36' : K.tone(P.ac, -0.35);
+  // 휴대폰 + 손 (오른손: 손바닥은 휴대폰 뒤, 네 손가락 끝은 오른쪽 가장자리, 엄지는 왼쪽 가장자리 앞)
+  const rise = 1 - easeOut((t - 0.1) / 0.7), wide = pw > ph * 1.3;
+  const Hh = ph * (wide ? 0.86 : 0.78), Ww = Hh * 0.47, cx = px + pw * (wide ? 0.66 : 0.62), cy = py + ph * (wide ? 0.55 : 0.53) + rise * ph * 0.25;
+  const skin = '#E2AD8B', skinD = '#C98E6C', skinL = '#EDC2A4', sleeve = fire ? '#3B3A36' : K.tone(P.ac, -0.35);
   x.save(); x.translate(cx, cy); x.rotate(-0.09 + Math.sin(t * 0.9) * 0.008);
-  // 소매·손목 (오른쪽 아래에서 들어옴)
-  x.save(); x.rotate(0.5); x.fillStyle = sleeve; x.fillRect(-Ww * 0.2, Hh * 0.5, Ww * 1.1, Hh * 0.9);
-  if (fire) { x.fillStyle = '#E8D44D'; x.fillRect(-Ww * 0.2, Hh * 0.62, Ww * 1.1, Hh * 0.035); x.fillStyle = '#C9CDD2'; x.fillRect(-Ww * 0.2, Hh * 0.655, Ww * 1.1, Hh * 0.025); x.fillStyle = '#E8D44D'; x.fillRect(-Ww * 0.2, Hh * 0.68, Ww * 1.1, Hh * 0.035); }
+  const W2 = Ww / 2, H2 = Hh / 2;
+  // 소매: 손목 아래 오른쪽으로
+  x.save(); x.translate(W2 * 0.35, H2 * 1.32); x.rotate(-0.35);
+  x.fillStyle = sleeve; x.fillRect(-Ww * 0.42, 0, Ww * 0.95, Hh * 0.6);
+  if (fire) { x.fillStyle = '#E8D44D'; x.fillRect(-Ww * 0.42, Hh * 0.07, Ww * 0.95, Hh * 0.028); x.fillStyle = '#C9CDD2'; x.fillRect(-Ww * 0.42, Hh * 0.098, Ww * 0.95, Hh * 0.02); x.fillStyle = '#E8D44D'; x.fillRect(-Ww * 0.42, Hh * 0.118, Ww * 0.95, Hh * 0.028); }
+  else { x.fillStyle = K.tone(sleeve, -0.2); x.fillRect(-Ww * 0.42, 0, Ww * 0.95, Hh * 0.03); }
   x.restore();
-  K.el(x, skinD, Ww * 0.05, Hh * 0.42, Ww * 0.62, Hh * 0.2); // 손바닥
-  K.el(x, skin, Ww * 0.02, Hh * 0.4, Ww * 0.6, Hh * 0.19);
-  // 오른쪽에서 감싼 손가락 (휴대폰 뒤)
-  [-0.12, 0.0, 0.12, 0.23].forEach((fy, i) => { x.fillStyle = i % 2 ? skinD : skin; x.beginPath(); x.roundRect(Ww * 0.36, Hh * fy, Ww * 0.26, Hh * 0.075, Hh * 0.037); x.fill(); });
+  // 휴대폰 뒤 손: 손목·손바닥 + 오른쪽 가장자리로 나온 손가락 네 개 (한 덩어리 윤곽)
+  const fx0 = W2 * 0.96, fingers = [[-0.16, 0.13], [0.0, 0.16], [0.16, 0.155], [0.31, 0.12]];
+  x.fillStyle = skin; x.beginPath();
+  x.moveTo(-W2 * 0.55, H2 * 1.45);
+  x.bezierCurveTo(-W2 * 0.75, H2 * 1.1, -W2 * 0.6, H2 * 0.85, -W2 * 0.2, H2 * 0.8);
+  x.lineTo(fx0, H2 * 0.75);
+  x.bezierCurveTo(fx0 + W2 * 0.2, H2 * 0.72, fx0 + W2 * 0.18, H2 * 0.62, fx0, H2 * 0.58);
+  for (let i = fingers.length - 1; i >= 0; i--) { // 아래 손가락부터 위로
+    const [fy, len] = fingers[i], yb = fy * Hh + Hh * 0.075, ytp = fy * Hh - Hh * 0.062, out = fx0 + Ww * len;
+    x.lineTo(fx0 + Ww * 0.02, yb);
+    x.bezierCurveTo(out, yb + Hh * 0.006, out + Ww * 0.03, ytp + Hh * 0.01, fx0 + Ww * len * 0.55, ytp);
+  }
+  x.lineTo(fx0 - W2 * 0.1, fingers[0][0] * Hh - Hh * 0.07); x.lineTo(0, 0);
+  x.lineTo(W2 * 0.9, H2 * 1.5); x.closePath(); x.fill();
+  // 손가락 사이 주름과 손가락 끝 그늘
+  x.strokeStyle = skinD; x.lineWidth = Math.max(2, Ww * 0.012); x.lineCap = 'round';
+  fingers.forEach(([fy, len], i) => {
+    if (i) { const y = fy * Hh - Hh * 0.065; x.beginPath(); x.moveTo(fx0 + Ww * 0.01, y); x.lineTo(fx0 + Ww * len * 0.5, y + Hh * 0.004); x.stroke(); }
+  });
   // 휴대폰
   const r = Ww * 0.13, l = -Ww / 2, tp = -Hh / 2;
   x.fillStyle = '#16171A'; x.beginPath(); x.roundRect(l, tp, Ww, Hh, r); x.fill();
@@ -68,11 +86,19 @@ Graphics.handheld = function(x, px, py, pw, ph, v, P, t, media){
   x.fillStyle = 'rgba(255,255,255,0.06)'; x.beginPath(); x.moveTo(sl, st); x.lineTo(sl + sw * 0.55, st); x.lineTo(sl, st + sh * 0.45); x.fill(); // 화면 반사
   x.restore();
   K.el(x, '#16171A', 0, tp + bz * 2.2, Ww * 0.045, Ww * 0.045); // 카메라 구멍
-  // 왼쪽 엄지 (휴대폰 앞)
-  x.save(); x.translate(l - Ww * 0.02, Hh * 0.2); x.rotate(-0.55);
-  x.fillStyle = skinD; x.beginPath(); x.roundRect(-Ww * 0.08, -Hh * 0.02, Ww * 0.2, Hh * 0.22, Ww * 0.1); x.fill();
-  x.fillStyle = skin; x.beginPath(); x.roundRect(-Ww * 0.09, -Hh * 0.03, Ww * 0.19, Hh * 0.2, Ww * 0.095); x.fill();
-  x.fillStyle = '#F2C9AE'; x.beginPath(); x.roundRect(-Ww * 0.05, -Hh * 0.02, Ww * 0.1, Hh * 0.05, Ww * 0.05); x.fill(); // 손톱
+  // 왼쪽 엄지: 아래에서 올라와 휴대폰 왼쪽 가장자리 위에 얹힘. 손톱은 끝쪽, 엄지 방향으로
+  const thumb = () => { x.beginPath();
+    x.moveTo(-W2 * 1.22, H2 * 1.3);
+    x.bezierCurveTo(-W2 * 1.2, H2 * 0.9, -W2 * 1.12, H2 * 0.45, -W2 * 0.98, H2 * 0.28);
+    x.bezierCurveTo(-W2 * 0.88, H2 * 0.16, -W2 * 0.68, H2 * 0.18, -W2 * 0.66, H2 * 0.32);
+    x.bezierCurveTo(-W2 * 0.64, H2 * 0.5, -W2 * 0.66, H2 * 0.78, -W2 * 0.6, H2 * 1.0);
+    x.lineTo(-W2 * 0.56, H2 * 1.3); x.closePath(); };
+  x.fillStyle = skin; thumb(); x.fill();
+  x.save(); thumb(); x.clip(); // 바깥쪽 그늘
+  x.fillStyle = skinD; x.beginPath(); x.ellipse(-W2 * 1.28, H2 * 0.9, W2 * 0.28, H2 * 0.75, 0, 0, Math.PI * 2); x.fill(); x.restore();
+  x.save(); x.translate(-W2 * 0.82, H2 * 0.3); x.rotate(0.12);
+  x.fillStyle = skinL; x.beginPath(); x.ellipse(0, 0, W2 * 0.12, H2 * 0.075, 0, 0, Math.PI * 2); x.fill();
+  x.strokeStyle = skinD; x.lineWidth = Math.max(1.5, Ww * 0.008); x.stroke(); x.restore();
   x.restore();
   x.restore();
 };
