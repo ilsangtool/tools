@@ -2,10 +2,12 @@
    - 도구를 실제로 쓴 뒤(결과 복사·파일 저장, 또는 1분 넘게 여러 번 입력) 아래에서 작은 창이 올라옴
    - 모든 입력은 선택. 닫으면 그만이고, 같은 기기에서는 자주 묻지 않음
    - 보내는 내용: 도구 이름, 고른 느낌, 적은 글, 휴대폰/PC 구분, 시각. 이름·연락처·기기 식별값은 보내지 않음
-   - 저장: Firebase Realtime Database /_feedback (쓰기만 공개, 읽기는 관리자 키로만) */
+   - 저장: 개발자 구글 시트 (Apps Script 웹 앱, apps-script/feedback.gs). 읽기·관리는 비밀 낱말이 있어야만 됨 */
 (function () {
   'use strict';
-  var DB = 'https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_feedback';
+  // 구글 시트 Apps Script 웹 앱 주소. 비어 있으면 의견 창을 띄우지 않음 (보낼 곳이 없으므로)
+  var ENDPOINT = '';
+  window.ILSANG_FEEDBACK_URL = ENDPOINT;
   var MAX = 1000;
   var ASK_AGAIN_DAYS = 14, AFTER_SENT_DAYS = 120, MAX_LATER = 2;
   var NAMES = {
@@ -17,7 +19,7 @@
   // 주소에서 도구 이름 찾기: /tools/weekly-pay/ → weekly-pay
   var parts = location.pathname.split('/').filter(function (p) { return p && p !== 'tools' && p !== 'index.html'; });
   var APP = parts.length ? parts[parts.length - 1] : '';
-  if (!APP || !NAMES[APP]) return; // 첫 화면·관리 화면에서는 묻지 않음
+  if (!ENDPOINT || !APP || !NAMES[APP]) return; // 주소가 없거나 첫 화면·관리 화면이면 묻지 않음
   var KEY = 'ilsang_fb_' + APP;
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
@@ -92,9 +94,14 @@
     send.addEventListener('click', function () {
       var body = { a: APP, t: Date.now(), r: mood || '', m: ta.value.trim().slice(0, MAX), d: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'm' : 'p', w: reason || '' };
       send.disabled = true; send.textContent = '보내는 중…';
-      fetch(DB + '/' + encodeURIComponent(APP) + '.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-        .then(function (r) {
-          if (!r.ok) throw new Error(r.status);
+      var payload = JSON.stringify(body);
+      // 일반 텍스트로 보내 브라우저 사전 확인 요청을 피함. 응답을 못 읽는 환경(일부 휴대폰)이면 응답 없이 한 번 더 보냄
+      fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload, redirect: 'follow' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { if (!j || !j.ok) throw new Error(j && j.err || 'fail'); }, function () {
+          return fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payload });
+        })
+        .then(function () {
           var s = load(); s.sent = Date.now(); keep(s);
           el.querySelector('.fb-moods').remove(); el.querySelector('label').remove(); ta.remove(); el.querySelector('.fb-meta').remove(); el.querySelector('.fb-sub').remove();
           el.querySelector('h2').textContent = '남겨 주셔서 감사합니다. 꼭 살펴보겠습니다.';

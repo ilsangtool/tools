@@ -82,16 +82,17 @@
 </div></div>
 <main>
   <h1>의견함</h1>
-  <p class="lead">도구를 쓴 사람이 남긴 개선 의견입니다. 이 화면과 의견 내용은 관리자 키가 있어야만 열립니다.</p>
+  <p class="lead">도구를 쓴 사람이 남긴 개선 의견입니다. 의견은 '일상툴 의견함' 구글 시트에 저장되고, 이 화면은 비밀 낱말이 있어야만 열립니다.</p>
 
   <section class="card" id="login">
-    <h2>관리자 키 넣기</h2>
-    <label class="f" for="key">Firebase 데이터베이스 비밀 키</label>
-    <input type="password" id="key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="gurichecklist 프로젝트의 데이터베이스 비밀 키">
+    <h2>비밀 낱말 넣기</h2>
+    <label class="f" for="key">의견함 비밀 낱말</label>
+    <input type="password" id="key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="구글 시트 스크립트에 정한 ADMIN_KEY">
     <label class="chk"><input type="checkbox" id="remember" checked> 이 기기에 기억하기 (내 휴대폰·PC에서만)</label>
     <div class="row" style="margin-top:14px"><button type="button" id="enter">의견 열기</button></div>
     <p class="err hidden" id="loginErr"></p>
-    <p class="hint">키는 이 기기 브라우저에만 저장되고 일상툴 서버나 저장소에는 올라가지 않습니다. 키 위치: Firebase 콘솔 → gurichecklist 프로젝트 설정 → 서비스 계정 → 데이터베이스 보안 비밀(Database secrets) → 표시.</p>
+    <p class="hint">비밀 낱말은 이 기기 브라우저에만 저장되고 일상툴 저장소에는 올라가지 않습니다. 낱말은 '일상툴 의견함' 구글 시트 → 확장 프로그램 → Apps Script 맨 위 ADMIN_KEY에 적은 것입니다.</p>
+    <p class="err hidden" id="noUrl">아직 구글 시트가 연결되지 않았습니다. assets/feedback.js의 ENDPOINT에 웹 앱 주소를 넣어 주세요.</p>
   </section>
 
   <div id="board" class="hidden">
@@ -128,10 +129,11 @@
   </div>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="../assets/feedback.js"></script>
 <script>
 (function(){
   'use strict';
-  var DB = 'https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_feedback';
+  var URL_ = window.ILSANG_FEEDBACK_URL || '';
   var KEYS = 'ilsang_admin_key';
   var NAMES = {'pdf-to-hwp':'PDF 한글 변환·나누기·합치기','image-resize':'사진 용량 줄이기','id-photo':'증명사진 자르기','weekly-pay':'주휴수당·월급 계산기','dutch-pay':'더치페이 정산','date-calc':'D-day·만 나이 계산기','refund-policy':'환불·교환 규정 생성기','noshow-policy':'노쇼 규정 문구 생성기','review-policy':'리뷰 운영정책 고지문','closed-notice':'휴무 안내문 만들기','short-video':'숏폼 영상 만들기'};
   var MOOD = {good:'편했어요', ok:'보통이에요', bad:'불편했어요'};
@@ -142,12 +144,18 @@
   var name = function(a){ return NAMES[a] || a; };
   var when = function(t){ var d = new Date(t); if (isNaN(d)) return ''; var p = function(n){ return String(n).padStart(2,'0'); }; return d.getFullYear() + '.' + p(d.getMonth()+1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
   function toast(m){ var t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
-  function api(path, opt){ return fetch(DB + path + '.json?auth=' + encodeURIComponent(key), opt).then(function(r){ if (r.status === 401 || r.status === 403) throw new Error('KEY'); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
+  // 구글 시트 Apps Script에 일반 텍스트로 보냄 (비밀 낱말은 주소가 아니라 본문에 담음)
+  function api(action, extra){
+    if (!URL_) return Promise.reject(new Error('NOURL'));
+    var body = Object.assign({ action: action, key: key }, extra || {});
+    return fetch(URL_, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(body), redirect:'follow' })
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(j){ if (!j.ok) throw new Error(j.err === 'key' ? 'KEY' : (j.err || 'fail')); return j; });
+  }
 
   function loadAll(){
-    return api('', {cache:'no-store'}).then(function(d){
-      rows = [];
-      Object.keys(d || {}).forEach(function(a){ Object.keys(d[a] || {}).forEach(function(id){ var v = d[a][id] || {}; rows.push({ id:id, a:a, t:+v.t || 0, r:v.r || '', m:v.m || '', d:v.d || '', w:v.w || '', c:+v.c || 0 }); }); });
+    return api('list').then(function(j){
+      rows = (j.rows || []).map(function(v){ return { id:String(v.id), a:v.a || '', t:+v.t || 0, r:v.r || '', m:v.m || '', d:v.d || '', w:v.w || '', c:!!v.c }; });
       rows.sort(function(x, y){ return y.t - x.t; });
       render();
     });
@@ -159,7 +167,7 @@
       if ($('#remember').checked) { try { localStorage.setItem(KEYS, key); } catch(e){} }
       $('#login').classList.add('hidden'); $('#board').classList.remove('hidden'); $('#reload').classList.remove('hidden'); $('#logout').classList.remove('hidden');
     }).catch(function(e){
-      showErr(e.message === 'KEY' ? '키가 맞지 않습니다. Firebase 콘솔에서 데이터베이스 비밀 키를 다시 확인해 주세요.' : '불러오지 못했습니다. 인터넷 연결을 확인해 주세요. (' + e.message + ')');
+      showErr(e.message === 'KEY' ? '비밀 낱말이 맞지 않습니다. 시트 스크립트의 ADMIN_KEY를 다시 확인해 주세요.' : e.message === 'NOURL' ? '아직 구글 시트가 연결되지 않았습니다.' : '불러오지 못했습니다. 인터넷 연결을 확인해 주세요. (' + e.message + ')');
       if (e.message === 'KEY') { try { localStorage.removeItem(KEYS); } catch(x){} }
     }).finally(function(){ $('#enter').disabled = false; $('#enter').textContent = '의견 열기'; });
   }
@@ -195,7 +203,7 @@
     $('#list').innerHTML = f.length ? f.map(function(r){
       return '<article class="item' + (r.c ? '' : ' new') + '" data-id="' + esc(r.id) + '" data-a="' + esc(r.a) + '">' +
         '<div class="hd"><b>' + esc(name(r.a)) + '</b><span>' + when(r.t) + '</span>' + (r.r ? '<span class="mood ' + esc(r.r) + '">' + esc(MOOD[r.r] || r.r) + '</span>' : '') +
-        '<span>' + (r.d === 'm' ? '휴대폰' : r.d === 'p' ? 'PC' : '') + (WHY[r.w] ? ' · ' + WHY[r.w] : '') + '</span>' + (r.c ? '<span>· 확인함 ' + when(r.c).slice(2) + '</span>' : '') + '</div>' +
+        '<span>' + (r.d === 'm' ? '휴대폰' : r.d === 'p' ? 'PC' : '') + (WHY[r.w] ? ' · ' + WHY[r.w] : '') + '</span>' + (r.c ? '<span>· 확인함</span>' : '') + '</div>' +
         (r.m ? '<p class="msg">' + esc(r.m) + '</p>' : '<p class="msg empty">글 없이 느낌만 남겼습니다.</p>') +
         '<div class="row"><button type="button" class="ghost sm" data-act="done">' + (r.c ? '새 의견으로 되돌리기' : '확인함') + '</button>' + (r.m ? '<button type="button" class="ghost sm" data-act="copy">글 복사</button>' : '') + '<button type="button" class="sm danger" data-act="del">삭제</button></div></article>';
     }).join('') : '<p class="empty-all">조건에 맞는 의견이 없습니다.</p>';
@@ -205,23 +213,21 @@
   $('#list').addEventListener('click', function(e){
     var b = e.target.closest('button'); if (!b) return;
     var it = b.closest('.item'), r = find(it.dataset.id, it.dataset.a), act = b.dataset.act; if (!r) return;
-    var path = '/' + encodeURIComponent(r.a) + '/' + encodeURIComponent(r.id);
     if (act === 'copy') { navigator.clipboard.writeText(r.m).then(function(){ toast('복사했습니다'); }); return; }
     if (act === 'done') {
-      var v = r.c ? null : Date.now(); b.disabled = true;
-      api(path + '/c', { method:'PUT', body: JSON.stringify(v) }).then(function(){ r.c = v || 0; render(); toast(v ? '확인함으로 옮겼습니다' : '새 의견으로 되돌렸습니다'); }).catch(function(){ b.disabled = false; toast('바꾸지 못했습니다'); });
+      var v = !r.c; b.disabled = true;
+      api('done', { id: r.id, v: v }).then(function(){ r.c = v; render(); toast(v ? '확인함으로 옮겼습니다' : '새 의견으로 되돌렸습니다'); }).catch(function(){ b.disabled = false; toast('바꾸지 못했습니다'); });
       return;
     }
     if (act === 'del') {
       if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = '한 번 더 누르면 삭제'; setTimeout(function(){ if (document.body.contains(b)) { b.classList.remove('armed'); b.textContent = '삭제'; } }, 3000); return; }
       b.disabled = true;
-      api(path, { method:'DELETE' }).then(function(){ rows = rows.filter(function(x){ return x !== r; }); render(); toast('삭제했습니다'); }).catch(function(){ b.disabled = false; toast('삭제하지 못했습니다'); });
+      api('del', { id: r.id }).then(function(){ rows = rows.filter(function(x){ return x !== r; }); render(); toast('삭제했습니다'); }).catch(function(){ b.disabled = false; toast('삭제하지 못했습니다'); });
     }
   });
   $('#allDone').addEventListener('click', function(){
     var f = filtered().filter(function(r){ return !r.c; }); if (!f.length) { toast('확인할 새 의견이 없습니다'); return; }
-    var now = Date.now(), patch = {}; f.forEach(function(r){ patch[r.a + '/' + r.id + '/c'] = now; });
-    api('', { method:'PATCH', body: JSON.stringify(patch) }).then(function(){ f.forEach(function(r){ r.c = now; }); render(); toast(f.length + '건을 확인함으로 옮겼습니다'); }).catch(function(){ toast('바꾸지 못했습니다'); });
+    api('done', { ids: f.map(function(r){ return r.id; }), v: true }).then(function(){ f.forEach(function(r){ r.c = true; }); render(); toast(f.length + '건을 확인함으로 옮겼습니다'); }).catch(function(){ toast('바꾸지 못했습니다'); });
   });
   $('#csv').addEventListener('click', function(){
     var f = filtered(), q = function(s){ return '"' + String(s).replace(/"/g, '""') + '"'; };
@@ -237,6 +243,7 @@
   $('#key').addEventListener('keydown', function(e){ if (e.key === 'Enter') enter($('#key').value); });
   $('#reload').addEventListener('click', function(){ loadAll().then(function(){ toast('새로 불러왔습니다'); }).catch(function(){ toast('불러오지 못했습니다'); }); });
   $('#logout').addEventListener('click', function(){ try { localStorage.removeItem(KEYS); } catch(e){} key = ''; rows = []; $('#board').classList.add('hidden'); $('#login').classList.remove('hidden'); $('#reload').classList.add('hidden'); $('#logout').classList.add('hidden'); $('#key').value = ''; toast('이 기기에서 키를 지웠습니다'); });
+  if (!URL_) $('#noUrl').classList.remove('hidden');
   var saved = ''; try { saved = localStorage.getItem(KEYS) || ''; } catch(e){}
   if (saved) enter(saved, true);
 })();

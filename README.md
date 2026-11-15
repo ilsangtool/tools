@@ -66,29 +66,15 @@ robots.txt, sitemap.xml   검색엔진 등록용
 - 페이지 원본은 `_build/tools/<도구>/`. 원본을 고치고 `python _build/build.py` 실행. 결과 `index.html`을 직접 고치면 다음 점검 때 덮어써집니다.
 
 ## 의견함 (사용자 개선 의견)
-- `assets/feedback.js`: 도구를 쓴 뒤(결과 복사·파일 저장, 또는 1분 넘게 5번 넘게 입력) 아래에서 의견 창이 올라온다. 모든 입력은 선택이고, 보내면 120일, "다음에"를 누르면 14일 동안 같은 도구에서 다시 묻지 않는다(최대 2번).
+- `assets/feedback.js`: 도구를 쓴 뒤(결과 복사·파일 저장, 또는 1분 넘게 5번 넘게 입력) 아래에서 "더 개선할 점이 있을까요?" 창이 올라온다. 모든 입력은 선택이고, 보내면 120일, "다음에"를 누르면 14일 동안 같은 도구에서 다시 묻지 않는다(최대 2번).
 - 보내는 내용: 도구 이름, 느낌(편했어요·보통이에요·불편했어요), 글(1,000자 이하), 휴대폰/PC, 물은 때, 시각. 이름·연락처·기기 식별값은 보내지 않는다.
-- 관리 화면: `admin/` (검색 제외). 첫 화면 아래 "관리자" 또는 위쪽 "의견함"(키를 저장한 기기에서만 보임)으로 연다. Firebase 데이터베이스 보안 비밀(Database secrets)로 읽고, 키는 그 기기 브라우저에만 저장된다.
-- 저장 위치: Firebase `gurichecklist` Realtime Database `/_feedback/{도구}/{자동 ID}`
+- 저장: 개발자 구글 시트 '일상툴 의견함'의 '의견' 탭 (Firebase 사용 안 함). 시트를 직접 열어 보거나 일상툴 `admin/` 의견함 화면에서 본다. 두 곳은 같은 내용이다.
+- 관리 화면 `admin/`(검색 제외): 첫 화면 아래 "관리자" 또는 위쪽 "의견함"(비밀 낱말을 저장한 기기에서만 보임)으로 연다.
 
-### Firebase 규칙 (한 번만 추가)
-`"rules": {` 안, `_orbit` 블록 옆에 추가. 최상위에 `".read": true`가 있으면 의견이 공개되므로 없는지 확인한다.
-
-```json
-"_feedback": {
-  ".read": false,
-  "$app": {
-    "$id": {
-      ".write": "!data.exists() && newData.exists()",
-      ".validate": "$app.matches(/^[a-z0-9-]{2,40}$/) && newData.hasChildren(['a', 't']) && newData.child('a').val() == $app && newData.child('t').val() <= now + 60000",
-      "a": { ".validate": "newData.isString()" },
-      "t": { ".validate": "newData.isNumber()" },
-      "r": { ".validate": "newData.isString() && newData.val().matches(/^(good|ok|bad|)$/)" },
-      "m": { ".validate": "newData.isString() && newData.val().length <= 1000" },
-      "d": { ".validate": "newData.isString() && newData.val().length <= 2" },
-      "w": { ".validate": "newData.isString() && newData.val().length <= 8" },
-      "$other": { ".validate": false }
-    }
-  }
-}
-```
+### 구글 시트 연결 (한 번만)
+1. 구글 시트를 새로 만들고 이름을 '일상툴 의견함'으로 정한다.
+2. 확장 프로그램 → Apps Script → `apps-script/feedback.gs` 내용을 모두 붙여 넣는다.
+3. 맨 위 `ADMIN_KEY`를 나만 아는 낱말로 바꾸고 저장한다.
+4. 배포 → 새 배포 → 유형 "웹 앱" → 실행 계정 "나" → 액세스 권한 "모든 사용자" → 배포 → 권한 허용.
+5. 나온 웹 앱 URL(`https://script.google.com/macros/s/…/exec`)을 `assets/feedback.js`의 `ENDPOINT`에 넣는다. 비어 있으면 의견 창이 뜨지 않는다.
+- 스크립트를 고친 뒤에는 배포 관리 → 수정 → 버전 "새 버전" → 배포 (URL 유지).

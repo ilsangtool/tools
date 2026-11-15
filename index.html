@@ -124,18 +124,20 @@
   });
 })();
 </script>
+<script src="assets/feedback.js"></script>
 <script>
-/* 관리자 의견함: 관리자 키를 저장한 기기에서만 위쪽 버튼이 보이고, 새 의견 수를 표시 */
+/* 관리자 의견함: 비밀 낱말을 저장한 기기에서만 위쪽 버튼이 보이고, 새 의견 수를 표시 (의견은 구글 시트) */
 (function(){
-  var DB='https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_feedback';
   var openAdmin=function(){var w=window.open('admin/','ilsang_admin');if(!w)location.href='admin/';};
   document.getElementById('adminLink').addEventListener('click',openAdmin);
   var btn=document.getElementById('adminBtn');btn.addEventListener('click',openAdmin);
   var key='';try{key=localStorage.getItem('ilsang_admin_key')||'';}catch(e){}
+  var url=window.ILSANG_FEEDBACK_URL||'';
   if(!key)return;
   btn.classList.remove('hidden');
-  fetch(DB+'.json?auth='+encodeURIComponent(key),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
-    if(!d)return;var n=0;Object.keys(d).forEach(function(a){Object.keys(d[a]||{}).forEach(function(id){if(!(d[a][id]||{}).c)n++;});});
+  if(!url)return;
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'list',key:key}),redirect:'follow'}).then(function(r){return r.json()}).then(function(j){
+    if(!j||!j.ok)return;var n=(j.rows||[]).filter(function(r){return !r.c}).length;
     if(n){var b=document.getElementById('adminNew');b.textContent=n;b.classList.remove('hidden');btn.setAttribute('aria-label','의견함 관리 열기, 새 의견 '+n+'건');}
   }).catch(function(){});
 })();
