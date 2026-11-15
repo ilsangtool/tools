@@ -60,13 +60,13 @@
     el.className = 'fb-sheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-labelledby', 'fb-t');
     el.innerHTML =
       '<button type="button" class="fb-x" aria-label="닫기">×</button>' +
-      '<h2 id="fb-t">써 보시니 어떠셨나요?</h2>' +
-      '<p class="fb-sub">고칠 점을 알려 주시면 다음 개선에 반영합니다. 적지 않고 닫아도 됩니다.</p>' +
+      '<h2 id="fb-t">더 편해질 수 있는 부분이 있을까요?</h2>' +
+      '<p class="fb-sub">짧게 남겨 주시면 다음 업데이트에 반영하겠습니다. 그냥 닫으셔도 괜찮습니다.</p>' +
       '<div class="fb-moods" role="group" aria-label="사용 느낌 (선택)">' +
       MOODS.map(function (m) { return '<button type="button" data-m="' + m[0] + '" aria-pressed="false">' + m[1] + '</button>'; }).join('') + '</div>' +
-      '<label for="fb-m">고칠 점이나 있었으면 하는 기능 <span style="font-weight:400;color:var(--faint,#8c7f78)">(선택)</span></label>' +
-      '<textarea id="fb-m" maxlength="' + MAX + '" placeholder="예: 결과를 그림으로도 저장하고 싶어요"></textarea>' +
-      '<div class="fb-meta"><span>이름·연락처는 적지 마세요. 개발자만 봅니다.</span><span class="fb-n">0/' + MAX + '</span></div>' +
+      '<label for="fb-m">불편했던 점이나 있었으면 하는 기능 <span style="font-weight:400;color:var(--faint,#8c7f78)">(선택)</span></label>' +
+      '<textarea id="fb-m" maxlength="' + MAX + '" placeholder="예: 결과를 이미지로도 저장하고 싶어요"></textarea>' +
+      '<div class="fb-meta"><span>이름·연락처는 적지 말아 주세요. 남긴 글은 개발자만 확인합니다.</span><span class="fb-n">0/' + MAX + '</span></div>' +
       '<div class="fb-row"><button type="button" class="ghost fb-later">다음에</button><button type="button" class="fb-send" disabled>보내기</button></div>';
     document.body.appendChild(el);
     requestAnimationFrame(function () { el.classList.add('show'); });
@@ -97,7 +97,7 @@
           if (!r.ok) throw new Error(r.status);
           var s = load(); s.sent = Date.now(); keep(s);
           el.querySelector('.fb-moods').remove(); el.querySelector('label').remove(); ta.remove(); el.querySelector('.fb-meta').remove(); el.querySelector('.fb-sub').remove();
-          el.querySelector('h2').textContent = '보내 주셔서 고맙습니다';
+          el.querySelector('h2').textContent = '남겨 주셔서 감사합니다. 꼭 살펴보겠습니다.';
           el.querySelector('.fb-row').innerHTML = '<button type="button" class="fb-ok">닫기</button>';
           el.querySelector('.fb-ok').addEventListener('click', function () { close(false); });
           setTimeout(function () { if (document.body.contains(el)) close(false); }, 2500);
