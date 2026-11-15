@@ -363,7 +363,7 @@ function onRulesLoaded(fn){
 /* 함께 쓰면 좋은 도구: 실제 이용 기기 수(오비트 집계) 순으로 다시 정렬. 하루 한 번만 받아 이 기기에 보관 */
 (function(){
   const box = document.getElementById('related'); if (!box) return;
-  const KEY = 'ilsang_pop_v1', DB = 'https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_orbit/apps.json';
+  const KEY = 'ilsang_pop_v1', DB = 'https://orbit-f48fe-default-rtdb.asia-southeast1.firebasedatabase.app/_orbit/apps.json';
   const apply = counts => {
     const ol = box.querySelector('ol'), li = Array.from(ol.children);
     const sc = el => { const c = counts['tools~' + el.dataset.slug] || {}; return (c.u || 0) * 1000 + (c.v || 0) / 1000; };
