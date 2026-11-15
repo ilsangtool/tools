@@ -60,11 +60,29 @@ VARS = vars_()
 def tpl(s):
     return re.sub(r'\{\{([\w.]+)\}\}', lambda m: str(VARS[m.group(1)]), s)
 
-ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
+BRAND_MARK = '<svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e5a47"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'
+# 숏폼은 캔버스 글꼴로 Noto Sans KR을 씀
+NOTO = '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">'
+ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e5a47'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
 
 # 이용자 수를 받기 전(첫 방문·통신 실패)에 쓰는 순서: 검색 수요가 많은 도구부터
 POP_FALLBACK = ['pdf-to-hwp', 'image-resize', 'weekly-pay', 'date-calc', 'id-photo', 'dutch-pay',
                 'short-video', 'refund-policy', 'review-policy', 'noshow-policy', 'closed-notice']
+
+# 한국어 줄바꿈: '문자·매장'처럼 가운뎃점으로 이은 말 앞뒤에서 줄이 바뀌지 않게 낱말 잇기 문자(U+2060)를 넣음
+# (script·style·pre·textarea·title 안과 태그 속성은 건드리지 않음)
+import re as _re
+_WJ = '\u2060'
+def keep_dots(page):
+    out, skip = [], None
+    for part in _re.split(r'(<[^>]+>)', page):
+        if part.startswith('<'):
+            m = _re.match(r'<(/?)(script|style|pre|textarea|title|option|select|label|button)\b', part, _re.I)
+            if m: skip = None if m.group(1) else m.group(2).lower()
+            out.append(part); continue
+        if skip or '·' not in part: out.append(part); continue
+        out.append(_re.sub(r'(?<=[가-힣A-Za-z0-9)\]%])·(?=[가-힣A-Za-z0-9(\[])', _WJ + '·' + _WJ, part))
+    return ''.join(out)
 
 def related(slug):
     rank = {s: i for i, s in enumerate(POP_FALLBACK)}
@@ -109,18 +127,19 @@ def build(slug):
 <!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
 <link rel="icon" href="{ICON}">
 <script type="application/ld+json">{ld}</script>
-{faq}<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+{faq}<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+{NOTO if slug == 'short-video' else ''}
 <style>
-{base_css}  .faq details{{border-bottom:1px solid var(--line);padding:8px 0}}
-  .faq summary{{cursor:pointer;font-weight:500;font-size:14.5px}}
-  .faq p{{margin:6px 0 2px;color:var(--sub);font-size:14px}}
-{read(os.path.join(d, 'style.css'))}</style>
+{base_css}{read(os.path.join(d, 'style.css'))}</style>
 </head>
 <body>
+<div class="topbar"><div class="in">
+  <a class="brand" href="../" aria-label="일상툴 처음으로">{BRAND_MARK}일상툴</a>
+  <a class="all" href="../">전체 도구</a>
+</div></div>
 <header>
   <div class="wrap">
-    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
     <span class="tag">{e(m['tag'])}</span>
     <h1>{e(m['h1'])}</h1>
     <p>{e(m['lead'])}</p>
@@ -152,8 +171,16 @@ def build(slug):
 </html>
 '''
     os.makedirs(os.path.join(OUT, slug), exist_ok=True)
+    page = keep_dots(page)
     open(os.path.join(OUT, slug, 'index.html'), 'w', encoding='utf-8').write(page)
     print('built', slug, len(page.encode()), 'bytes')
+
+# 손으로 만든 첫 화면·리뷰 고지문 생성기에도 같은 줄바꿈 처리
+for f in ('index.html', os.path.join('review-policy', 'index.html')):
+    fp = os.path.join(OUT, f)
+    if os.path.exists(fp):
+        t = open(fp, encoding='utf-8').read(); n = keep_dots(t)
+        if n != t: open(fp, 'w', encoding='utf-8').write(n)
 
 for s, _, _ in TOOLS:
     if s != 'review-policy' and os.path.exists(os.path.join(ROOT, 'tools', s, 'meta.json')):

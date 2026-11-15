@@ -46,7 +46,7 @@ async function openFile(f){
     task.onPassword = async (cb, reason) => { $('#pwMsg').textContent = reason === 2 ? '비밀번호가 틀렸습니다. 다시 입력하세요.' : '비밀번호가 걸린 PDF입니다.'; cb(await pwWait()); };
     if (pdf) pdf.destroy();
     pdf = await task.promise;
-    $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${(f.size / 1048576).toFixed(1)}MB`;
+    $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${mb(f.size)}`;
     $('#optRange').placeholder = `전체 (1-${pdf.numPages})`;
     $('#convert').disabled = false;
     $('#convert').focus();

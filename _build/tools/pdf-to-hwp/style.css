@@ -1,7 +1,3 @@
-  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed #cfd3d8;border-radius:8px;padding:34px 12px;text-align:center;cursor:pointer;background:#fafafa;transition:.15s}
-  .drop.over,.drop:hover,.drop:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
-  .drop input{position:absolute;opacity:0;width:1px;height:1px}
-  .drop span{font-size:13px;color:var(--sub)}
   .pwrow{display:flex;gap:6px}.pwrow input{flex:1}
   .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
   .bar div{height:100%;width:0;background:var(--accent);transition:width .2s}
@@ -15,15 +11,15 @@
   .pv td p{margin:0}
   .pv hr.pg{border:0;border-top:2px dashed #c9ccd1;margin:16px 0}
   .flist{list-style:none;margin:0 0 8px;padding:0}
-  .flist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:0 0 6px;background:#fff;font-size:14px}
+  .flist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;margin:0 0 8px;background:#fff;font-size:14.5px}
   .flist .nm{flex:1 1 calc(100% - 40px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .flist .nm small{display:block;color:var(--sub);font-size:12px}
-  .flist input{width:110px;padding:6px 8px}
-  .flist button{padding:6px 10px;min-width:auto;font-size:13px}
-  #modes>.tabs button{font-size:15px;padding:10px 14px}
+  .flist input{width:110px;min-height:40px;padding:8px 10px;font-size:15px}
+  .flist button{min-height:38px;padding:6px 12px;min-width:auto;font-size:13.5px}
+  @media(min-width:601px){#modes>.tabs button{font-size:15px;padding:10px 14px}}
   #mList input{flex:1 1 90px}
   .pwask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   .pwask.hidden{display:none}
-  .pwbox{background:#fff;border-radius:6px;padding:16px;width:100%;max-width:360px}
+  .pwbox{background:#fff;border-radius:var(--r);padding:24px;width:100%;max-width:380px}
   .pwbox p{margin:0 0 8px;font-size:14.5px}
-  .pwbox input{width:100%;height:48px;padding:0 12px;border:1px solid #cfd3d8;border-radius:4px;font-size:16px;box-sizing:border-box}
+  .pwbox input{margin-bottom:4px}

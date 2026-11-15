@@ -12,95 +12,119 @@
 <meta property="og:url" content="https://ilsangtool.github.io/tools/">
 <meta property="og:locale" content="ko_KR">
 <!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e5a47'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  :root{--ink:#1d1f22;--sub:#5b6068;--line:#e3e5e8;--bg:#f6f6f4;--accent:#0f5c4a;--accent-soft:#e7f1ee}
+  :root{--ink:#191f28;--ink2:#333d4b;--sub:#4e5968;--faint:#8b95a1;--line:#e5e8eb;--line2:#d1d6db;--bg:#f3f4f6;--fill:#f7f8fa;--accent:#0e5a47;--accent-soft:#eaf3f0;--accent-line:#b9d6cc;--ring:0 0 0 3px rgba(14,90,71,.16)}
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
-  .wrap{max-width:760px;margin:0 auto;padding:32px 16px 60px}
-  h1{font-size:24px;margin:0 0 6px;letter-spacing:-.4px}
-  .lead{color:var(--sub);margin:0 0 24px;font-size:15px}
-  a.tool{display:block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s}
-  a.tool:hover,a.tool:focus-visible{border-color:var(--accent)}
-  .cat{font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px}
-  .tool h2{font-size:17px;margin:8px 0 4px}
-  .tool p{margin:0;color:var(--sub);font-size:14px}
-  .soon{border:1px dashed #cfd3d8;border-radius:8px;padding:14px 16px;color:var(--sub);font-size:14px}
-  h2.grp{font-size:14px;color:var(--sub);font-weight:500;margin:22px 0 8px}
-  h2.grp:first-of-type{margin-top:0}
-  footer{margin-top:28px;font-size:12.5px;color:var(--sub)}
+  body{margin:0;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
+  h1,h2,h3{text-wrap:balance} p{text-wrap:pretty}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px)}
+  .topbar .in{max-width:960px;margin:0 auto;height:52px;padding:0 16px;display:flex;align-items:center}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+  .brand svg{display:block}
+  .hero{background:#fff;border-bottom:1px solid var(--line)}
+  .hero .in{max-width:960px;margin:0 auto;padding:44px 16px 32px}
+  h1{font-size:34px;line-height:1.28;margin:0 0 12px;letter-spacing:-.035em;font-weight:700}
+  .lead{color:var(--sub);margin:0 0 24px;font-size:16.5px;line-height:1.65;max-width:34em}
+  .facts{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0 0 24px;padding:0;list-style:none;font-size:14px;color:var(--ink2);font-weight:500}
+  .facts li{display:flex;align-items:center;gap:8px}
+  .facts li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .search{position:relative;display:block;max-width:560px}
+  .search input{width:100%;height:52px;padding:0 16px 0 46px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:var(--fill);color:var(--ink);-webkit-appearance:none;appearance:none;transition:border-color .15s,background-color .15s,box-shadow .15s}
+  .search input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:var(--ring)}
+  .search input::placeholder{color:#a6aeb7}
+  .search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);pointer-events:none}
+  main{max-width:960px;margin:0 auto;padding:32px 16px 72px}
+  .grp{margin:0 0 32px}
+  .grp h2{font-size:15px;font-weight:700;color:var(--ink2);margin:0 0 12px;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .grp h2 small{font-size:13px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  a.tool{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 52px 22px 22px;text-decoration:none;color:inherit;transition:border-color .15s,background-color .15s;min-height:132px}
+  a.tool:hover{border-color:var(--accent-line);background:#fbfdfc}
+  a.tool:focus-visible{outline:none;border-color:var(--accent);box-shadow:var(--ring)}
+  .tool h3{font-size:17.5px;line-height:1.4;margin:0 0 6px;letter-spacing:-.025em;font-weight:700}
+  .tool p{margin:0;color:var(--sub);font-size:14.5px;line-height:1.65}
+  .go{position:absolute;right:20px;top:24px;width:28px;height:28px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;transition:background-color .15s}
+  .go::before{content:'';width:7px;height:7px;border-top:1.8px solid var(--sub);border-right:1.8px solid var(--sub);transform:translateX(-1px) rotate(45deg)}
+  a.tool:hover .go{background:var(--accent-soft)}
+  a.tool:hover .go::before{border-color:var(--accent)}
+  .empty{display:none;color:var(--sub);font-size:15px;padding:24px 0}
+  footer{font-size:13px;color:var(--faint);line-height:1.75;border-top:1px solid var(--line);padding-top:20px}
+  @media(max-width:680px){
+    .hero .in{padding:32px 12px 24px}
+    .topbar .in{padding:0 12px}
+    h1{font-size:27px}
+    .lead{font-size:15.5px}
+    .grid{grid-template-columns:1fr;gap:10px}
+    a.tool{min-height:0;padding:18px 48px 18px 18px}
+    .go{right:16px;top:20px}
+    main{padding:24px 12px 64px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>생활·업무 무료 도구 모음</h1>
-  <p class="lead">설치 없이 브라우저에서 바로 씁니다. 입력한 내용은 서버로 전송되지 않습니다.</p>
-
-  <h2 class="grp">문서 도구</h2>
-  <a class="tool" href="pdf-to-hwp/">
-    <span class="cat">문서 도구</span>
-    <h2>PDF 한글 변환·나누기·합치기</h2>
-    <p>서버 업로드 없이 PDF를 한글(HWPX)·워드로. 표와 합친 칸, 글자 크기·굵기를 살리고 스캔 PDF는 글자를 인식합니다. PDF 나누기·합치기도 됩니다.</p>
-  </a>
-  <h2 class="grp">영상 도구</h2>
-  <a class="tool" href="short-video/">
-    <span class="cat">영상 도구</span>
-    <h2>숏폼 영상 만들기</h2>
-    <p>알릴 내용을 쓰면 빠진 항목을 묻고 구성안 3가지를 보여 줍니다. 사진이 없어도 가격표·달력·지도 그림으로 채워 30~60초 영상으로 저장합니다.</p>
-  </a>
-  <h2 class="grp">매장·쇼핑몰 운영</h2>
-  <a class="tool" href="review-policy/">
-    <span class="cat">매장·쇼핑몰 운영</span>
-    <h2>리뷰 운영정책 고지문 생성기</h2>
-    <p>2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 고지문과 HTML 코드가 완성됩니다.</p>
-  </a>
-  <a class="tool" href="refund-policy/">
-    <span class="cat">매장·쇼핑몰 운영</span>
-    <h2>환불·교환 규정 고지문 생성기</h2>
-    <p>온라인 7일 청약철회 기준 반영. 법에 어긋나는 "세일 상품 환불 불가" 문구는 자동으로 걸러냅니다.</p>
-  </a>
-  <a class="tool" href="noshow-policy/">
-    <span class="cat">매장·쇼핑몰 운영</span>
-    <h2>예약·노쇼 규정 문구 생성기</h2>
-    <p>2025.12 개정 노쇼 위약금 기준(20%·40%) 반영. 예약 확정 문자와 매장 공지를 한 번에.</p>
-  </a>
-  <a class="tool" href="closed-notice/">
-    <span class="cat">매장·쇼핑몰 운영</span>
-    <h2>휴무·임시휴업 안내문 만들기</h2>
-    <p>날짜만 고르면 A4 인쇄용 안내문, SNS 이미지, 네이버 플레이스 공지 문구가 완성됩니다.</p>
-  </a>
-  <h2 class="grp">생활 계산</h2>
-  <a class="tool" href="weekly-pay/">
-    <span class="cat">생활 계산</span>
-    <h2>알바 주휴수당·월급 계산기</h2>
-    <p>2026년 10,320원 · 2027년 10,700원 반영. 주휴수당, 월급, 3.3%·4대보험 실수령액까지.</p>
-  </a>
-  <a class="tool" href="dutch-pay/">
-    <span class="cat">생활 계산</span>
-    <h2>더치페이·모임 정산 계산기</h2>
-    <p>1차·2차 결제자가 달라도 누가 누구에게 얼마 보내면 되는지 송금 횟수를 최소로 정리합니다.</p>
-  </a>
-  <a class="tool" href="date-calc/">
-    <span class="cat">생활 계산</span>
-    <h2>D-day·전역일·만나이 계산기</h2>
-    <p>디데이, 100일·1000일 기념일, 날짜 더하기, 군 전역일, 만 나이를 한 화면에서.</p>
-  </a>
-  <h2 class="grp">사진 도구</h2>
-  <a class="tool" href="image-resize/">
-    <span class="cat">사진 도구</span>
-    <h2>사진 용량 줄이기·HEIC 변환</h2>
-    <p>서버 업로드 없이 여러 장을 목표 용량(KB) 이하로 줄이고, 아이폰 HEIC를 JPG로 바꿉니다.</p>
-  </a>
-  <a class="tool" href="id-photo/">
-    <span class="cat">사진 도구</span>
-    <h2>증명사진 규격 자르기</h2>
-    <p>여권·반명함·비자 규격으로 자르고 편의점에서 뽑는 4×6 인화용 판까지 만듭니다.</p>
-  </a>
-
-  <footer>모든 도구는 참고용이며 법률·세무 자문을 대신하지 않습니다.</footer>
-</div>
+<div class="topbar"><div class="in"><a class="brand" href="./"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e5a47"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a></div></div>
+<div class="hero"><div class="in">
+  <h1>생활⁠·⁠업무 무료 도구 모음</h1>
+  <p class="lead">PDF 변환, 사진 용량 줄이기, 주휴수당 계산, 매장 안내문까지. 설치 없이 브라우저에서 바로 씁니다.</p>
+  <ul class="facts"><li>회원가입 없음</li><li>입력 내용은 서버로 보내지 않음</li><li>법령 개정 자동 반영</li></ul>
+  <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="도구 찾기 (예: PDF, 주휴수당, 증명사진)" aria-label="도구 찾기"></label>
+</div></div>
+<main>
+  <section class="grp" data-g="문서 도구">
+    <h2>문서 도구 <small>1</small></h2>
+    <div class="grid">
+      <a class="tool" href="pdf-to-hwp/"><h3>PDF 한글 변환⁠·⁠나누기⁠·⁠합치기</h3><p>서버 업로드 없이 PDF를 한글(HWPX)⁠·⁠워드로. 표와 합친 칸, 글자 크기⁠·⁠굵기를 살리고 스캔 PDF는 글자를 인식합니다. PDF 나누기⁠·⁠합치기도 됩니다.</p><span class="go" aria-hidden="true"></span></a>
+    </div>
+  </section>
+  <section class="grp" data-g="사진 도구">
+    <h2>사진 도구 <small>2</small></h2>
+    <div class="grid">
+      <a class="tool" href="image-resize/"><h3>사진 용량 줄이기⁠·⁠HEIC 변환</h3><p>서버 업로드 없이 여러 장을 목표 용량(KB) 이하로 줄이고, 아이폰 HEIC를 JPG로 바꿉니다.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="id-photo/"><h3>증명사진 규격 자르기</h3><p>여권⁠·⁠반명함⁠·⁠비자 규격으로 자르고 편의점에서 뽑는 4×6 인화용 판까지 만듭니다.</p><span class="go" aria-hidden="true"></span></a>
+    </div>
+  </section>
+  <section class="grp" data-g="생활 계산">
+    <h2>생활 계산 <small>3</small></h2>
+    <div class="grid">
+      <a class="tool" href="weekly-pay/"><h3>알바 주휴수당⁠·⁠월급 계산기</h3><p>2026년 10,320원 · 2027년 10,700원 반영. 주휴수당, 월급, 3.3%⁠·⁠4대보험 실수령액까지.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="dutch-pay/"><h3>더치페이⁠·⁠모임 정산 계산기</h3><p>1차⁠·⁠2차 결제자가 달라도 누가 누구에게 얼마 보내면 되는지 송금 횟수를 최소로 정리합니다.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="date-calc/"><h3>D-day⁠·⁠전역일⁠·⁠만나이 계산기</h3><p>디데이, 100일⁠·⁠1000일 기념일, 날짜 더하기, 군 전역일, 만 나이를 한 화면에서.</p><span class="go" aria-hidden="true"></span></a>
+    </div>
+  </section>
+  <section class="grp" data-g="매장·쇼핑몰 운영">
+    <h2>매장⁠·⁠쇼핑몰 운영 <small>4</small></h2>
+    <div class="grid">
+      <a class="tool" href="review-policy/"><h3>리뷰 운영정책 고지문 생성기</h3><p>2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 고지문과 HTML 코드가 완성됩니다.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="refund-policy/"><h3>환불⁠·⁠교환 규정 고지문 생성기</h3><p>온라인 7일 청약철회 기준 반영. 법에 어긋나는 "세일 상품 환불 불가" 문구는 자동으로 걸러냅니다.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="noshow-policy/"><h3>예약⁠·⁠노쇼 규정 문구 생성기</h3><p>2025.12 개정 노쇼 위약금 기준(20%⁠·⁠40%) 반영. 예약 확정 문자와 매장 공지를 한 번에.</p><span class="go" aria-hidden="true"></span></a>
+      <a class="tool" href="closed-notice/"><h3>휴무⁠·⁠임시휴업 안내문 만들기</h3><p>날짜만 고르면 A4 인쇄용 안내문, SNS 이미지, 네이버 플레이스 공지 문구가 완성됩니다.</p><span class="go" aria-hidden="true"></span></a>
+    </div>
+  </section>
+  <section class="grp" data-g="영상 도구">
+    <h2>영상 도구 <small>1</small></h2>
+    <div class="grid">
+      <a class="tool" href="short-video/"><h3>숏폼 영상 만들기</h3><p>알릴 내용을 쓰면 빠진 항목을 묻고 구성안 3가지를 보여 줍니다. 사진이 없어도 가격표⁠·⁠달력⁠·⁠지도 그림으로 채워 30~60초 영상으로 저장합니다.</p><span class="go" aria-hidden="true"></span></a>
+    </div>
+  </section>
+  <p class="empty" id="empty">찾는 도구가 없습니다. 다른 낱말로 찾아보세요.</p>
+  <footer>모든 도구는 참고용이며 법률⁠·⁠세무 자문을 대신하지 않습니다.</footer>
+</main>
+<script>
+(function(){
+  var q=document.getElementById('q'),cards=[].slice.call(document.querySelectorAll('a.tool')),grps=[].slice.call(document.querySelectorAll('section.grp'));
+  var norm=function(s){return s.toLowerCase().replace(/[\s\u2060]+/g,'')};
+  q.addEventListener('input',function(){
+    var w=norm(q.value),n=0;
+    cards.forEach(function(a){var hit=!w||norm(a.textContent).indexOf(w)>=0||norm(a.closest('.grp').dataset.g).indexOf(w)>=0;a.style.display=hit?'':'none';if(hit)n++;});
+    grps.forEach(function(g){g.style.display=[].some.call(g.querySelectorAll('a.tool'),function(a){return a.style.display!=='none'})?'':'none'});
+    document.getElementById('empty').style.display=n?'none':'block';
+  });
+})();
+</script>
 <!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->
 <script async src="https://gurifire.github.io/orbit/track.js"></script>
 </body>

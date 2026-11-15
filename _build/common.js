@@ -13,6 +13,7 @@ function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth()
 function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
 async function copy(s){
+  s = String(s).replace(/\u2060/g, '');
   try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
   catch(e) {
     const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();

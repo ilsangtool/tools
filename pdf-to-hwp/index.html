@@ -13,94 +13,168 @@
 <meta property="og:url" content="https://ilsangtool.github.io/tools/pdf-to-hwp/">
 <meta property="og:locale" content="ko_KR">
 <!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f5c4a'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e5a47'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "PDF 한글 변환·나누기·합치기", "url": "https://ilsangtool.github.io/tools/pdf-to-hwp/", "applicationCategory": "BusinessApplication", "operatingSystem": "All", "inLanguage": "ko", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "KRW"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "PDF가 서버에 올라가나요?", "acceptedAnswer": {"@type": "Answer", "text": "아니요. 변환은 지금 쓰는 브라우저 안에서만 이루어집니다. 처음 한 번 변환 도구를 받은 뒤에는 인터넷을 끊어도 글자 PDF 변환이 됩니다."}}, {"@type": "Question", "name": ".hwp 파일로 받을 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "한글(HWPX)로 저장한 뒤 한글 프로그램에서 열어 '다른 이름으로 저장'에서 HWP를 고르면 됩니다. HWPX는 2026년부터 공공기관 표준 형식이라 그대로 써도 됩니다."}}, {"@type": "Question", "name": "표도 그대로 옮겨지나요?", "acceptedAnswer": {"@type": "Answer", "text": "테두리 선이 있는 표는 칸 나눔과 합친 칸까지 한글·워드 표로 만듭니다. 선이 없는 표는 문단으로 옮겨집니다."}}, {"@type": "Question", "name": "스캔한 PDF도 되나요?", "acceptedAnswer": {"@type": "Answer", "text": "네. 글자가 없는 쪽은 자동으로 한국어·영어 글자 인식을 합니다. 처음 한 번 약 7MB를 받고, 한 쪽에 10~30초쯤 걸립니다. 숫자와 이름은 원본과 꼭 대조하세요."}}, {"@type": "Question", "name": "PDF 나누기·합치기는 어떻게 하나요?", "acceptedAnswer": {"@type": "Answer", "text": "위의 'PDF 나누기'에서 한 쪽씩, 범위대로, 몇 쪽씩, 고른 쪽만 중 하나로 나누고 여러 파일은 ZIP으로 한 번에 받습니다. 'PDF 합치기'에서는 여러 PDF를 넣고 순서를 바꾼 뒤 파일마다 넣을 쪽을 골라 하나로 합칩니다."}}, {"@type": "Question", "name": "인쇄·편집이 막힌 PDF나 암호 걸린 PDF도 나눌 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "네. 인쇄·편집만 막아 둔 PDF(공문 등)는 바로 보안을 풀어 나누거나 합치고, 여는 암호가 있으면 암호를 물어봅니다(소유자 암호도 됨). RC4·AES-128·AES-256 표준 보안을 지원하며, 인증서·DRM 방식은 풀 수 없습니다. 결과 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요."}}, {"@type": "Question", "name": "한글로 변환이 안 되는 PDF도 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "여는 비밀번호를 모르는 PDF, 손상된 파일은 열 수 없습니다. 글자를 그림(윤곽선)으로 바꾼 인쇄용 PDF나 복사하면 글자가 깨지는 PDF는 '스캔 글자 인식'을 '항상'으로 바꿔야 하고, 손글씨·흐린 스캔·세로쓰기·한자 위주 문서는 정확도가 떨어집니다. 그림 속 글자는 옮기지 않습니다."}}]}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
 <style>
+  /* 일상툴 공통 화면 — 흰 면 + 옅은 회색 바탕, 강조색 하나(진녹색), 그림자 대신 면 색 차이로 구분 */
   :root{
-    --ink:#1d1f22; --sub:#5b6068; --line:#e3e5e8; --bg:#f6f6f4; --card:#fff;
-    --accent:#0f5c4a; --accent-soft:#e7f1ee; --warn:#9a4b00; --warn-soft:#fff4e5; --bad:#b42318;
+    --ink:#191f28; --ink2:#333d4b; --sub:#4e5968; --faint:#8b95a1;
+    --line:#e5e8eb; --line2:#d1d6db; --bg:#f3f4f6; --card:#fff; --fill:#f7f8fa;
+    --accent:#0e5a47; --accent-ink:#0a4334; --accent-soft:#eaf3f0; --accent-line:#b9d6cc;
+    --warn:#a24a00; --warn-soft:#fff5e8; --bad:#c92a2a; --bad-soft:#fff0f0;
+    --r:12px; --r-s:10px; --ring:0 0 0 3px rgba(14,90,71,.16);
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px}
-  header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 18px 18px}
-  header .wrap{max-width:860px;margin:0 auto}
-  .back{font-size:13px;color:var(--sub);text-decoration:none;display:inline-block;margin-bottom:8px}
-  h1{font-size:21px;margin:0 0 4px;letter-spacing:-.3px}
-  header p{margin:0;color:var(--sub);font-size:14px}
-  .tag{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;margin-bottom:8px}
-  main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
-  .notice{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 12px;font-size:13.5px;color:#5a3500;margin-bottom:16px;border-radius:0 4px 4px 0}
-  .notice.ok{background:var(--accent-soft);border-color:var(--accent);color:#0b3d31}
-  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:12px}
-  section.card h2{font-size:16px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;align-items:center;justify-content:center;flex-shrink:0}
-  .opt{font-size:11px;font-weight:500;color:var(--sub);border:1px solid var(--line);padding:0 6px;border-radius:3px}
-  .hint{font-size:13px;color:var(--sub);margin:2px 0 12px}
-  label.f{display:block;font-size:13.5px;font-weight:500;margin:10px 0 4px}
-  input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;padding:9px 10px;border:1px solid #cfd3d8;border-radius:6px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
-  textarea{min-height:64px;resize:vertical}
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-  .chk{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:14px;border-bottom:1px dashed #eceef0}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px;letter-spacing:-.005em;
+    word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 0}
+  /* 한국어 줄바꿈: 낱말 단위(keep-all) + 제목은 줄 길이 맞춤, 본문은 마지막 줄 외톨이 막기 */
+  h1,h2,h3,summary,.tag,.cat{text-wrap:balance}
+  p,li,td,.hint,label{text-wrap:pretty}
+  a{color:var(--accent)}
+  ::selection{background:#cfe5dd}
+
+  /* 상단 막대: 브랜드 + 전체 도구 */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px)}
+  .topbar .in{max-width:880px;margin:0 auto;height:52px;padding:0 16px;display:flex;align-items:center;gap:12px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+  .brand svg{display:block;flex-shrink:0}
+  .topbar .all{margin-left:auto;font-size:14px;font-weight:600;color:var(--sub);text-decoration:none;padding:8px 12px;border-radius:8px}
+  .topbar .all:hover{background:var(--fill);color:var(--ink)}
+
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:28px 0 24px}
+  header .wrap{max-width:880px;margin:0 auto;padding:0 16px}
+  .back{display:none}
+  .tag{display:inline-block;font-size:12.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:8px;margin-bottom:12px;line-height:1.5}
+  h1{font-size:28px;line-height:1.3;margin:0 0 8px;letter-spacing:-.03em;font-weight:700}
+  header p{margin:0;color:var(--sub);font-size:15.5px;max-width:40em;line-height:1.65}
+
+  main{max-width:880px;margin:0 auto;padding:20px 16px 72px}
+  .notice{background:var(--warn-soft);border:1px solid #f6dcb8;padding:14px 16px;font-size:14px;color:#5a3500;margin-bottom:16px;border-radius:var(--r);line-height:1.65}
+  .notice.ok{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-ink)}
+  .notice b{font-weight:700}
+
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-bottom:12px}
+  section.card h2{font-size:17px;line-height:1.4;margin:0 0 4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;letter-spacing:-.02em;font-weight:700}
+  .num{display:inline-flex;width:24px;height:24px;border-radius:8px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;align-items:center;justify-content:center;flex-shrink:0;font-variant-numeric:tabular-nums}
+  .opt{font-size:11.5px;font-weight:600;color:var(--faint);background:var(--fill);border:1px solid var(--line);padding:1px 7px;border-radius:999px;line-height:1.5}
+  .hint{font-size:13.5px;color:var(--sub);margin:4px 0 16px;line-height:1.6}
+
+  label.f{display:block;font-size:14px;font-weight:600;color:var(--ink2);margin:16px 0 8px}
+  input[type=text],input[type=number],input[type=date],input[type=tel],input[type=email],input[type=url],input[type=password],input[type=search],select,textarea{
+    width:100%;min-height:48px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-s);font:inherit;font-size:16px;line-height:1.4;
+    background:var(--fill);color:var(--ink);transition:border-color .15s,background-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}
+  select{padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234e5968' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+  input::placeholder,textarea::placeholder{color:#a6aeb7}
+  input:hover,select:hover,textarea:hover{border-color:var(--line2)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background-color:#fff;box-shadow:var(--ring)}
+  textarea{min-height:96px;resize:vertical;line-height:1.6}
+  input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--accent)}
+  input[type=checkbox]{width:18px;height:18px;flex-shrink:0}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .row>*,.row3>*{min-width:0}
+  .chk{display:flex;gap:10px;align-items:flex-start;padding:12px 0;font-size:14.5px;border-bottom:1px solid #f0f2f4;line-height:1.55}
   .chk:last-child{border-bottom:0}
-  .chk input{margin-top:4px;accent-color:var(--accent)}
-  .radio-group{display:flex;flex-wrap:wrap;gap:6px}
-  .radio-group label{position:relative;border:1px solid #cfd3d8;border-radius:6px;padding:6px 10px;font-size:13.5px;cursor:pointer;background:#fff}
+  .chk input{margin-top:2px}
+
+  .radio-group{display:flex;flex-wrap:wrap;gap:8px}
+  .radio-group label{position:relative;display:inline-flex;align-items:center;min-height:42px;border:1px solid var(--line);border-radius:var(--r-s);padding:8px 14px;font-size:14.5px;font-weight:500;cursor:pointer;background:#fff;color:var(--ink2);line-height:1.35;transition:border-color .15s,background-color .15s}
+  .radio-group label:hover{border-color:var(--line2)}
   .radio-group input{position:absolute;opacity:0;width:1px;height:1px}
-  .radio-group label:has(input:focus-visible){outline:2px solid var(--accent)}
-  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .radio-group label:has(input:focus-visible){box-shadow:var(--ring)}
+  .radio-group label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-weight:700;box-shadow:inset 0 0 0 1px var(--accent)}
   .hidden{display:none!important}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
-  button{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:10px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
-  button.ghost{background:#fff;color:var(--ink)}
-  button.sm{padding:5px 9px;font-size:13px}
-  button:disabled{opacity:.4;cursor:not-allowed}
-  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
-  .tabs button{border:0;background:none;color:var(--sub);border-bottom:2px solid transparent;border-radius:0;padding:8px 12px;white-space:nowrap}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 4px}
+  button{font:inherit;font-size:15px;font-weight:600;line-height:1.3;border-radius:var(--r-s);min-height:48px;padding:12px 18px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;letter-spacing:-.01em;transition:background-color .15s,border-color .15s,color .15s}
+  button:hover{background:#000}
+  button:focus-visible{outline:none;box-shadow:var(--ring)}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line2)}
+  button.ghost:hover{background:var(--fill);border-color:#b0b8c1}
+  button.sm{min-height:36px;padding:6px 12px;font-size:13.5px;border-radius:8px}
+  button:disabled,button:disabled:hover{opacity:.38;cursor:not-allowed;background:var(--ink)}
+  button.ghost:disabled,button.ghost:disabled:hover{background:#fff}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{border:0;background:none;color:var(--faint);border-bottom:2px solid transparent;border-radius:0;min-height:44px;padding:10px 12px;white-space:nowrap;font-weight:600;flex-shrink:0}
+  .tabs button:hover{background:none;color:var(--ink2)}
   .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
-  pre{white-space:pre-wrap;word-break:break-all;background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;max-height:420px;overflow:auto;margin:0;font-family:inherit}
-  pre.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
-  .preview-box{border:1px solid var(--line);border-radius:6px;padding:12px;background:#fff}
-  .warn-line{color:var(--bad);font-size:13px;margin-top:6px}
-  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 8px}
-  .stat div{background:#fafafa;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
-  .stat small{display:block;color:var(--sub);font-size:12.5px}
-  .stat b{font-size:20px;letter-spacing:-.3px}
-  .stat .main{background:var(--accent-soft);border-color:#bfd9d1}
+
+  pre{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;background:var(--fill);border:1px solid var(--line);border-radius:var(--r-s);padding:16px;font-size:14px;line-height:1.7;max-height:440px;overflow:auto;margin:0;font-family:inherit}
+  pre.code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;word-break:break-all}
+  .preview-box{border:1px solid var(--line);border-radius:var(--r-s);padding:16px;background:#fff}
+  .warn-line{color:var(--bad);font-size:13.5px;margin-top:8px}
+
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0 12px}
+  .stat div{background:var(--fill);border:1px solid var(--line);border-radius:var(--r-s);padding:14px 16px;min-width:0}
+  .stat small{display:block;color:var(--sub);font-size:13px;margin-bottom:2px}
+  .stat b{font-size:22px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;font-weight:700}
+  .stat .main{background:var(--accent-soft);border-color:var(--accent-line)}
   .stat .main b{color:var(--accent)}
-  table.t{width:100%;border-collapse:collapse;font-size:14px}
-  table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}
-  table.t th{font-weight:500;color:var(--sub);font-size:13px}
-  table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
-  .toast.show{opacity:1}
-  .related{margin-top:28px;border:1px solid var(--line);border-radius:6px;background:#fff}
-  .related summary{cursor:pointer;padding:12px 14px;font-size:14.5px;font-weight:600;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px}
-  .related summary::-webkit-details-marker{display:none}
-  .related summary::after{content:'';margin-left:auto;width:8px;height:8px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);transform:rotate(45deg);transition:transform .15s}
-  .related[open] summary::after{transform:rotate(-135deg)}
-  .related summary small{font-size:12px;color:var(--sub);font-weight:400}
-  .related ol{list-style:none;margin:0;padding:0 12px 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;counter-reset:rk}
-  .related li{counter-increment:rk}
-  .related a{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13.5px;color:var(--ink);text-decoration:none}
-  .related a::before{content:counter(rk);min-width:1.4em;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums;text-align:right}
-  .related a:hover,.related a:focus-visible{border-color:var(--accent)}
-  .related a i{font-style:normal}
-  .related a span{display:block;font-size:11.5px;color:var(--accent)}
-  footer{font-size:12.5px;color:var(--sub);margin-top:24px;line-height:1.7}
-  footer a{color:var(--sub)}
-  @media(max-width:560px){.row,.row3{grid-template-columns:1fr}h1{font-size:19px}}
-  .faq details{border-bottom:1px solid var(--line);padding:8px 0}
-  .faq summary{cursor:pointer;font-weight:500;font-size:14.5px}
-  .faq p{margin:6px 0 2px;color:var(--sub);font-size:14px}
-  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:2px dashed #cfd3d8;border-radius:8px;padding:34px 12px;text-align:center;cursor:pointer;background:#fafafa;transition:.15s}
+  table.t{width:100%;border-collapse:collapse;font-size:14.5px}
+  table.t th,table.t td{border-bottom:1px solid #eef0f2;padding:12px 8px;text-align:left;vertical-align:top}
+  table.t th{font-weight:600;color:var(--faint);font-size:13px;border-bottom-color:var(--line)}
+  table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.t tr:last-child td{border-bottom:0}
+
+  .drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--line2);border-radius:var(--r);padding:40px 16px;text-align:center;cursor:pointer;background:var(--fill);transition:border-color .15s,background-color .15s}
   .drop.over,.drop:hover,.drop:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
   .drop input{position:absolute;opacity:0;width:1px;height:1px}
-  .drop span{font-size:13px;color:var(--sub)}
+  .drop b{font-size:16px;font-weight:700;letter-spacing:-.02em}
+  .drop span{font-size:13.5px;color:var(--sub)}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:70;max-width:calc(100vw - 32px);text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .faq{padding-bottom:8px!important}
+  .faq details{border-bottom:1px solid #eef0f2;padding:0}
+  .faq details:last-child{border-bottom:0}
+  .faq summary{cursor:pointer;font-weight:600;font-size:15px;padding:14px 28px 14px 0;list-style:none;position:relative;line-height:1.5}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'';position:absolute;right:4px;top:21px;width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg);transition:transform .15s}
+  .faq details[open] summary::after{transform:rotate(-135deg);top:24px}
+  .faq p{margin:0 0 14px;color:var(--sub);font-size:14.5px;line-height:1.7}
+
+  .related{margin-top:24px;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+  .related summary{cursor:pointer;padding:16px 20px;font-size:15px;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .related summary::-webkit-details-marker{display:none}
+  .related summary::after{content:'';margin-left:auto;width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg);transition:transform .15s;margin-top:-3px}
+  .related[open] summary::after{transform:rotate(-135deg);margin-top:3px}
+  .related summary small{font-size:12.5px;color:var(--faint);font-weight:500}
+  .related ol{list-style:none;margin:0;padding:0 16px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;counter-reset:rk}
+  .related li{counter-increment:rk;min-width:0}
+  .related a{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;height:100%;transition:border-color .15s,background-color .15s}
+  .related a::before{content:counter(rk);min-width:1.2em;font-weight:700;color:var(--faint);font-variant-numeric:tabular-nums;text-align:right}
+  .related a:hover,.related a:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
+  .related a i{font-style:normal;min-width:0}
+  .related a span{display:block;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:1px}
+  footer{font-size:13px;color:var(--faint);margin-top:28px;line-height:1.75;padding:0 4px}
+  footer a{color:var(--sub)}
+
+  @media(max-width:600px){
+    header{padding:22px 0 20px}
+    h1{font-size:24px}
+    header p{font-size:15px}
+    main{padding:16px 12px 64px}
+    header .wrap,.topbar .in{padding:0 12px}
+    section.card{padding:20px 16px}
+    .row,.row3{grid-template-columns:1fr}
+    .related ol{grid-template-columns:1fr}
+    /* 좁은 화면의 탭: 옆으로 숨지 않게 알약 모양으로 줄바꿈 */
+    .tabs{flex-wrap:wrap;gap:6px;border-bottom:0;overflow:visible}
+    .tabs button{min-height:38px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--sub);font-size:14px}
+    .tabs button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+    .tabs button:hover{color:var(--ink)}
+    .tabs button.on:hover{color:#fff}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
   .pwrow{display:flex;gap:6px}.pwrow input{flex:1}
   .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
   .bar div{height:100%;width:0;background:var(--accent);transition:width .2s}
@@ -114,33 +188,36 @@
   .pv td p{margin:0}
   .pv hr.pg{border:0;border-top:2px dashed #c9ccd1;margin:16px 0}
   .flist{list-style:none;margin:0 0 8px;padding:0}
-  .flist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:0 0 6px;background:#fff;font-size:14px}
+  .flist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;margin:0 0 8px;background:#fff;font-size:14.5px}
   .flist .nm{flex:1 1 calc(100% - 40px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .flist .nm small{display:block;color:var(--sub);font-size:12px}
-  .flist input{width:110px;padding:6px 8px}
-  .flist button{padding:6px 10px;min-width:auto;font-size:13px}
-  #modes>.tabs button{font-size:15px;padding:10px 14px}
+  .flist input{width:110px;min-height:40px;padding:8px 10px;font-size:15px}
+  .flist button{min-height:38px;padding:6px 12px;min-width:auto;font-size:13.5px}
+  @media(min-width:601px){#modes>.tabs button{font-size:15px;padding:10px 14px}}
   #mList input{flex:1 1 90px}
   .pwask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
   .pwask.hidden{display:none}
-  .pwbox{background:#fff;border-radius:6px;padding:16px;width:100%;max-width:360px}
+  .pwbox{background:#fff;border-radius:var(--r);padding:24px;width:100%;max-width:380px}
   .pwbox p{margin:0 0 8px;font-size:14.5px}
-  .pwbox input{width:100%;height:48px;padding:0 12px;border:1px solid #cfd3d8;border-radius:4px;font-size:16px;box-sizing:border-box}
+  .pwbox input{margin-bottom:4px}
 </style>
 </head>
 <body>
+<div class="topbar"><div class="in">
+  <a class="brand" href="../" aria-label="일상툴 처음으로"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e5a47"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a>
+  <a class="all" href="../">전체 도구</a>
+</div></div>
 <header>
   <div class="wrap">
-    <a class="back" href="../">← 생활·업무 도구 모음</a><br>
-    <span class="tag">서버 업로드 없음 · 표 살리기 · 스캔 글자 인식 · 분할·병합</span>
-    <h1>PDF 한글 변환·나누기·합치기</h1>
-    <p>PDF를 한글(HWPX)·워드(DOCX)로 바꾸고, 쪽을 나누거나 여러 PDF를 하나로 합칩니다. 위에서 할 일을 고르세요.</p>
+    <span class="tag">서버 업로드 없음 · 표 살리기 · 스캔 글자 인식 · 분할⁠·⁠병합</span>
+    <h1>PDF 한글 변환⁠·⁠나누기⁠·⁠합치기</h1>
+    <p>PDF를 한글(HWPX)⁠·⁠워드(DOCX)로 바꾸고, 쪽을 나누거나 여러 PDF를 하나로 합칩니다. 위에서 할 일을 고르세요.</p>
   </div>
 </header>
 
 <main>
   <div class="notice ok">
-    PDF는 <b>이 기기 안에서만</b> 변환·분할·합치기가 됩니다. 서버로 올라가지 않아 공문·계약서·개인정보가 담긴 문서도 안심하고 쓸 수 있습니다.
+    PDF는 <b>이 기기 안에서만</b> 변환⁠·⁠분할⁠·⁠합치기가 됩니다. 서버로 올라가지 않아 공문⁠·⁠계약서⁠·⁠개인정보가 담긴 문서도 안심하고 쓸 수 있습니다.
   </div>
 
 <div id="modes">
@@ -200,7 +277,7 @@
       <button type="button" id="saveTxt" class="ghost">텍스트 (.txt)</button>
       <button type="button" id="copyTxt" class="ghost">글자 복사</button>
     </div>
-    <p class="hint">옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요. 미리보기는 대략적인 모양이며, 실제 한글·워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
+    <p class="hint">옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요. 미리보기는 대략적인 모양이며, 실제 한글⁠·⁠워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
     <h2 style="margin-top:14px;font-size:14px;color:var(--sub);font-weight:500">미리보기</h2>
     <div class="pv" id="preview"></div>
   </section>
@@ -209,20 +286,20 @@
     <h2>이런 PDF가 잘 됩니다</h2>
     <table class="t" style="margin-top:8px">
       <tr><th>PDF 종류</th><th>결과</th></tr>
-      <tr><td>한글·워드에서 PDF로 저장한 문서</td><td>글자, 굵기, 크기, 가운데 정렬, 들여쓰기, 표까지 거의 그대로</td></tr>
-      <tr><td>스캔·사진 PDF</td><td>글자 인식으로 변환. 선명할수록 정확하며, 숫자·이름은 대조 필요</td></tr>
-      <tr><td>2단 편집, 도형·그림이 많은 문서</td><td>글자는 살지만 배치가 달라질 수 있음. 그림은 넣지 않습니다</td></tr>
+      <tr><td>한글⁠·⁠워드에서 PDF로 저장한 문서</td><td>글자, 굵기, 크기, 가운데 정렬, 들여쓰기, 표까지 거의 그대로</td></tr>
+      <tr><td>스캔⁠·⁠사진 PDF</td><td>글자 인식으로 변환. 선명할수록 정확하며, 숫자⁠·⁠이름은 대조 필요</td></tr>
+      <tr><td>2단 편집, 도형⁠·⁠그림이 많은 문서</td><td>글자는 살지만 배치가 달라질 수 있음. 그림은 넣지 않습니다</td></tr>
     </table>
     <h2 style="margin-top:16px">한글로 변환이 안 되거나 결과가 나쁜 PDF</h2>
     <table class="t" style="margin-top:8px">
       <tr><th>PDF 종류</th><th>왜, 어떻게</th></tr>
       <tr><td>여는 비밀번호를 모르는 PDF</td><td>열 수 없습니다. 비밀번호를 알면 입력해서 변환됩니다</td></tr>
       <tr><td>손상된 파일, PDF가 아닌 파일(이름만 .pdf)</td><td>열리지 않습니다. 원본을 다시 받거나 다시 PDF로 저장하세요</td></tr>
-      <tr><td>글자를 그림(윤곽선)으로 바꿔 만든 PDF<br><small>디자인 프로그램 포스터·전단·인쇄용 PDF</small></td><td>글자 정보가 없어 빈 쪽이 됩니다. '스캔 글자 인식'을 <b>항상</b>으로 바꾸면 인식은 되지만 정확도가 떨어집니다</td></tr>
+      <tr><td>글자를 그림(윤곽선)으로 바꿔 만든 PDF<br><small>디자인 프로그램 포스터⁠·⁠전단⁠·⁠인쇄용 PDF</small></td><td>글자 정보가 없어 빈 쪽이 됩니다. '스캔 글자 인식'을 <b>항상</b>으로 바꾸면 인식은 되지만 정확도가 떨어집니다</td></tr>
       <tr><td>복사하면 이상한 글자가 나오는 PDF<br><small>글꼴 정보가 깨졌거나 일부러 막은 문서</small></td><td>글자가 깨져 나옵니다. '스캔 글자 인식'을 <b>항상</b>으로 바꿔 다시 변환하세요</td></tr>
-      <tr><td>손글씨, 흐리거나 기울어진 스캔, 도장·서명 위 글자</td><td>글자 인식 정확도가 낮습니다. 300dpi 이상으로 다시 스캔하면 나아집니다</td></tr>
-      <tr><td>세로쓰기, 한자·옛한글이 많은 문서</td><td>세로 글은 순서가 섞이고, 한자 인식은 지원하지 않습니다(글자 PDF의 한자는 그대로 옮겨짐)</td></tr>
-      <tr><td>그림·사진·도표 속 글자</td><td>그림은 문서에 넣지 않고, 그림 속 글자도 옮기지 않습니다</td></tr>
+      <tr><td>손글씨, 흐리거나 기울어진 스캔, 도장⁠·⁠서명 위 글자</td><td>글자 인식 정확도가 낮습니다. 300dpi 이상으로 다시 스캔하면 나아집니다</td></tr>
+      <tr><td>세로쓰기, 한자⁠·⁠옛한글이 많은 문서</td><td>세로 글은 순서가 섞이고, 한자 인식은 지원하지 않습니다(글자 PDF의 한자는 그대로 옮겨짐)</td></tr>
+      <tr><td>그림⁠·⁠사진⁠·⁠도표 속 글자</td><td>그림은 문서에 넣지 않고, 그림 속 글자도 옮기지 않습니다</td></tr>
       <tr><td>수백 쪽짜리 큰 파일</td><td>휴대폰에서는 메모리가 모자라 멈출 수 있습니다. '변환할 쪽'을 나눠 변환하거나 PC에서 하세요</td></tr>
     </table>
   </section>
@@ -250,7 +327,7 @@
     <div id="sPickBox" class="hidden"><label class="f" for="sPick">뽑을 쪽 <span class="opt">적은 순서대로 담김</span></label><input type="text" id="sPick" placeholder="예: 1, 3, 5-7"></div>
     <p class="hint" id="sPlan" style="margin:8px 0 0"></p>
     <div class="actions"><button type="button" id="sGo" disabled>나누기</button></div>
-    <p class="hint">인쇄·편집을 막아 둔 PDF도 보안을 풀어 나누고, 여는 암호가 있으면 물어봅니다. 나눈 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요. 쪽을 나눠도 글자·그림 화질은 그대로입니다.</p>
+    <p class="hint">인쇄⁠·⁠편집을 막아 둔 PDF도 보안을 풀어 나누고, 여는 암호가 있으면 물어봅니다. 나눈 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요. 쪽을 나눠도 글자⁠·⁠그림 화질은 그대로입니다.</p>
   </section>
   <section class="card hidden" id="sOut">
     <h2><span class="num">3</span>결과</h2>
@@ -274,7 +351,7 @@
     <label class="f" for="mName">저장할 이름</label><input type="text" id="mName" value="합친문서">
     <p class="hint" id="mInfo" style="margin:8px 0 0"></p>
     <div class="actions"><button type="button" id="mGo">합치기</button><button type="button" class="ghost" id="mClear">모두 빼기</button></div>
-    <p class="hint">인쇄·편집을 막아 둔 PDF도 보안을 풀어 합치고, 여는 암호가 있으면 물어봅니다. 합친 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요. 크기가 다른 쪽(A4·B5·가로)도 원래 크기 그대로 들어갑니다.</p>
+    <p class="hint">인쇄⁠·⁠편집을 막아 둔 PDF도 보안을 풀어 합치고, 여는 암호가 있으면 물어봅니다. 합친 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요. 크기가 다른 쪽(A4⁠·⁠B5⁠·⁠가로)도 원래 크기 그대로 들어갑니다.</p>
   </section>
 </div>
   <div class="pwask hidden" id="pwAsk" role="dialog" aria-label="PDF 암호 입력">
@@ -286,10 +363,10 @@
   </div>
 </div>
 
-<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>PDF가 서버에 올라가나요?</summary><p>아니요. 변환은 지금 쓰는 브라우저 안에서만 이루어집니다. 처음 한 번 변환 도구를 받은 뒤에는 인터넷을 끊어도 글자 PDF 변환이 됩니다.</p></details><details><summary>.hwp 파일로 받을 수 있나요?</summary><p>한글(HWPX)로 저장한 뒤 한글 프로그램에서 열어 &#x27;다른 이름으로 저장&#x27;에서 HWP를 고르면 됩니다. HWPX는 2026년부터 공공기관 표준 형식이라 그대로 써도 됩니다.</p></details><details><summary>표도 그대로 옮겨지나요?</summary><p>테두리 선이 있는 표는 칸 나눔과 합친 칸까지 한글·워드 표로 만듭니다. 선이 없는 표는 문단으로 옮겨집니다.</p></details><details><summary>스캔한 PDF도 되나요?</summary><p>네. 글자가 없는 쪽은 자동으로 한국어·영어 글자 인식을 합니다. 처음 한 번 약 7MB를 받고, 한 쪽에 10~30초쯤 걸립니다. 숫자와 이름은 원본과 꼭 대조하세요.</p></details><details><summary>PDF 나누기·합치기는 어떻게 하나요?</summary><p>위의 &#x27;PDF 나누기&#x27;에서 한 쪽씩, 범위대로, 몇 쪽씩, 고른 쪽만 중 하나로 나누고 여러 파일은 ZIP으로 한 번에 받습니다. &#x27;PDF 합치기&#x27;에서는 여러 PDF를 넣고 순서를 바꾼 뒤 파일마다 넣을 쪽을 골라 하나로 합칩니다.</p></details><details><summary>인쇄·편집이 막힌 PDF나 암호 걸린 PDF도 나눌 수 있나요?</summary><p>네. 인쇄·편집만 막아 둔 PDF(공문 등)는 바로 보안을 풀어 나누거나 합치고, 여는 암호가 있으면 암호를 물어봅니다(소유자 암호도 됨). RC4·AES-128·AES-256 표준 보안을 지원하며, 인증서·DRM 방식은 풀 수 없습니다. 결과 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요.</p></details><details><summary>한글로 변환이 안 되는 PDF도 있나요?</summary><p>여는 비밀번호를 모르는 PDF, 손상된 파일은 열 수 없습니다. 글자를 그림(윤곽선)으로 바꾼 인쇄용 PDF나 복사하면 글자가 깨지는 PDF는 &#x27;스캔 글자 인식&#x27;을 &#x27;항상&#x27;으로 바꿔야 하고, 손글씨·흐린 스캔·세로쓰기·한자 위주 문서는 정확도가 떨어집니다. 그림 속 글자는 옮기지 않습니다.</p></details></section>
-<details class="related" id="related"><summary>함께 쓰면 좋은 무료 도구 <small>10개 · 많이 쓰는 순</small></summary><ol><li data-slug="image-resize"><a href="../image-resize/"><i><span>사진 도구</span>사진 용량 줄이기·HEIC 변환</i></a></li><li data-slug="weekly-pay"><a href="../weekly-pay/"><i><span>급여 계산</span>알바 주휴수당·월급 계산기</i></a></li><li data-slug="date-calc"><a href="../date-calc/"><i><span>생활 계산</span>D-day·전역일·만나이 계산기</i></a></li><li data-slug="id-photo"><a href="../id-photo/"><i><span>사진 도구</span>증명사진 규격 자르기</i></a></li><li data-slug="dutch-pay"><a href="../dutch-pay/"><i><span>생활 계산</span>더치페이·모임 정산 계산기</i></a></li><li data-slug="short-video"><a href="../short-video/"><i><span>영상 도구</span>숏폼 영상 만들기</i></a></li><li data-slug="refund-policy"><a href="../refund-policy/"><i><span>매장·쇼핑몰 운영</span>환불·교환 규정 고지문 생성기</i></a></li><li data-slug="review-policy"><a href="../review-policy/"><i><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</i></a></li><li data-slug="noshow-policy"><a href="../noshow-policy/"><i><span>매장 운영</span>예약·노쇼 규정 문구 생성기</i></a></li><li data-slug="closed-notice"><a href="../closed-notice/"><i><span>매장 운영</span>휴무·임시휴업 안내문 만들기</i></a></li></ol></details>
+<section class="card faq"><h2>자주 묻는 질문</h2><details><summary>PDF가 서버에 올라가나요?</summary><p>아니요. 변환은 지금 쓰는 브라우저 안에서만 이루어집니다. 처음 한 번 변환 도구를 받은 뒤에는 인터넷을 끊어도 글자 PDF 변환이 됩니다.</p></details><details><summary>.hwp 파일로 받을 수 있나요?</summary><p>한글(HWPX)로 저장한 뒤 한글 프로그램에서 열어 &#x27;다른 이름으로 저장&#x27;에서 HWP를 고르면 됩니다. HWPX는 2026년부터 공공기관 표준 형식이라 그대로 써도 됩니다.</p></details><details><summary>표도 그대로 옮겨지나요?</summary><p>테두리 선이 있는 표는 칸 나눔과 합친 칸까지 한글⁠·⁠워드 표로 만듭니다. 선이 없는 표는 문단으로 옮겨집니다.</p></details><details><summary>스캔한 PDF도 되나요?</summary><p>네. 글자가 없는 쪽은 자동으로 한국어⁠·⁠영어 글자 인식을 합니다. 처음 한 번 약 7MB를 받고, 한 쪽에 10~30초쯤 걸립니다. 숫자와 이름은 원본과 꼭 대조하세요.</p></details><details><summary>PDF 나누기⁠·⁠합치기는 어떻게 하나요?</summary><p>위의 &#x27;PDF 나누기&#x27;에서 한 쪽씩, 범위대로, 몇 쪽씩, 고른 쪽만 중 하나로 나누고 여러 파일은 ZIP으로 한 번에 받습니다. &#x27;PDF 합치기&#x27;에서는 여러 PDF를 넣고 순서를 바꾼 뒤 파일마다 넣을 쪽을 골라 하나로 합칩니다.</p></details><details><summary>인쇄⁠·⁠편집이 막힌 PDF나 암호 걸린 PDF도 나눌 수 있나요?</summary><p>네. 인쇄⁠·⁠편집만 막아 둔 PDF(공문 등)는 바로 보안을 풀어 나누거나 합치고, 여는 암호가 있으면 암호를 물어봅니다(소유자 암호도 됨). RC4⁠·⁠AES-128⁠·⁠AES-256 표준 보안을 지원하며, 인증서⁠·⁠DRM 방식은 풀 수 없습니다. 결과 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요.</p></details><details><summary>한글로 변환이 안 되는 PDF도 있나요?</summary><p>여는 비밀번호를 모르는 PDF, 손상된 파일은 열 수 없습니다. 글자를 그림(윤곽선)으로 바꾼 인쇄용 PDF나 복사하면 글자가 깨지는 PDF는 &#x27;스캔 글자 인식&#x27;을 &#x27;항상&#x27;으로 바꿔야 하고, 손글씨⁠·⁠흐린 스캔⁠·⁠세로쓰기⁠·⁠한자 위주 문서는 정확도가 떨어집니다. 그림 속 글자는 옮기지 않습니다.</p></details></section>
+<details class="related" id="related"><summary>함께 쓰면 좋은 무료 도구 <small>10개 · 많이 쓰는 순</small></summary><ol><li data-slug="image-resize"><a href="../image-resize/"><i><span>사진 도구</span>사진 용량 줄이기⁠·⁠HEIC 변환</i></a></li><li data-slug="weekly-pay"><a href="../weekly-pay/"><i><span>급여 계산</span>알바 주휴수당⁠·⁠월급 계산기</i></a></li><li data-slug="date-calc"><a href="../date-calc/"><i><span>생활 계산</span>D-day⁠·⁠전역일⁠·⁠만나이 계산기</i></a></li><li data-slug="id-photo"><a href="../id-photo/"><i><span>사진 도구</span>증명사진 규격 자르기</i></a></li><li data-slug="dutch-pay"><a href="../dutch-pay/"><i><span>생활 계산</span>더치페이⁠·⁠모임 정산 계산기</i></a></li><li data-slug="short-video"><a href="../short-video/"><i><span>영상 도구</span>숏폼 영상 만들기</i></a></li><li data-slug="refund-policy"><a href="../refund-policy/"><i><span>매장⁠·⁠쇼핑몰 운영</span>환불⁠·⁠교환 규정 고지문 생성기</i></a></li><li data-slug="review-policy"><a href="../review-policy/"><i><span>쇼핑몰 운영</span>리뷰 운영정책 고지문 생성기</i></a></li><li data-slug="noshow-policy"><a href="../noshow-policy/"><i><span>매장 운영</span>예약⁠·⁠노쇼 규정 문구 생성기</i></a></li><li data-slug="closed-notice"><a href="../closed-notice/"><i><span>매장 운영</span>휴무⁠·⁠임시휴업 안내문 만들기</i></a></li></ol></details>
   <footer>
-    변환에는 Mozilla pdf.js, Tesseract OCR(Apache-2.0), 나누기·합치기에는 pdf-lib(MIT)를 이 사이트에 직접 두고 씁니다. HWPX 틀은 한컴 한글로 저장된 견본(python-hwpx, Apache-2.0)을 바탕으로 합니다. 한글·HWPX는 한글과컴퓨터의 상표입니다.<br>
+    변환에는 Mozilla pdf.js, Tesseract OCR(Apache-2.0), 나누기⁠·⁠합치기에는 pdf-lib(MIT)를 이 사이트에 직접 두고 씁니다. HWPX 틀은 한컴 한글로 저장된 견본(python-hwpx, Apache-2.0)을 바탕으로 합니다. 한글⁠·⁠HWPX는 한글과컴퓨터의 상표입니다.<br>
     
     선택한 PDF는 서버로 전송되지 않습니다. 모든 변환은 이 기기의 브라우저 안에서 이루어집니다.
   </footer>
@@ -314,6 +391,7 @@ function dayDiff(a, b){ return Math.round((Date.UTC(b.getFullYear(),b.getMonth()
 function today(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
 async function copy(s){
+  s = String(s).replace(/\u2060/g, '');
   try { await navigator.clipboard.writeText(s); toast('복사했습니다'); }
   catch(e) {
     const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select();
@@ -1320,7 +1398,7 @@ async function openFile(f){
     task.onPassword = async (cb, reason) => { $('#pwMsg').textContent = reason === 2 ? '비밀번호가 틀렸습니다. 다시 입력하세요.' : '비밀번호가 걸린 PDF입니다.'; cb(await pwWait()); };
     if (pdf) pdf.destroy();
     pdf = await task.promise;
-    $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${(f.size / 1048576).toFixed(1)}MB`;
+    $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${mb(f.size)}`;
     $('#optRange').placeholder = `전체 (1-${pdf.numPages})`;
     $('#convert').disabled = false;
     $('#convert').focus();
