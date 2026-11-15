@@ -12,107 +12,99 @@
 <meta property="og:url" content="https://ilsangtool.github.io/tools/">
 <meta property="og:locale" content="ko_KR">
 <!-- 네이버 서치어드바이저 소유확인 메타태그를 이 아래에 붙여넣으세요 -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e5a47'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d1f2c'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#191f28;--ink2:#333d4b;--sub:#4e5968;--faint:#8b95a1;--line:#e5e8eb;--line2:#d1d6db;--bg:#f3f4f6;--fill:#f7f8fa;--accent:#0e5a47;--accent-soft:#eaf3f0;--accent-line:#b9d6cc;--ring:0 0 0 3px rgba(14,90,71,.16)}
+  :root{--ink:#2a2324;--ink2:#3d3536;--sub:#6b605c;--faint:#8c7f78;--line:#e8e0d6;--line2:#d6cabd;--bg:#faf7f1;--accent:#6d1f2c;--accent-soft:#f6ecec;--serif:"Noto Serif KR","Nanum Myeongjo","AppleMyungjo",serif;--ring:0 0 0 3px rgba(109,31,44,.14)}
   *{box-sizing:border-box}
   body{margin:0;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
-  h1,h2,h3{text-wrap:balance} p{text-wrap:pretty}
-  .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px)}
-  .topbar .in{max-width:960px;margin:0 auto;height:52px;padding:0 16px;display:flex;align-items:center}
-  .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+  h1,h2,b{text-wrap:balance} p,.tx span{text-wrap:pretty}
+  ::selection{background:#ecd5d8}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(250,247,241,.94);border-bottom:1px solid var(--line);backdrop-filter:saturate(1.3) blur(8px);-webkit-backdrop-filter:saturate(1.3) blur(8px)}
+  .topbar .wrap{height:60px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-weight:700;font-size:18px;color:var(--accent);text-decoration:none;letter-spacing:-.02em}
   .brand svg{display:block}
-  .hero{background:#fff;border-bottom:1px solid var(--line)}
-  .hero .in{max-width:960px;margin:0 auto;padding:44px 16px 32px}
-  h1{font-size:34px;line-height:1.28;margin:0 0 12px;letter-spacing:-.035em;font-weight:700}
-  .lead{color:var(--sub);margin:0 0 24px;font-size:16.5px;line-height:1.65;max-width:34em}
-  .facts{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0 0 24px;padding:0;list-style:none;font-size:14px;color:var(--ink2);font-weight:500}
-  .facts li{display:flex;align-items:center;gap:8px}
-  .facts li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
-  .search{position:relative;display:block;max-width:560px}
-  .search input{width:100%;height:52px;padding:0 16px 0 46px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:var(--fill);color:var(--ink);-webkit-appearance:none;appearance:none;transition:border-color .15s,background-color .15s,box-shadow .15s}
-  .search input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:var(--ring)}
-  .search input::placeholder{color:#a6aeb7}
-  .search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);pointer-events:none}
-  main{max-width:960px;margin:0 auto;padding:32px 16px 72px}
-  .grp{margin:0 0 32px}
-  .grp h2{font-size:15px;font-weight:700;color:var(--ink2);margin:0 0 12px;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
-  .grp h2 small{font-size:13px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums}
-  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  a.tool{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 52px 22px 22px;text-decoration:none;color:inherit;transition:border-color .15s,background-color .15s;min-height:132px}
-  a.tool:hover{border-color:var(--accent-line);background:#fbfdfc}
-  a.tool:focus-visible{outline:none;border-color:var(--accent);box-shadow:var(--ring)}
-  .tool h3{font-size:17.5px;line-height:1.4;margin:0 0 6px;letter-spacing:-.025em;font-weight:700}
-  .tool p{margin:0;color:var(--sub);font-size:14.5px;line-height:1.65}
-  .go{position:absolute;right:20px;top:24px;width:28px;height:28px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;transition:background-color .15s}
-  .go::before{content:'';width:7px;height:7px;border-top:1.8px solid var(--sub);border-right:1.8px solid var(--sub);transform:translateX(-1px) rotate(45deg)}
-  a.tool:hover .go{background:var(--accent-soft)}
-  a.tool:hover .go::before{border-color:var(--accent)}
+  .topbar small{font-size:12.5px;color:var(--faint);letter-spacing:.02em}
+  .hero{padding:56px 0 36px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;color:var(--accent);font-weight:700;margin:0 0 16px}
+  h1{font-family:var(--serif);font-size:40px;line-height:1.36;margin:0 0 16px;letter-spacing:-.025em;font-weight:500}
+  .lead{color:var(--sub);margin:0 0 28px;font-size:16px;line-height:1.75;max-width:30em}
+  .search{position:relative;display:flex;align-items:center;gap:12px;max-width:520px;height:52px;border-bottom:1.5px solid var(--ink)}
+  .search input{flex:1;height:100%;border:0;background:transparent;font:inherit;font-size:16px;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none}
+  .search:focus-within{border-bottom-color:var(--accent)}
+  .search input::placeholder{color:#b3a79f}
+  main{padding:8px 0 80px}
+  .grp{margin:0 0 36px}
+  .grp h2{font-size:12.5px;font-weight:700;color:var(--faint);margin:0;padding:0 0 10px;letter-spacing:.06em;border-bottom:1px solid var(--ink)}
+  a.tool{display:grid;grid-template-columns:44px minmax(0,1fr) 24px;gap:14px;align-items:start;padding:20px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);transition:color .15s}
+  a.tool:hover .tx b{color:var(--accent)}
+  a.tool:focus-visible{outline:none;box-shadow:var(--ring)}
+  .no{font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--accent);font-variant-numeric:tabular-nums}
+  .tx{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .tx b{font-family:var(--serif);font-size:19px;line-height:1.45;font-weight:600;letter-spacing:-.02em}
+  .tx span{font-size:14.5px;color:var(--sub);line-height:1.65}
+  .go{color:var(--accent);font-size:17px;line-height:1.6;text-align:right;transition:transform .15s}
+  a.tool:hover .go{transform:translateX(3px)}
   .empty{display:none;color:var(--sub);font-size:15px;padding:24px 0}
-  footer{font-size:13px;color:var(--faint);line-height:1.75;border-top:1px solid var(--line);padding-top:20px}
-  @media(max-width:680px){
-    .hero .in{padding:32px 12px 24px}
-    .topbar .in{padding:0 12px}
-    h1{font-size:27px}
+  footer{font-size:13px;color:var(--faint);line-height:1.75;border-top:1px solid var(--ink);padding-top:18px}
+  @media(max-width:600px){
+    .wrap{padding:0 20px}
+    .hero{padding:40px 0 28px}
+    h1{font-size:31px}
     .lead{font-size:15.5px}
-    .grid{grid-template-columns:1fr;gap:10px}
-    a.tool{min-height:0;padding:18px 48px 18px 18px}
-    .go{right:16px;top:20px}
-    main{padding:24px 12px 64px}
+    a.tool{grid-template-columns:36px minmax(0,1fr) 18px;gap:12px;padding:18px 0}
+    .no{font-size:19px}
+    .tx b{font-size:17.5px}
+    .tx span{font-size:14px}
   }
   @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="in"><a class="brand" href="./"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e5a47"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a></div></div>
-<div class="hero"><div class="in">
-  <h1>생활⁠·⁠업무 무료 도구 모음</h1>
-  <p class="lead">PDF 변환, 사진 용량 줄이기, 주휴수당 계산, 매장 안내문까지. 설치 없이 브라우저에서 바로 씁니다.</p>
-  <ul class="facts"><li>회원가입 없음</li><li>입력 내용은 서버로 보내지 않음</li><li>법령 개정 자동 반영</li></ul>
-  <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b95a1" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="도구 찾기 (예: PDF, 주휴수당, 증명사진)" aria-label="도구 찾기"></label>
-</div></div>
+<div class="topbar"><div class="wrap"><a class="brand" href="./"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#6d1f2c"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a><small>무료 도구 11</small></div></div>
+<div class="wrap">
+<div class="hero">
+  <p class="eyebrow">무료 · 가입 없음 · 기록 없음</p>
+  <h1>기록을 남기지 않는<br>생활⁠·⁠업무 도구</h1>
+  <p class="lead">PDF 변환, 사진 용량 줄이기, 주휴수당 계산, 매장 안내문까지. 설치 없이 브라우저에서 바로 쓰고, 입력한 내용은 서버로 보내지 않습니다.</p>
+  <label class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a2324" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="도구 찾기 (예: PDF, 주휴수당, 증명사진)" aria-label="도구 찾기"></label>
+</div>
 <main>
   <section class="grp" data-g="문서 도구">
-    <h2>문서 도구 <small>1</small></h2>
-    <div class="grid">
-      <a class="tool" href="pdf-to-hwp/"><h3>PDF 한글 변환⁠·⁠나누기⁠·⁠합치기</h3><p>서버 업로드 없이 PDF를 한글(HWPX)⁠·⁠워드로. 표와 합친 칸, 글자 크기⁠·⁠굵기를 살리고 스캔 PDF는 글자를 인식합니다. PDF 나누기⁠·⁠합치기도 됩니다.</p><span class="go" aria-hidden="true"></span></a>
-    </div>
+    <h2>문서 도구</h2>
+    <a class="tool" href="pdf-to-hwp/"><span class="no">01</span><span class="tx"><b>PDF 한글 변환⁠·⁠나누기⁠·⁠합치기</b><span>서버 업로드 없이 PDF를 한글(HWPX)⁠·⁠워드로. 표와 합친 칸, 글자 크기⁠·⁠굵기를 살리고 스캔 PDF는 글자를 인식합니다. PDF 나누기⁠·⁠합치기도 됩니다.</span></span><span class="go" aria-hidden="true">→</span></a>
   </section>
   <section class="grp" data-g="사진 도구">
-    <h2>사진 도구 <small>2</small></h2>
-    <div class="grid">
-      <a class="tool" href="image-resize/"><h3>사진 용량 줄이기⁠·⁠HEIC 변환</h3><p>서버 업로드 없이 여러 장을 목표 용량(KB) 이하로 줄이고, 아이폰 HEIC를 JPG로 바꿉니다.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="id-photo/"><h3>증명사진 규격 자르기</h3><p>여권⁠·⁠반명함⁠·⁠비자 규격으로 자르고 편의점에서 뽑는 4×6 인화용 판까지 만듭니다.</p><span class="go" aria-hidden="true"></span></a>
-    </div>
+    <h2>사진 도구</h2>
+    <a class="tool" href="image-resize/"><span class="no">02</span><span class="tx"><b>사진 용량 줄이기⁠·⁠HEIC 변환</b><span>서버 업로드 없이 여러 장을 목표 용량(KB) 이하로 줄이고, 아이폰 HEIC를 JPG로 바꿉니다.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="id-photo/"><span class="no">03</span><span class="tx"><b>증명사진 규격 자르기</b><span>여권⁠·⁠반명함⁠·⁠비자 규격으로 자르고 편의점에서 뽑는 4×6 인화용 판까지 만듭니다.</span></span><span class="go" aria-hidden="true">→</span></a>
   </section>
   <section class="grp" data-g="생활 계산">
-    <h2>생활 계산 <small>3</small></h2>
-    <div class="grid">
-      <a class="tool" href="weekly-pay/"><h3>알바 주휴수당⁠·⁠월급 계산기</h3><p>2026년 10,320원 · 2027년 10,700원 반영. 주휴수당, 월급, 3.3%⁠·⁠4대보험 실수령액까지.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="dutch-pay/"><h3>더치페이⁠·⁠모임 정산 계산기</h3><p>1차⁠·⁠2차 결제자가 달라도 누가 누구에게 얼마 보내면 되는지 송금 횟수를 최소로 정리합니다.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="date-calc/"><h3>D-day⁠·⁠전역일⁠·⁠만나이 계산기</h3><p>디데이, 100일⁠·⁠1000일 기념일, 날짜 더하기, 군 전역일, 만 나이를 한 화면에서.</p><span class="go" aria-hidden="true"></span></a>
-    </div>
+    <h2>생활 계산</h2>
+    <a class="tool" href="weekly-pay/"><span class="no">04</span><span class="tx"><b>알바 주휴수당⁠·⁠월급 계산기</b><span>2026년 10,320원 · 2027년 10,700원 반영. 주휴수당, 월급, 3.3%⁠·⁠4대보험 실수령액까지.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="dutch-pay/"><span class="no">05</span><span class="tx"><b>더치페이⁠·⁠모임 정산 계산기</b><span>1차⁠·⁠2차 결제자가 달라도 누가 누구에게 얼마 보내면 되는지 송금 횟수를 최소로 정리합니다.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="date-calc/"><span class="no">06</span><span class="tx"><b>D-day⁠·⁠전역일⁠·⁠만나이 계산기</b><span>디데이, 100일⁠·⁠1000일 기념일, 날짜 더하기, 군 전역일, 만 나이를 한 화면에서.</span></span><span class="go" aria-hidden="true">→</span></a>
   </section>
   <section class="grp" data-g="매장·쇼핑몰 운영">
-    <h2>매장⁠·⁠쇼핑몰 운영 <small>4</small></h2>
-    <div class="grid">
-      <a class="tool" href="review-policy/"><h3>리뷰 운영정책 고지문 생성기</h3><p>2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 고지문과 HTML 코드가 완성됩니다.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="refund-policy/"><h3>환불⁠·⁠교환 규정 고지문 생성기</h3><p>온라인 7일 청약철회 기준 반영. 법에 어긋나는 "세일 상품 환불 불가" 문구는 자동으로 걸러냅니다.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="noshow-policy/"><h3>예약⁠·⁠노쇼 규정 문구 생성기</h3><p>2025.12 개정 노쇼 위약금 기준(20%⁠·⁠40%) 반영. 예약 확정 문자와 매장 공지를 한 번에.</p><span class="go" aria-hidden="true"></span></a>
-      <a class="tool" href="closed-notice/"><h3>휴무⁠·⁠임시휴업 안내문 만들기</h3><p>날짜만 고르면 A4 인쇄용 안내문, SNS 이미지, 네이버 플레이스 공지 문구가 완성됩니다.</p><span class="go" aria-hidden="true"></span></a>
-    </div>
+    <h2>매장⁠·⁠쇼핑몰 운영</h2>
+    <a class="tool" href="review-policy/"><span class="no">07</span><span class="tx"><b>리뷰 운영정책 고지문 생성기</b><span>2026년 개정 전자상거래법 리뷰 공개 의무 대응. 질문 6개에 답하면 고지문과 HTML 코드가 완성됩니다.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="refund-policy/"><span class="no">08</span><span class="tx"><b>환불⁠·⁠교환 규정 고지문 생성기</b><span>온라인 7일 청약철회 기준 반영. 법에 어긋나는 "세일 상품 환불 불가" 문구는 자동으로 걸러냅니다.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="noshow-policy/"><span class="no">09</span><span class="tx"><b>예약⁠·⁠노쇼 규정 문구 생성기</b><span>2025.12 개정 노쇼 위약금 기준(20%⁠·⁠40%) 반영. 예약 확정 문자와 매장 공지를 한 번에.</span></span><span class="go" aria-hidden="true">→</span></a>
+    <a class="tool" href="closed-notice/"><span class="no">10</span><span class="tx"><b>휴무⁠·⁠임시휴업 안내문 만들기</b><span>날짜만 고르면 A4 인쇄용 안내문, SNS 이미지, 네이버 플레이스 공지 문구가 완성됩니다.</span></span><span class="go" aria-hidden="true">→</span></a>
   </section>
   <section class="grp" data-g="영상 도구">
-    <h2>영상 도구 <small>1</small></h2>
-    <div class="grid">
-      <a class="tool" href="short-video/"><h3>숏폼 영상 만들기</h3><p>알릴 내용을 쓰면 빠진 항목을 묻고 구성안 3가지를 보여 줍니다. 사진이 없어도 가격표⁠·⁠달력⁠·⁠지도 그림으로 채워 30~60초 영상으로 저장합니다.</p><span class="go" aria-hidden="true"></span></a>
-    </div>
+    <h2>영상 도구</h2>
+    <a class="tool" href="short-video/"><span class="no">11</span><span class="tx"><b>숏폼 영상 만들기</b><span>알릴 내용을 쓰면 빠진 항목을 묻고 구성안 3가지를 보여 줍니다. 사진이 없어도 가격표⁠·⁠달력⁠·⁠지도 그림으로 채워 30~60초 영상으로 저장합니다.</span></span><span class="go" aria-hidden="true">→</span></a>
   </section>
   <p class="empty" id="empty">찾는 도구가 없습니다. 다른 낱말로 찾아보세요.</p>
-  <footer>모든 도구는 참고용이며 법률⁠·⁠세무 자문을 대신하지 않습니다.</footer>
+  <footer>모든 도구는 참고용이며 법률⁠·⁠세무 자문을 대신하지 않습니다. 최저임금⁠·⁠청약철회⁠·⁠노쇼 위약금 기준은 국가법령정보센터 원문을 주 2회 확인해 자동으로 반영합니다.</footer>
 </main>
+</div>
 <script>
 (function(){
   var q=document.getElementById('q'),cards=[].slice.call(document.querySelectorAll('a.tool')),grps=[].slice.call(document.querySelectorAll('section.grp'));

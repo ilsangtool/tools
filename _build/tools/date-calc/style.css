@@ -1,5 +1,5 @@
-  .big{font-size:34px;font-weight:700;letter-spacing:-.03em;margin:20px 0 12px;color:var(--accent);line-height:1.25;font-variant-numeric:tabular-nums}
-  .big small{display:block;font-size:14.5px;color:var(--sub);font-weight:500;letter-spacing:-.005em;margin-top:4px}
+  .big{font-family:var(--serif);font-size:36px;font-weight:600;letter-spacing:-.03em;margin:20px 0 12px;color:var(--accent);line-height:1.25;font-variant-numeric:tabular-nums}
+  .big small{display:block;font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:14.5px;color:var(--sub);font-weight:500;letter-spacing:-.005em;margin-top:4px}
   .bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:4px 0 12px}
   .bar div{height:100%;background:var(--accent);width:0;transition:width .3s}
   tr.past td{color:#9aa0a6}

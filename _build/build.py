@@ -60,10 +60,10 @@ VARS = vars_()
 def tpl(s):
     return re.sub(r'\{\{([\w.]+)\}\}', lambda m: str(VARS[m.group(1)]), s)
 
-BRAND_MARK = '<svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e5a47"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'
+BRAND_MARK = '<svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#6d1f2c"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>'
 # 숏폼은 캔버스 글꼴로 Noto Sans KR을 씀
 NOTO = '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">'
-ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e5a47'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
+ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d1f2c'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
 
 # 이용자 수를 받기 전(첫 방문·통신 실패)에 쓰는 순서: 검색 수요가 많은 도구부터
 POP_FALLBACK = ['pdf-to-hwp', 'image-resize', 'weekly-pay', 'date-calc', 'id-photo', 'dutch-pay',
@@ -129,6 +129,9 @@ def build(slug):
 <script type="application/ld+json">{ld}</script>
 {faq}<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
 {NOTO if slug == 'short-video' else ''}
 <style>
 {base_css}{read(os.path.join(d, 'style.css'))}</style>
