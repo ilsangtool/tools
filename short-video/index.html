@@ -488,6 +488,15 @@ function sceneStyle(seed, idx){
   const S = styleOf(seed), r = rngOf(seed, 1000 + idx);
   return { ...S, trans: r() < 0.33 ? pickR(r, ['wipe', 'fade', 'zoom', 'slide', 'iris']) : S.trans, pan: r() < 0.5 ? 1 : -1 };
 }
+const LOOKS = { split: '나눔 화면', full: '꽉 찬 사진', poster: '포스터', magazine: '매거진', keyword: '키워드 강조', docu: '다큐', card: '카드 넘김' };
+const LOOK_GROUP = { full: '어두운 바탕', docu: '어두운 바탕', poster: '선명한 바탕', keyword: '선명한 바탕', magazine: '밝은 바탕', card: '밝은 바탕' };
+// 구성안 A·B·C에 서로 다른 룩 3개를 배정 (사진이 없으면 사진이 필요한 룩은 빼고)
+function looksFor(seed, hasMedia){
+  const r = rngOf(seed, 3), a = Object.keys(LOOKS).filter(k => hasMedia || (k !== 'full' && k !== 'docu'));
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return { A: a[0], B: a[1], C: a[2] };
+}
+function lookOf(seed, plan, hasMedia){ return seed ? looksFor(seed, hasMedia)[plan || 'A'] : 'split'; }
 const FONT = '"Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
 const easeOut = k => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
 
@@ -560,7 +569,7 @@ class Stage {
   sizeOf(role, u, kind, vis){
     if (kind === 'big' && role === 'accent') return u * 15;
     const k = vis ? 1.22 : 1.3; // 그림 없는 장면은 글자를 더 크게
-    return ({ main: u * 9, accent: u * 9, sub: u * 5.6, label: u * 4.4 }[role] || u * 6) * k;
+    return ({ main: u * 9, accent: u * 9, sub: u * 5.6, label: u * 4.4 }[role] || u * 6) * k * (this.sizeK || 1);
   }
   /* 글 블록 배치: 넘치면 전체를 줄여 맞춤 */
   layoutText(lines, box, kind, align, vis){
@@ -586,12 +595,156 @@ class Stage {
   measure(sc, idx){
     if (idx != null) this.idx = idx;
     if (sc.kind === 'list') { const n = sc.rows.length; return { fit: n <= 7, k: 1 }; }
-    const box = this.isFull(sc) ? this.fullFrame().text : sc.visual ? this.frame(sc).text : this.geo().textOnly, r = this.layoutText(sc.lines, box, sc.kind, sc.align, !!sc.visual);
+    const look = this.look(), v = sc.visual, L = look !== 'split' ? this.lookGeo(look, sc, !!v, !!(v && v.media != null && v.g !== 'handheld' && this.media[v.media])) : null;
+    this.sizeK = L ? L.size || 1 : 1;
+    const box = L ? L.text : this.isFull(sc) ? this.fullFrame().text : sc.visual ? this.frame(sc).text : this.geo().textOnly, r = this.layoutText(sc.lines, box, sc.kind, sc.align, L ? true : !!sc.visual);
+    this.sizeK = 1;
     return { fit: r.h <= box[3] + 1 && !r.res.some(x => x.rows.length > 4), k: this._k };
   }
   draw(sc, local, P){
+    this.x.setTransform(this.s, 0, 0, this.s, 0, 0);
+    // 첫 장면은 첫 프레임부터 글·그림이 다 보이게 (피드에서 멈춰 보이는 첫 화면 = 표지)
+    if ((this.idx || 0) === 0) local += 0.6;
+    const look = this.look();
+    if (look !== 'split') return this.drawLook(look, sc, local, P);
+    return this.drawSplit(sc, local, P);
+  }
+  /* ===== 스타일 템플릿(룩): 영상 생김새 자체를 바꿈 =====
+     split 나눔 화면 · full 꽉 찬 사진 · poster 포스터 · magazine 매거진 · keyword 키워드 강조 · docu 다큐 · card 카드 넘김 */
+  pl(){ return this.plan || ST.plan; }
+  look(){ return lookOf(this.sd(), this.pl(), this.media.length > 0); }
+  lookGeo(look, sc, hasV, isMedia){
+    const W = this.W, H = this.H, r = this.ratio, v = r === '9:16', w169 = r === '16:9';
+    const R = (a, b, c, d) => [W * a, H * b, W * c, H * d];
+    const side = { art: R(0.52, 0.12, 0.41, 0.76), text: R(0.07, 0.14, 0.41, 0.72), valign: 0.45 }; // 가로 화면: 그림 오른쪽, 글 왼쪽
+    if (look === 'full' || look === 'keyword') {
+      const kw = look === 'keyword';
+      if (isMedia) return { art: [0, 0, W, H], shade: kw ? 'dim' : 'bottom', onPhoto: true, mode: kw ? 'words' : 'box', size: kw ? 1.6 : 0.95, center: kw,
+        text: kw ? R(0.07, v ? 0.3 : 0.22, 0.86, v ? 0.42 : 0.56) : w169 ? R(0.06, 0.44, 0.62, 0.44) : v ? R(0.08, 0.5, 0.84, 0.3) : R(0.08, 0.52, 0.84, 0.38), valign: kw ? 0.5 : 1 };
+      if (hasV) return { art: kw ? (w169 ? R(0.36, 0.08, 0.28, 0.36) : R(0.26, v ? 0.1 : 0.06, 0.48, v ? 0.24 : 0.34)) : (w169 ? side.art : R(0, v ? 0.1 : 0.04, 1, v ? 0.42 : 0.5)),
+        mode: kw ? 'words' : 'box', size: kw ? 1.5 : 0.95, center: kw, text: kw ? R(0.07, v ? 0.38 : 0.44, 0.86, v ? 0.42 : 0.46) : w169 ? side.text : R(0.08, v ? 0.57 : 0.6, 0.84, v ? 0.23 : 0.32), valign: kw ? 0.4 : 0.3 };
+      return { mode: kw ? 'words' : 'box', size: kw ? 1.7 : 1.05, center: kw, text: R(0.08, v ? 0.14 : 0.12, 0.84, v ? 0.64 : 0.72), valign: 0.5 };
+    }
+    if (look === 'poster') {
+      if (!hasV) return { mode: 'plain', size: 1.45, text: R(0.08, v ? 0.12 : 0.1, 0.84, v ? 0.66 : 0.78), valign: 0.42, heavy: true };
+      if (w169) return { art: side.art, frame: 'round', mode: 'plain', size: 1.2, text: side.text, valign: 0.3, heavy: true };
+      return { art: v ? R(0.14, 0.5, 0.72, 0.29) : R(0.2, 0.52, 0.6, 0.4), frame: 'round', mode: 'plain', size: 1.25, heavy: true, text: v ? R(0.08, 0.1, 0.84, 0.37) : R(0.08, 0.07, 0.84, 0.42), valign: 0.15 };
+    }
+    if (look === 'magazine') {
+      if (!hasV) return { mode: 'fade', size: 0.95, text: R(0.12, v ? 0.2 : 0.16, 0.76, v ? 0.56 : 0.66), valign: 0.45, index: true };
+      if (w169) return { art: side.art, frame: 'paper', mode: 'fade', size: 0.85, text: side.text, valign: 0.45, index: true };
+      return { art: v ? R(0.08, 0.1, 0.84, 0.47) : R(0.1, 0.07, 0.8, 0.54), frame: 'paper', mode: 'fade', size: 0.82, index: true, text: v ? R(0.1, 0.61, 0.8, 0.19) : R(0.1, 0.66, 0.8, 0.28), valign: 0 };
+    }
+    if (look === 'docu') {
+      const bars = w169 ? 0.1 : v ? 0.09 : 0.08;
+      // 사진은 화면 가득, 그림(달력·지도 등)은 자막과 겹치지 않게 위쪽에
+      const art = isMedia ? [0, H * bars, W, H * (1 - bars * 2 - (v ? 0.05 : 0))] : w169 ? [W * 0.25, H * (bars + 0.04), W * 0.5, H * 0.5] : [0, H * bars, W, H * (v ? 0.48 : 0.52)];
+      return { art: hasV ? art : null, bars, grade: true, onPhoto: !!isMedia, shade: isMedia ? 'bottom' : null, mode: 'subtitle', size: 0.72, center: true,
+        text: v ? R(0.1, 0.62, 0.8, 0.17) : w169 ? R(0.15, 0.66, 0.7, 0.2) : R(0.1, 0.66, 0.8, 0.22), valign: 1 };
+    }
+    if (look === 'card') {
+      const card = w169 ? R(0.08, 0.1, 0.84, 0.8) : v ? R(0.07, 0.1, 0.86, 0.69) : R(0.08, 0.07, 0.84, 0.86), u = W / 100;
+      if (!hasV) return { card, mode: 'plain', size: 1.1, text: [card[0] + u * 6, card[1] + u * 6, card[2] - u * 12, card[3] - u * 12], valign: 0.45 };
+      if (w169) return { card, art: [card[0] + card[2] * 0.5, card[1] + u * 3, card[2] * 0.5 - u * 3, card[3] - u * 6], frame: 'clip', mode: 'plain', size: 0.95, text: [card[0] + u * 5, card[1] + u * 5, card[2] * 0.42, card[3] - u * 10], valign: 0.45 };
+      return { card, art: [card[0] + u * 3, card[1] + u * 3, card[2] - u * 6, card[3] * 0.56], frame: 'clip', mode: 'plain', size: 0.9, text: [card[0] + u * 6, card[1] + card[3] * 0.6, card[2] - u * 12, card[3] * 0.36], valign: 0.25 };
+    }
+    return null;
+  }
+  // 룩 그리기 (나눔 화면 split은 drawSplit)
+  drawLook(look, sc, local, P){
+    const x = this.x, W = this.W, H = this.H, g = this.geo(), u = g.u;
+    const v = sc.visual, isMedia = !!(v && v.media != null && v.g !== 'handheld' && this.media[v.media]);
+    const L = this.lookGeo(look, sc, !!v, isMedia);
+    // 카드 룩은 바탕을 강조색 쪽으로 물들여 흰 카드가 떠 보이게, 매거진은 새하얀 바탕이면 종이색으로
+    x.fillStyle = L.card ? mixHex(P.bg, P.ac, lum(P.bg) > 0.6 ? 0.42 : 0.18) : look === 'magazine' && lum(P.bg) > 0.92 ? '#F2EEE6' : P.bg; x.fillRect(0, 0, W, H);
+    let Pt = P, slide = 0;
+    if (L.card) { // 카드: 옆에서 밀려 들어옴, 카드 안은 밝은 종이색
+      const k = easeOut(local / 0.45); slide = (1 - k) * W * 0.9;
+      const dark = lum(P.bg) < 0.25, cbg = dark ? '#F6F3EE' : '#FFFFFF';
+      Pt = Object.assign({}, P, { bg: cbg, fg: '#1C1C1C', ac: contrast(P.ac, cbg) >= 3 ? P.ac : '#B5442C', stage: mixHex(cbg, P.ac, 0.12), panel: mixHex(cbg, '#000000', 0.05), line: mixHex(cbg, '#000000', 0.15) });
+      Pt.floor = mixHex(Pt.stage, '#000000', 0.1);
+      x.save(); x.translate(slide, 0);
+      x.fillStyle = 'rgba(0,0,0,0.18)'; this.rr(L.card[0] + u * 0.6, L.card[1] + u * 1.2, L.card[2], L.card[3], u * 4); x.fill();
+      x.fillStyle = cbg; this.rr(...L.card, u * 4); x.fill();
+      x.restore();
+    }
+    if (L.art && v) {
+      x.save(); x.translate(slide, 0);
+      const [ax, ay, aw, ah] = L.art;
+      if (L.frame === 'paper') { x.fillStyle = 'rgba(0,0,0,0.16)'; x.fillRect(ax + u * 0.8, ay + u * 1.2, aw, ah); x.fillStyle = '#FFFFFF'; x.fillRect(ax - u * 1.4, ay - u * 1.4, aw + u * 2.8, ah + u * 2.8); }
+      if (L.frame === 'round') { x.fillStyle = Pt.ac; this.rr(ax - u * 1.1, ay - u * 1.1, aw + u * 2.2, ah + u * 2.2, u * 4.6); x.fill(); }
+      if (L.frame === 'round' || L.frame === 'clip') { this.rr(ax, ay, aw, ah, u * 3.6); x.clip(); }
+      this.drawVisual(v, L.art, local, sc.d, Pt);
+      x.restore();
+    }
+    if (L.grade) { x.save(); x.globalCompositeOperation = 'soft-light'; x.fillStyle = 'rgba(255,170,80,0.35)'; x.fillRect(0, 0, W, H); x.restore(); }
+    if (L.shade === 'bottom') this.shade();
+    if (L.shade === 'dim') { x.fillStyle = 'rgba(0,0,0,0.52)'; x.fillRect(0, 0, W, H); }
+    if (L.bars) { x.fillStyle = '#000'; x.fillRect(0, 0, W, H * L.bars); x.fillRect(0, H * (1 - L.bars - (this.ratio === '9:16' ? 0.05 : 0)), W, H); }
+    if (L.onPhoto) Pt = this.onPhoto(Pt);
+    if (sc.kind === 'list') { x.save(); x.translate(slide, 0); this.drawList(sc, L.text, local, Pt, g); x.restore(); return this.drawProg(P); }
+    this.sizeK = L.size || 1;
+    const { res, h } = this.layoutText(sc.lines, L.text, sc.kind, sc.align, true);
+    this.sizeK = 1;
+    const SS = sceneStyle(this.sd(), this.idx || 0);
+    const center = L.center != null ? L.center : sc.align ? sc.align === 'center' : SS.center;
+    const box = L.text, y0 = box[1] + (box[3] - h) * (L.valign ?? 0.5), tx = (center ? box[0] + box[2] / 2 : box[0]) + slide;
+    if (L.onPhoto || L.mode === 'subtitle') { x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = u * 2 * this.s; x.shadowOffsetY = u * 0.3 * this.s; }
+    if (L.index) { // 매거진: 장면 번호 + 가는 선
+      const a = easeOut((local - 0.1) / 0.5); x.globalAlpha = a; x.fillStyle = Pt.ac; x.font = `700 ${u * 3.4}px ${FONT}`; x.textBaseline = 'alphabetic'; x.textAlign = center ? 'center' : 'left';
+      x.fillText(String((this.idx || 0) + 1).padStart(2, '0'), tx, y0 - u * 3.2); x.fillRect(center ? tx - u * 5 : tx + u * 6.5, y0 - u * 4.3, u * 10 * a, Math.max(2, u * 0.25)); x.globalAlpha = 1;
+    }
+    if (L.heavy) { const a = easeOut((local - 0.05) / 0.4), gp = Math.max(u * 5, (res[0] ? res[0].sz : 0) * 0.5); x.fillStyle = Pt.ac; x.fillRect(center ? tx - u * 8 * a : tx, y0 - gp, u * 16 * a, u * 1.6); }
+    this.drawRows(res, y0, tx, center, local, Pt, L.mode, SS, L.heavy);
+    x.globalAlpha = 1; x.textAlign = 'left'; x.shadowColor = 'transparent'; x.shadowBlur = 0; x.shadowOffsetY = 0;
+    this.drawProg(L.onPhoto ? Pt : P);
+  }
+  rr(x0, y0, w, h, r){ const x = this.x; x.beginPath(); if (x.roundRect) x.roundRect(x0, y0, w, h, r); else x.rect(x0, y0, w, h); }
+  // 글 줄 그리기: plain(장면 스타일 등장) · fade · box(강조 상자 자막) · words(낱말씩 톡) · subtitle(작은 자막)
+  drawRows(res, y0, tx, center, local, P, mode, SS, heavy){
+    const x = this.x, W = this.W, u = this.geo().u;
+    let n = 0, wi = 0;
+    res.forEach(r => {
+      const wt = heavy && r.w === 700 ? 900 : r.w;
+      x.font = `${wt} ${r.sz}px ${FONT}`;
+      const acc = r.l.role === 'accent' || r.l.role === 'label';
+      x.textBaseline = 'top'; x.textAlign = center ? 'center' : 'left';
+      r.rows.forEach((row, j) => {
+        const lh = r.sz * 1.3, y = y0 + r.top + j * lh, a = easeOut((local - 0.12 - n++ * 0.09) / 0.4);
+        if (mode === 'words') { // 낱말이 하나씩 커졌다 제자리로
+          const words = row.split(' '), sp = x.measureText(' ').width, ws = words.map(w => x.measureText(w).width), tot = ws.reduce((s, w) => s + w, 0) + sp * (words.length - 1);
+          let cx = center ? tx - tot / 2 : tx; x.textAlign = 'left';
+          words.forEach((w, k) => {
+            const b = easeOut((local - 0.1 - wi++ * 0.13) / 0.28); if (b > 0) {
+              const sc = 1 + 0.35 * (1 - b); x.save(); x.globalAlpha = Math.min(1, b * 1.5); x.translate(cx + ws[k] / 2, y + lh / 2); x.scale(sc, sc);
+              x.fillStyle = acc || (k === 0 && j === 0 && r === res[0]) ? P.ac : P.fg; x.fillText(w, -ws[k] / 2, -lh / 2 + r.sz * 0.1); x.restore(); }
+            cx += ws[k] + sp;
+          });
+          return;
+        }
+        if (a <= 0) return;
+        x.save();
+        if (mode === 'box') { // 자막 상자: 글 뒤에 강조색 띠
+          const tw = x.measureText(row).width, pad = r.sz * 0.28, bx = center ? tx - tw / 2 - pad : tx - pad, k2 = easeOut((local - 0.12 - (n - 1) * 0.09) / 0.3);
+          const fill = acc ? '#FFFFFF' : P.ac, ink = contrast(fill, '#FFFFFF') > contrast(fill, '#151515') ? '#FFFFFF' : '#151515';
+          x.shadowColor = 'transparent'; x.fillStyle = fill; x.globalAlpha = Math.min(1, a * 1.4);
+          this.rr(bx, y - r.sz * 0.06, (tw + pad * 2) * k2, r.sz * 1.24, r.sz * 0.16); x.fill();
+          x.fillStyle = ink; x.save(); this.rr(bx, y - r.sz * 0.06, (tw + pad * 2) * k2, r.sz * 1.24, 0); x.clip(); x.fillText(row, tx, y + r.sz * 0.04); x.restore();
+        } else {
+          x.fillStyle = acc ? P.ac : P.fg;
+          const st = mode === 'fade' || mode === 'subtitle' ? 'fade' : SS.text;
+          if (st === 'rise') { x.beginPath(); x.rect(0, y - lh * 0.1, W * 2, lh * 1.12); x.clip(); x.globalAlpha = Math.min(1, a * 1.4); x.fillText(row, tx, y + (1 - a) * lh * 0.9); }
+          else if (st === 'fade') { x.globalAlpha = a; x.fillText(row, tx, y + (1 - a) * lh * 0.12); }
+          else if (st === 'pop') { const k2 = 0.86 + 0.14 * (1 - Math.pow(1 - a, 2)) + 0.04 * Math.sin(Math.min(1, a) * Math.PI); x.globalAlpha = Math.min(1, a * 1.6); x.translate(tx, y + lh / 2); x.scale(k2, k2); x.fillText(row, 0, -lh / 2); }
+          else { x.globalAlpha = Math.min(1, a * 1.3); x.fillText(row, tx - (1 - a) * u * 8, y); }
+        }
+        x.restore();
+      });
+    });
+  }
+
+  drawSplit(sc, local, P){
     const x = this.x, W = this.W, H = this.H, g = this.geo();
-    x.setTransform(this.s, 0, 0, this.s, 0, 0);
     x.fillStyle = P.bg; x.fillRect(0, 0, W, H);
     const hasVis = !!sc.visual;
     // 첫·끝 장면에 내 사진이 있으면 사진을 화면 가득 깔고 그 위에 글 (어둡게 깐 띠 + 그림자로 잘 읽히게)
@@ -1589,13 +1742,25 @@ const DEF_PAL = { A: 'p0', B: 'p8', C: 'p9' }; // 먹색·크림·흰색
 const fmt = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 const ratio = () => radio('ratio'), len = () => +radio('len'), mood = () => radio('mood');
 // 색을 직접 고르지 않았으면: 구성안 기본색과 같은 묶음(어두운·밝은 바탕) 안에서 씨앗으로 고름. 사진 위주 영상은 어두운 바탕
-function autoPalId(){
-  const base = PALETTES.find(p => p.id === DEF_PAL[ST.plan]) || PALETTES[0];
-  const group = ST.media.length >= 2 ? PALETTES[0].group : base.group;
+// 룩마다 어울리는 색 묶음(포스터=선명, 매거진=밝음, 다큐=어두움…) 안에서 씨앗으로 고름
+function autoPalId(plan){
+  plan = plan || ST.plan;
+  const base = PALETTES.find(p => p.id === DEF_PAL[plan]) || PALETTES[0], lk = lookOf(ST.seed, plan, ST.media.length > 0);
+  const group = LOOK_GROUP[lk] || (ST.media.length >= 2 ? PALETTES[0].group : base.group);
   const list = PALETTES.filter(p => p.group === group && contrast(p.bg, p.fg) >= 4.5);
-  return ST.seed ? pickR(rngOf(ST.seed, 50 + ST.plan.charCodeAt(0)), list).id : base.id;
+  return ST.seed ? pickR(rngOf(ST.seed, 50 + plan.charCodeAt(0)), list).id : base.id;
 }
-const pal = () => ST.pal === 'custom' && ST.custom ? makePalette('custom', '직접', ST.custom.bg, ST.custom.fg, ST.custom.ac) : (PALETTES.find(p => p.id === (ST.pal || autoPalId())) || PALETTES[0]);
+const pal = (plan) => ST.pal === 'custom' && ST.custom ? makePalette('custom', '직접', ST.custom.bg, ST.custom.fg, ST.custom.ac) : (PALETTES.find(p => p.id === ((ST.palPicked || !plan || plan === ST.plan) && ST.pal ? ST.pal : autoPalId(plan))) || PALETTES[0]);
+// 새 씨앗: 지금 구성안의 룩이 직전과 반드시 달라지게
+// 최근에 나온 룩(사진 있으면 3개, 없으면 2개)은 피함 → 연달아 만들어도 생김새가 계속 바뀜
+function freshSeed(old){
+  const hm = ST.media.length > 0, keep = hm ? 3 : 2;
+  ST.recentLooks = (ST.recentLooks || []).slice(-keep);
+  if (old && !ST.recentLooks.length) ST.recentLooks.push(lookOf(old, ST.plan, hm));
+  let s2 = newSeed(); for (let i = 0; i < 60 && ST.recentLooks.includes(lookOf(s2, ST.plan, hm)); i++) s2 = newSeed();
+  ST.recentLooks.push(lookOf(s2, ST.plan, hm));
+  return s2;
+}
 
 /* ---- 1단계 ---- */
 $('#types').innerHTML = Object.entries(TYPES).map(([k, v]) => `<label><input type="radio" name="type" value="${k}"${k === 'promo' ? ' checked' : ''}><span>${v.name}</span></label>`).join('');
@@ -1690,7 +1855,7 @@ $$('input[name=mood]').forEach(r => r.addEventListener('change', () => { ST.plan
 
 /* ---- 3단계: 구성안 ---- */
 function makePlans(){
-  if (!ST.lockStyle || !ST.seed) ST.seed = newSeed();
+  if (!ST.lockStyle || !ST.seed) ST.seed = freshSeed(ST.seed);
   const r = rngOf(ST.seed, 9), H = phraseList(ST.type, 'hook', mood(), ST.fields), E = phraseList(ST.type, 'end', mood(), ST.fields);
   const fixedHook = ST.type !== 'free' && H.length > PHRASES[ST.type].hook[mood()].length; // 혜택·오픈 문구가 맨 앞
   if (!ST.lockStyle) ST.ph = { hook: fixedHook ? 0 : Math.floor(r() * H.length), end: Math.floor(r() * E.length) };
@@ -1713,12 +1878,12 @@ const markPal = () => $$('#pals button').forEach(b => b.classList.toggle('on', b
 
 const thumbs = {};
 function renderPlans(){
-  $('#plans').innerHTML = ['A', 'B', 'C'].map(k => `<div class="plan${ST.plan === k ? ' on' : ''}" data-plan="${k}"><canvas data-th="${k}"></canvas><h3>${PLAN_INFO[k][0]}</h3><p>${PLAN_INFO[k][1]} · ${ST.plans[k].length}장면</p></div>`).join('');
-  ['A', 'B', 'C'].forEach(k => { const st = new Stage($(`[data-th="${k}"]`)); st.media = ST.media; st.setup(ratio(), 0.22); thumbs[k] = { st, t: 0, playing: false }; });
+  $('#plans').innerHTML = ['A', 'B', 'C'].map(k => `<div class="plan${ST.plan === k ? ' on' : ''}" data-plan="${k}"><canvas data-th="${k}"></canvas><h3>${PLAN_INFO[k][0]}</h3><p><b>${LOOKS[lookOf(ST.seed, k, ST.media.length > 0)]}</b> · ${PLAN_INFO[k][1]} · ${ST.plans[k].length}장면</p></div>`).join('');
+  ['A', 'B', 'C'].forEach(k => { const st = new Stage($(`[data-th="${k}"]`)); st.media = ST.media; st.plan = k; st.setup(ratio(), 0.22); thumbs[k] = { st, t: 0, playing: false }; });
   drawPlanThumbs(); markPal();
 }
 function drawPlanThumbs(){
-  ['A', 'B', 'C'].forEach(k => { const th = thumbs[k]; if (!th) return; const sc = ST.plans[k], { i, local } = sceneAt(sc, th.t || 0.9); th.st.idx = i; th.st.draw(sc[i], th.playing ? local : 1.6, pal()); });
+  ['A', 'B', 'C'].forEach(k => { const th = thumbs[k]; if (!th) return; const sc = ST.plans[k], still = sc.length > 1 ? sc[0].d + 0.1 : 0.9, { i, local } = sceneAt(sc, th.playing ? th.t : still); th.st.idx = i; th.st.draw(sc[i], th.playing ? local : 1.6, pal(k)); });
 }
 let thumbRAF = null;
 $('#plans').addEventListener('click', e => {
@@ -1781,11 +1946,11 @@ $('#safeGuide').addEventListener('change', () => drawAt(player.t));
 /* 다른 느낌으로: 글은 그대로 두고 씨앗만 바꿔 색·음악·전환·글 등장·배치·사진 순서를 새로 */
 function vibeInfo(){
   const S = styleOf(ST.seed || 0), N = STYLE_NAMES, t = TRACKS.find(x => x.id === ST.track);
-  $('#vibeInfo').textContent = `지금 느낌: ${pal().name} · ${N.trans[S.trans]} 전환 · 글 ${N.text[S.text]} · ${N.layout[S.layout]}${t ? ' · ♪ ' + t.title : ''}` + (ST.lockStyle ? ' (고정됨)' : ' — 영상을 만들 때마다 다음 느낌이 새로 정해집니다');
+  $('#vibeInfo').textContent = `지금 느낌: ${LOOKS[lookOf(ST.seed, ST.plan, ST.media.length > 0)]} · ${pal().name} · ${N.trans[S.trans]} 전환 · 글 ${N.text[S.text]}${t ? ' · ♪ ' + t.title : ''}${ST.track && ST.beatInfo ? ` · 박자 맞춤 ${Math.round(ST.beatInfo.bpm)}BPM` : ''}` + (ST.lockStyle ? ' (고정됨)' : ' — 영상을 만들 때마다 다음 느낌이 새로 정해집니다');
 }
 function reroll(seed){
   ST.prev = { seed: ST.seed, track: ST.track, scenes: JSON.stringify(ST.scenes.map(sc => sc.visual)) };
-  ST.seed = seed || newSeed();
+  ST.seed = seed || freshSeed(ST.seed);
   $('#unroll').classList.remove('hidden');
   if (!ST.palPicked) ST.pal = null;
   if (!ST.trackPicked) { autoTrack(); fillBgm(); }
@@ -1793,6 +1958,7 @@ function reroll(seed){
   spreadMedia(free, ST.media.length, rngOf(ST.seed, 300 + ST.plan.charCodeAt(0)));
   adaptToMedia(free);
   markPal(); renderScenes(); drawAt(player.t); vibeInfo(); save();
+  snapToBeat().then(() => { renderScenes(); drawAt(player.t); vibeInfo(); });
 }
 $('#reroll').addEventListener('click', () => { pause(); reroll(); toast('다른 느낌으로 바꿨습니다. 글은 그대로입니다'); });
 $('#unroll').addEventListener('click', () => {
@@ -1876,8 +2042,8 @@ $('#sceneList').addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) { const box = e.target.closest('.sc'); if (box && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') { pause(); let acc = 0; for (let k = 0; k < +box.dataset.i; k++) acc += ST.scenes[k].d; player.t = acc + Math.min(1.6, ST.scenes[+box.dataset.i].d - 0.1); drawAt(player.t); } return; }
   const i = +b.closest('.sc').dataset.i, S0 = ST.scenes, a = b.dataset.a;
   if (a === 'aim') { openPick(i); return; }
-  if (a === 'dm') S0[i].d = Math.max(1.5, S0[i].d - 0.5);
-  if (a === 'dp') S0[i].d = Math.min(15, S0[i].d + 0.5);
+  if (a === 'dm') { S0[i].d = Math.max(1.5, S0[i].d - 0.5); S0[i].userD = true; }
+  if (a === 'dp') { S0[i].d = Math.min(15, S0[i].d + 0.5); S0[i].userD = true; }
   if (a === 'up' && i > 0) [S0[i - 1], S0[i]] = [S0[i], S0[i - 1]];
   if (a === 'dn' && i < S0.length - 1) [S0[i + 1], S0[i]] = [S0[i], S0[i + 1]];
   if (a === 'del') { if (S0.length <= 1) { toast('장면이 하나는 있어야 합니다'); return; } S0.splice(i, 1); }
@@ -1917,7 +2083,7 @@ function autoTrack(){
 }
 let bgmAudio = null;
 function stopBgm(){ if (bgmAudio) { bgmAudio.pause(); bgmAudio = null; } $('#bgmPlay').textContent = '듣기'; }
-$('#bgmSel').addEventListener('change', () => { stopBgm(); ST.track = $('#bgmSel').value; ST.trackPicked = true; save(); });
+$('#bgmSel').addEventListener('change', () => { stopBgm(); ST.track = $('#bgmSel').value; ST.trackPicked = true; save(); snapToBeat().then(() => { renderScenes(); drawAt(player.t); vibeInfo(); }); });
 $('#bgmPlay').addEventListener('click', () => {
   if (bgmAudio) { stopBgm(); return; }
   const v = $('#bgmSel').value; if (!v) { toast('배경음 없음을 골랐습니다'); return; }
@@ -1929,9 +2095,53 @@ $('#bgmVol').addEventListener('input', () => { $('#bgmVolV').textContent = $('#b
 $('#bgmIn').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   ST.bgm = { file: f, name: f.name }; ST.track = 'file'; ST.trackPicked = true; stopBgm();
+  snapToBeat().then(() => { renderScenes(); drawAt(player.t); vibeInfo(); });
   $('#bgmName').textContent = f.name.length > 18 ? f.name.slice(0, 16) + '…' : f.name; $('#bgmDel').classList.remove('hidden'); e.target.value = ''; fillBgm();
 });
 $('#bgmDel').addEventListener('click', () => { ST.bgm = null; if (ST.track === 'file') { ST.trackPicked = false; autoTrack(); } stopBgm(); $('#bgmName').textContent = '파일 넣기'; $('#bgmDel').classList.add('hidden'); fillBgm(); });
+/* ===== 음악 박자에 맞춰 장면 넘기기 =====
+   배경음을 한 번 읽어 빠르기(BPM)와 첫 박 위치를 찾고, 장면이 바뀌는 순간을 가까운 박자에 맞춤.
+   직접 길이를 바꾼 장면은 그대로 둠. 박자를 못 찾으면 원래 길이 그대로 */
+const beatCache = {};
+async function analyzeBeat(){
+  const key = ST.track === 'file' ? 'file:' + (ST.bgm && ST.bgm.file ? ST.bgm.file.name + ST.bgm.file.size : '') : ST.track;
+  if (!ST.track) return null;
+  if (key in beatCache) return beatCache[key];
+  beatCache[key] = null;
+  try {
+    const blob = await bgmBlob(); if (!blob) return null;
+    const ac = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 22050);
+    const buf = await ac.decodeAudioData(await blob.arrayBuffer());
+    const ch = buf.getChannelData(0), sr = buf.sampleRate, hop = Math.round(sr * 0.005), n = Math.min(Math.floor(ch.length / hop), 9000); // 5ms 간격, 앞 45초
+    const env = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let e = 0; for (let j = i * hop, k = j + hop; j < k; j++) e += ch[j] * ch[j]; env[i] = Math.sqrt(e / hop); }
+    const on = new Float32Array(n); for (let i = 1; i < n; i++) on[i] = Math.max(0, env[i] - env[i - 1]);
+    let best = 0, bestLag = 0;
+    for (let lag = 80; lag <= 172; lag++) { // 70~150 BPM
+      let c = 0; for (let i = lag; i < n; i++) c += on[i] * on[i - lag];
+      if (c > best) { best = c; bestLag = lag; }
+    }
+    if (!bestLag) return null;
+    let bo = 0, bs = -1; for (let o = 0; o < bestLag; o++) { let sum = 0; for (let i = o; i < n; i += bestLag) sum += on[i]; if (sum > bs) { bs = sum; bo = o; } }
+    return (beatCache[key] = { bpm: 12000 / bestLag, beat: bestLag / 200, offset: bo / 200 });
+  } catch (_) { return null; }
+}
+async function snapToBeat(){
+  const S = ST.scenes; if (!S || !S.length) return;
+  S.forEach(sc => { if (sc.d0 == null) sc.d0 = sc.d; });
+  const b = ST.track ? await analyzeBeat() : null;
+  if (!b) { S.forEach(sc => { if (!sc.userD) sc.d = sc.d0; }); ST.beatInfo = null; return; }
+  const unit = b.beat < 0.45 ? b.beat * 2 : b.beat; // 박이 너무 빠르면 두 박마다
+  let prev = 0, plan = 0;
+  S.forEach((sc, i) => {
+    plan += sc.userD ? sc.d : sc.d0;
+    if (sc.userD || i === S.length - 1) { sc.d = Math.max(1.5, plan - prev); prev += sc.d; return; }
+    let cut = b.offset + Math.round((plan - b.offset) / unit) * unit;
+    while (cut - prev < 1.5) cut += unit;
+    sc.d = +(cut - prev).toFixed(3); prev = cut;
+  });
+  ST.beatInfo = b;
+}
 async function bgmBlob(){
   const v = ST.track; if (!v) return null;
   if (v === 'file') return ST.bgm ? ST.bgm.file : null;
@@ -2213,6 +2423,7 @@ function go(n){
     }
     autoTrack(); fillBgm(); $('#bgmVol').value = ST.vol ?? 60; $('#bgmVolV').textContent = $('#bgmVol').value;
     stageSetup(); player.t = 1.6; renderScenes(); vibeInfo();
+    snapToBeat().then(() => { renderScenes(); drawAt(player.t); vibeInfo(); });
     if (!radio('q')) $$('input[name=q]').forEach(r => r.checked = r.value === (innerWidth < 760 ? '0.6667' : '1'));
   }
   Object.values(thumbs).forEach(t => t.playing = false);
