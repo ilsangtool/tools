@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>의견함 관리 - 일상툴</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d1f2c'/%3E%3Cpath d='M9 10h14M9 16h14M9 22h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#2a2324;--ink2:#3d3536;--sub:#6b605c;--faint:#8c7f78;--line:#e8e0d6;--line2:#d6cabd;--bg:#faf7f1;--fill:#fbf9f5;--accent:#6d1f2c;--accent-ink:#571823;--accent-soft:#f6ecec;--ok:#2f6b4f;--ok-soft:#edf4ef;--warn:#9a4a0c;--warn-soft:#fdf3e7;--bad:#b42318;--serif:"Noto Serif KR","Nanum Myeongjo","AppleMyungjo",serif;--ring:0 0 0 3px rgba(109,31,44,.14)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:15px;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+  h1,h2{text-wrap:balance}
+  .top{position:sticky;top:0;z-index:5;background:rgba(250,247,241,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .top .in{max-width:960px;margin:0 auto;height:56px;padding:0 16px;display:flex;align-items:center;gap:10px}
+  .brand{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--accent);text-decoration:none}
+  .top .sp{flex:1}
+  .sub-t{color:var(--faint);font-size:13px;white-space:nowrap}
+  main{max-width:960px;margin:0 auto;padding:24px 16px 72px}
+  h1{font-family:var(--serif);font-size:28px;font-weight:600;margin:0 0 4px;letter-spacing:-.02em}
+  .lead{color:var(--sub);margin:0 0 20px;font-size:14.5px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:12px}
+  .card h2{font-family:var(--serif);font-size:17px;font-weight:600;margin:0 0 12px}
+  label.f{display:block;font-size:13.5px;font-weight:600;color:var(--ink2);margin:0 0 6px}
+  input[type=password],input[type=search],select{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:16px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
+  select{padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236b605c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+  input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:var(--ring)}
+  button{font:inherit;font-size:14.5px;font-weight:600;border-radius:8px;min-height:44px;padding:10px 16px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff}
+  button:hover{background:var(--accent-ink)}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line2)}
+  button.ghost:hover{background:var(--fill)}
+  button.sm{min-height:34px;padding:5px 11px;font-size:13px;font-weight:500}
+  button.danger{color:var(--bad);border-color:#efc2bd;background:#fff}
+  button.danger.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+  button:focus-visible{outline:none;box-shadow:var(--ring)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chk{display:flex;gap:8px;align-items:center;font-size:14px;margin:10px 0 0}
+  .hint{font-size:13px;color:var(--sub);margin:8px 0 0;line-height:1.6}
+  .err{color:var(--bad);font-size:14px;margin:10px 0 0}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+  .stats div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stats small{display:block;color:var(--sub);font-size:12.5px}
+  .stats b{font-family:var(--serif);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stats .new b{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 8px;border-bottom:1px solid #efe8df;text-align:left}
+  th{font-size:12.5px;color:var(--faint);font-weight:600;border-bottom:1px solid var(--ink)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.click{cursor:pointer} tr.click:hover td{background:var(--fill)}
+  .wrapx{overflow-x:auto}
+  .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+  .item.new{border-left:3px solid var(--accent)}
+  .item .hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-bottom:8px}
+  .item .hd b{color:var(--ink);font-size:14.5px}
+  .mood{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--line2);background:var(--fill)}
+  .mood.good{color:var(--ok);background:var(--ok-soft);border-color:#cfe2d6}
+  .mood.bad{color:var(--bad);background:#fdeeee;border-color:#f3c9c4}
+  .mood.ok{color:var(--warn);background:var(--warn-soft);border-color:#f2d9b8}
+  .badge{font-size:11.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:1px 8px}
+  .msg{white-space:pre-wrap;margin:0 0 12px;font-size:15px;line-height:1.7}
+  .msg.empty{color:var(--faint);font-size:14px}
+  .empty-all{color:var(--sub);text-align:center;padding:32px 0}
+  .hidden{display:none!important}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2324;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .18s;pointer-events:none}
+  .toast.show{opacity:1}
+  @media(max-width:640px){.x{display:none}.sub-t{display:none}td:first-child{min-width:9em}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:1fr 1fr}main{padding:20px 12px 64px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <a class="brand" href="../">일상툴</a><span class="sub-t">의견함 관리</span>
+  <span class="sp"></span>
+  <button type="button" class="ghost sm hidden" id="reload">새로고침</button>
+  <button type="button" class="ghost sm hidden" id="logout">키 지우기</button>
+</div></div>
+<main>
+  <h1>의견함</h1>
+  <p class="lead">도구를 쓴 사람이 남긴 개선 의견입니다. 이 화면과 의견 내용은 관리자 키가 있어야만 열립니다.</p>
+
+  <section class="card" id="login">
+    <h2>관리자 키 넣기</h2>
+    <label class="f" for="key">Firebase 데이터베이스 비밀 키</label>
+    <input type="password" id="key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="gurichecklist 프로젝트의 데이터베이스 비밀 키">
+    <label class="chk"><input type="checkbox" id="remember" checked> 이 기기에 기억하기 (내 휴대폰·PC에서만)</label>
+    <div class="row" style="margin-top:14px"><button type="button" id="enter">의견 열기</button></div>
+    <p class="err hidden" id="loginErr"></p>
+    <p class="hint">키는 이 기기 브라우저에만 저장되고 일상툴 서버나 저장소에는 올라가지 않습니다. 키 위치: Firebase 콘솔 → gurichecklist 프로젝트 설정 → 서비스 계정 → 데이터베이스 보안 비밀(Database secrets) → 표시.</p>
+  </section>
+
+  <div id="board" class="hidden">
+    <div class="stats">
+      <div class="new"><small>새 의견</small><b id="sNew">0</b></div>
+      <div><small>전체 의견</small><b id="sAll">0</b></div>
+      <div><small>편했어요</small><b id="sGood">0</b></div>
+      <div><small>불편했어요</small><b id="sBad">0</b></div>
+    </div>
+
+    <section class="card">
+      <h2>도구별 모아보기</h2>
+      <div class="wrapx"><table>
+        <thead><tr><th>도구</th><th class="n">새 의견</th><th class="n">전체</th><th class="n x">편했어요</th><th class="n x">보통</th><th class="n x">불편</th><th class="n x">최근</th></tr></thead>
+        <tbody id="byApp"></tbody>
+      </table></div>
+      <p class="hint">줄을 누르면 그 도구 의견만 봅니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>의견 목록</h2>
+      <div class="filters">
+        <div><label class="f" for="fApp">도구</label><select id="fApp"><option value="">전체 도구</option></select></div>
+        <div><label class="f" for="fState">상태</label><select id="fState"><option value="">전체</option><option value="new" selected>새 의견</option><option value="done">확인함</option></select></div>
+        <div><label class="f" for="fMood">느낌</label><select id="fMood"><option value="">전체</option><option value="good">편했어요</option><option value="ok">보통이에요</option><option value="bad">불편했어요</option><option value="-">고르지 않음</option></select></div>
+        <div><label class="f" for="fText">낱말 찾기</label><input type="search" id="fText" placeholder="예: 저장"></div>
+      </div>
+      <div class="row" style="margin:14px 0 12px;justify-content:space-between">
+        <span class="hint" style="margin:0" id="count"></span>
+        <span class="row"><button type="button" class="ghost sm" id="allDone">보이는 의견 모두 확인함</button><button type="button" class="ghost sm" id="csv">CSV로 받기</button></span>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+  'use strict';
+  var DB = 'https://gurichecklist-default-rtdb.asia-southeast1.firebasedatabase.app/_feedback';
+  var KEYS = 'ilsang_admin_key';
+  var NAMES = {'pdf-to-hwp':'PDF 한글 변환·나누기·합치기','image-resize':'사진 용량 줄이기','id-photo':'증명사진 자르기','weekly-pay':'주휴수당·월급 계산기','dutch-pay':'더치페이 정산','date-calc':'D-day·만 나이 계산기','refund-policy':'환불·교환 규정 생성기','noshow-policy':'노쇼 규정 문구 생성기','review-policy':'리뷰 운영정책 고지문','closed-notice':'휴무 안내문 만들기','short-video':'숏폼 영상 만들기'};
+  var MOOD = {good:'편했어요', ok:'보통이에요', bad:'불편했어요'};
+  var WHY = {copy:'결과 복사 뒤', save:'파일 저장 뒤', use:'1분 넘게 쓴 뒤'};
+  var $ = function(s){ return document.querySelector(s); };
+  var key = '', rows = [];
+  var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var name = function(a){ return NAMES[a] || a; };
+  var when = function(t){ var d = new Date(t); if (isNaN(d)) return ''; var p = function(n){ return String(n).padStart(2,'0'); }; return d.getFullYear() + '.' + p(d.getMonth()+1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
+  function toast(m){ var t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function(){ t.classList.remove('show'); }, 1800); }
+  function api(path, opt){ return fetch(DB + path + '.json?auth=' + encodeURIComponent(key), opt).then(function(r){ if (r.status === 401 || r.status === 403) throw new Error('KEY'); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
+
+  function loadAll(){
+    return api('', {cache:'no-store'}).then(function(d){
+      rows = [];
+      Object.keys(d || {}).forEach(function(a){ Object.keys(d[a] || {}).forEach(function(id){ var v = d[a][id] || {}; rows.push({ id:id, a:a, t:+v.t || 0, r:v.r || '', m:v.m || '', d:v.d || '', w:v.w || '', c:+v.c || 0 }); }); });
+      rows.sort(function(x, y){ return y.t - x.t; });
+      render();
+    });
+  }
+  function enter(k, quiet){
+    key = (k || '').trim(); if (!key) { if (!quiet) showErr('키를 넣어 주세요.'); return; }
+    $('#enter').disabled = true; $('#enter').textContent = '여는 중…';
+    loadAll().then(function(){
+      if ($('#remember').checked) { try { localStorage.setItem(KEYS, key); } catch(e){} }
+      $('#login').classList.add('hidden'); $('#board').classList.remove('hidden'); $('#reload').classList.remove('hidden'); $('#logout').classList.remove('hidden');
+    }).catch(function(e){
+      showErr(e.message === 'KEY' ? '키가 맞지 않습니다. Firebase 콘솔에서 데이터베이스 비밀 키를 다시 확인해 주세요.' : '불러오지 못했습니다. 인터넷 연결을 확인해 주세요. (' + e.message + ')');
+      if (e.message === 'KEY') { try { localStorage.removeItem(KEYS); } catch(x){} }
+    }).finally(function(){ $('#enter').disabled = false; $('#enter').textContent = '의견 열기'; });
+  }
+  function showErr(m){ var e = $('#loginErr'); e.textContent = m; e.classList.remove('hidden'); }
+
+  function filtered(){
+    var a = $('#fApp').value, s = $('#fState').value, md = $('#fMood').value, q = $('#fText').value.trim().toLowerCase();
+    return rows.filter(function(r){
+      if (a && r.a !== a) return false;
+      if (s === 'new' && r.c) return false;
+      if (s === 'done' && !r.c) return false;
+      if (md === '-' ? r.r : (md && r.r !== md)) return false;
+      if (q && (r.m + ' ' + name(r.a)).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+  function render(){
+    var n = function(f){ return rows.filter(f).length; };
+    $('#sNew').textContent = n(function(r){ return !r.c; }); $('#sAll').textContent = rows.length;
+    $('#sGood').textContent = n(function(r){ return r.r === 'good'; }); $('#sBad').textContent = n(function(r){ return r.r === 'bad'; });
+    // 도구별
+    var apps = {}; rows.forEach(function(r){ var o = apps[r.a] || (apps[r.a] = { all:0, nw:0, good:0, ok:0, bad:0, last:0 }); o.all++; if (!r.c) o.nw++; if (o[r.r] != null) o[r.r]++; o.last = Math.max(o.last, r.t); });
+    var list = Object.keys(apps).sort(function(x, y){ return apps[y].nw - apps[x].nw || apps[y].all - apps[x].all; });
+    $('#byApp').innerHTML = list.length ? list.map(function(a){ var o = apps[a]; return '<tr class="click" data-a="' + esc(a) + '" tabindex="0"><td>' + esc(name(a)) + '</td><td class="n">' + (o.nw ? '<span class="badge">' + o.nw + '</span>' : '0') + '</td><td class="n">' + o.all + '</td><td class="n x">' + o.good + '</td><td class="n x">' + o.ok + '</td><td class="n x">' + o.bad + '</td><td class="n x">' + when(o.last).slice(2, 10) + '</td></tr>'; }).join('') : '<tr><td colspan="7" class="empty-all">아직 받은 의견이 없습니다.</td></tr>';
+    var cur = $('#fApp').value;
+    $('#fApp').innerHTML = '<option value="">전체 도구</option>' + Object.keys(NAMES).concat(list.filter(function(a){ return !NAMES[a]; })).map(function(a){ return '<option value="' + esc(a) + '">' + esc(name(a)) + (apps[a] ? ' (' + apps[a].all + ')' : '') + '</option>'; }).join('');
+    $('#fApp').value = cur;
+    drawList();
+  }
+  function drawList(){
+    var f = filtered();
+    $('#count').textContent = f.length + '건';
+    $('#list').innerHTML = f.length ? f.map(function(r){
+      return '<article class="item' + (r.c ? '' : ' new') + '" data-id="' + esc(r.id) + '" data-a="' + esc(r.a) + '">' +
+        '<div class="hd"><b>' + esc(name(r.a)) + '</b><span>' + when(r.t) + '</span>' + (r.r ? '<span class="mood ' + esc(r.r) + '">' + esc(MOOD[r.r] || r.r) + '</span>' : '') +
+        '<span>' + (r.d === 'm' ? '휴대폰' : r.d === 'p' ? 'PC' : '') + (WHY[r.w] ? ' · ' + WHY[r.w] : '') + '</span>' + (r.c ? '<span>· 확인함 ' + when(r.c).slice(2) + '</span>' : '') + '</div>' +
+        (r.m ? '<p class="msg">' + esc(r.m) + '</p>' : '<p class="msg empty">글 없이 느낌만 남겼습니다.</p>') +
+        '<div class="row"><button type="button" class="ghost sm" data-act="done">' + (r.c ? '새 의견으로 되돌리기' : '확인함') + '</button>' + (r.m ? '<button type="button" class="ghost sm" data-act="copy">글 복사</button>' : '') + '<button type="button" class="sm danger" data-act="del">삭제</button></div></article>';
+    }).join('') : '<p class="empty-all">조건에 맞는 의견이 없습니다.</p>';
+  }
+  function find(id, a){ for (var i = 0; i < rows.length; i++) if (rows[i].id === id && rows[i].a === a) return rows[i]; }
+
+  $('#list').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    var it = b.closest('.item'), r = find(it.dataset.id, it.dataset.a), act = b.dataset.act; if (!r) return;
+    var path = '/' + encodeURIComponent(r.a) + '/' + encodeURIComponent(r.id);
+    if (act === 'copy') { navigator.clipboard.writeText(r.m).then(function(){ toast('복사했습니다'); }); return; }
+    if (act === 'done') {
+      var v = r.c ? null : Date.now(); b.disabled = true;
+      api(path + '/c', { method:'PUT', body: JSON.stringify(v) }).then(function(){ r.c = v || 0; render(); toast(v ? '확인함으로 옮겼습니다' : '새 의견으로 되돌렸습니다'); }).catch(function(){ b.disabled = false; toast('바꾸지 못했습니다'); });
+      return;
+    }
+    if (act === 'del') {
+      if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = '한 번 더 누르면 삭제'; setTimeout(function(){ if (document.body.contains(b)) { b.classList.remove('armed'); b.textContent = '삭제'; } }, 3000); return; }
+      b.disabled = true;
+      api(path, { method:'DELETE' }).then(function(){ rows = rows.filter(function(x){ return x !== r; }); render(); toast('삭제했습니다'); }).catch(function(){ b.disabled = false; toast('삭제하지 못했습니다'); });
+    }
+  });
+  $('#allDone').addEventListener('click', function(){
+    var f = filtered().filter(function(r){ return !r.c; }); if (!f.length) { toast('확인할 새 의견이 없습니다'); return; }
+    var now = Date.now(), patch = {}; f.forEach(function(r){ patch[r.a + '/' + r.id + '/c'] = now; });
+    api('', { method:'PATCH', body: JSON.stringify(patch) }).then(function(){ f.forEach(function(r){ r.c = now; }); render(); toast(f.length + '건을 확인함으로 옮겼습니다'); }).catch(function(){ toast('바꾸지 못했습니다'); });
+  });
+  $('#csv').addEventListener('click', function(){
+    var f = filtered(), q = function(s){ return '"' + String(s).replace(/"/g, '""') + '"'; };
+    var lines = [['받은 시각','도구','느낌','기기','물은 때','상태','의견'].map(q).join(',')].concat(f.map(function(r){ return [when(r.t), name(r.a), MOOD[r.r] || '', r.d === 'm' ? '휴대폰' : r.d === 'p' ? 'PC' : '', WHY[r.w] || '', r.c ? '확인함' : '새 의견', r.m].map(q).join(','); }));
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = '일상툴_의견_' + when(Date.now()).slice(0, 10).replace(/\./g, '') + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+  ['fApp','fState','fMood'].forEach(function(id){ $('#' + id).addEventListener('change', drawList); });
+  $('#fText').addEventListener('input', drawList);
+  $('#byApp').addEventListener('click', function(e){ var tr = e.target.closest('tr[data-a]'); if (!tr) return; $('#fApp').value = tr.dataset.a; $('#fState').value = ''; drawList(); $('#list').scrollIntoView({ behavior:'smooth', block:'start' }); });
+  $('#byApp').addEventListener('keydown', function(e){ if (e.key === 'Enter') { var tr = e.target.closest('tr[data-a]'); if (tr) tr.click(); } });
+  $('#enter').addEventListener('click', function(){ enter($('#key').value); });
+  $('#key').addEventListener('keydown', function(e){ if (e.key === 'Enter') enter($('#key').value); });
+  $('#reload').addEventListener('click', function(){ loadAll().then(function(){ toast('새로 불러왔습니다'); }).catch(function(){ toast('불러오지 못했습니다'); }); });
+  $('#logout').addEventListener('click', function(){ try { localStorage.removeItem(KEYS); } catch(e){} key = ''; rows = []; $('#board').classList.add('hidden'); $('#login').classList.remove('hidden'); $('#reload').classList.add('hidden'); $('#logout').classList.add('hidden'); $('#key').value = ''; toast('이 기기에서 키를 지웠습니다'); });
+  var saved = ''; try { saved = localStorage.getItem(KEYS) || ''; } catch(e){}
+  if (saved) enter(saved, true);
+})();
+</script>
+</body>
+</html>

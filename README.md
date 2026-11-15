@@ -64,3 +64,31 @@ robots.txt, sitemap.xml   검색엔진 등록용
 - 저장소 Settings → Secrets and variables → Actions에 `LAW_OC`(국가법령정보 공동활용 Open API 인증값: 가입 이메일 @ 앞부분) 저장. 없으면 값은 절대 바뀌지 않고 보도 알림만 옵니다.
 - 점검: `.github/workflows/law-watch.yml`, 매주 월·목 오전 9시(한국시간). Actions → **Run workflow**로 즉시 실행 가능.
 - 페이지 원본은 `_build/tools/<도구>/`. 원본을 고치고 `python _build/build.py` 실행. 결과 `index.html`을 직접 고치면 다음 점검 때 덮어써집니다.
+
+## 의견함 (사용자 개선 의견)
+- `assets/feedback.js`: 도구를 쓴 뒤(결과 복사·파일 저장, 또는 1분 넘게 5번 넘게 입력) 아래에서 의견 창이 올라온다. 모든 입력은 선택이고, 보내면 120일, "다음에"를 누르면 14일 동안 같은 도구에서 다시 묻지 않는다(최대 2번).
+- 보내는 내용: 도구 이름, 느낌(편했어요·보통이에요·불편했어요), 글(1,000자 이하), 휴대폰/PC, 물은 때, 시각. 이름·연락처·기기 식별값은 보내지 않는다.
+- 관리 화면: `admin/` (검색 제외). 첫 화면 아래 "관리자" 또는 위쪽 "의견함"(키를 저장한 기기에서만 보임)으로 연다. Firebase 데이터베이스 보안 비밀(Database secrets)로 읽고, 키는 그 기기 브라우저에만 저장된다.
+- 저장 위치: Firebase `gurichecklist` Realtime Database `/_feedback/{도구}/{자동 ID}`
+
+### Firebase 규칙 (한 번만 추가)
+`"rules": {` 안, `_orbit` 블록 옆에 추가. 최상위에 `".read": true`가 있으면 의견이 공개되므로 없는지 확인한다.
+
+```json
+"_feedback": {
+  ".read": false,
+  "$app": {
+    "$id": {
+      ".write": "!data.exists() && newData.exists()",
+      ".validate": "$app.matches(/^[a-z0-9-]{2,40}$/) && newData.hasChildren(['a', 't']) && newData.child('a').val() == $app && newData.child('t').val() <= now + 60000",
+      "a": { ".validate": "newData.isString()" },
+      "t": { ".validate": "newData.isNumber()" },
+      "r": { ".validate": "newData.isString() && newData.val().matches(/^(good|ok|bad|)$/)" },
+      "m": { ".validate": "newData.isString() && newData.val().length <= 1000" },
+      "d": { ".validate": "newData.isString() && newData.val().length <= 2" },
+      "w": { ".validate": "newData.isString() && newData.val().length <= 8" },
+      "$other": { ".validate": false }
+    }
+  }
+}
+```
