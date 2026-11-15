@@ -20,3 +20,7 @@
   .verdict p{margin:0;font-size:14px;color:var(--sub)}
   .tbl-wrap{overflow-x:auto}
   .stat .neg b{color:var(--ok)}
+  .hols{margin:12px 0 0;font-size:14px}
+  .hols summary{cursor:pointer;color:var(--sub);font-weight:600}
+  .hols ul{columns:2;margin:8px 0 0;padding-left:18px;color:var(--ink2)}
+  @media(max-width:600px){.hols ul{columns:1}}

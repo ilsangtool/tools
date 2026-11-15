@@ -16,13 +16,7 @@ const statBox = (L) => L.map(([l, v, cls]) => `<div class="${cls || ''}"><small>
 const textOf = id => $(id).innerText.replace(/\t/g, ' ').replace(/⁠/g, '');
 
 /* ---------- 신고 일정 ---------- */
-const FIXED_HOL = ['01-01', '03-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25'];
-const LUNAR_HOL = {
-  2026: ['02-16', '02-17', '02-18', '03-02', '05-24', '05-25', '06-03', '08-17', '09-24', '09-25', '09-26', '09-28', '10-05'],
-  2027: ['02-06', '02-07', '02-08', '02-09', '05-13', '08-16', '09-14', '09-15', '09-16', '10-04', '10-11', '12-27'],
-  2028: ['01-26', '01-27', '01-28', '05-02', '10-02', '10-03', '10-04', '10-05']
-};
-function isHoliday(d){ const md = ymd(d).slice(5); return d.getDay() === 0 || d.getDay() === 6 || FIXED_HOL.includes(md) || (LUNAR_HOL[d.getFullYear()] || []).includes(md); }
+const isHoliday = d => KHol.is(d);
 function due(y, m, d){ let x = new Date(y, m - 1, Math.min(d, new Date(y, m, 0).getDate())); const o = new Date(x); while (isHoliday(x)) x = addDays(x, 1); return { d: x, moved: +x !== +o }; }
 function schedule(y, who){
   const L = [], add = (m, d, t, w, note) => { if (!w.some(k => who.includes(k))) return; const r = due(y, m, d); L.push({ ...r, t, note: note || '', w }); };
@@ -54,6 +48,9 @@ function renderCal(){
   const L = schedule(y, who);
   const up = schedule(t.getFullYear(), who).concat(schedule(t.getFullYear() + 1, who)).filter(x => x.d >= t).slice(0, 4);
   $('#next').innerHTML = up.length ? '<div class="next">' + up.map(x => { const n = dayDiff(t, x.d); return `<div class="${n <= 7 ? 'soon' : ''}"><b class="dd">${n === 0 ? 'D-day' : 'D-' + n}</b><span>${esc(x.t)}<small>${kDate(x.d, true)}${x.moved ? ' · 휴일이라 미뤄짐' : ''}</small></span></div>`; }).join('') + '</div>' : '<p class="hint">위에서 사업 유형을 고르세요.</p>';
+  const H = KHol.list(y);
+  $('#holList').innerHTML = '<ul>' + Object.keys(H).sort().map(k => `<li>${kDate(parseDate(k))} ${esc(H[k])}</li>`).join('') + '</ul>';
+  $('#holNote').textContent = '기한이 토·일요일이나 공휴일이면 다음 평일로 미뤘습니다. ' + (KHol.hasOfficial(y) ? `${y}년 공휴일은 한국천문연구원 특일정보(임시공휴일 포함)를 따릅니다.` : `${y}년 공휴일은 관공서 공휴일 규정과 음력 천문 계산으로 구했습니다. 임시공휴일은 지정되면 자동으로 더해집니다.`);
   $('#calTbl').innerHTML = L.length ? '<thead><tr><th>기한</th><th>할 일</th></tr></thead><tbody>' + L.map(x => `<tr class="${x.d < t ? 'past' : ''}"><td style="white-space:nowrap">${kDate(x.d)}${x.moved ? ' <span class="chip">미뤄짐</span>' : ''}</td><td>${esc(x.t)}${x.note ? `<br><small>${esc(x.note)}</small>` : ''}</td></tr>`).join('') + '</tbody>' : '';
   saveState();
 }
@@ -151,9 +148,14 @@ function calcInc(){
 /* ---------- 원천징수 ---------- */
 function calcWh(){
   const W = ruleAt(RULES.withholding, ymd(today())), type = radio('wType'), dir = radio('wDir'), amt = N(val('wAmt'));
+  $('#wWageBox').classList.toggle('hidden', type !== 'wage');
   $('#wExpBox').classList.toggle('hidden', type !== 'other'); $('#wDaysBox').classList.toggle('hidden', type !== 'daily'); $('#wEiBox').classList.toggle('hidden', type !== 'daily');
-  $('#wAmtL').textContent = (type === 'daily' ? '하루 일당 ' : '지급액 ') + (dir === 'gross' ? '(세전)' : '(실수령)');
+  $('#wAmtL').textContent = (type === 'daily' ? '하루 일당 ' : type === 'wage' ? '월급 ' : '지급액 ') + (dir === 'gross' ? '(세전)' : '(실수령)');
   const taxOf = g => {
+    if (type === 'wage') {
+      const non = N(val('wNon')), r = WageTax.calc(Math.max(0, g - non), +val('wFam') || 1, +val('wKid') || 0, +radio('wRatio') || 100, ymd(today()));
+      return { it: r.it, lt: r.lt, base: Math.max(0, g - non), rate: `간이세액표 ${fmt(Math.max(0, g - non))}원·가족 ${Math.max(1, +val('wFam') || 1)}명` + (r.child ? ` − 자녀 공제 ${fmt(r.child)}원` : '') + (radio('wRatio') !== '100' ? ` × ${radio('wRatio')}%` : ''), src: r.source };
+    }
     if (type === 'biz') { let it = f10(g * W.biz); if (it < W.minor) it = 0; return { it, lt: f10(it * 0.1), base: g, rate: '지급액 × 3%' }; }
     if (type === 'int') { const it = f10(g * W.interest); return { it, lt: f10(it * 0.1), base: g, rate: '지급액 × 14%' }; }
     if (type === 'other') {
@@ -184,7 +186,7 @@ function calcWh(){
     r.ei ? ['고용보험 <small>(0.9%)</small>', r.ei] : '-',
     ['= 실수령액', net, 'sum']
   ]);
-  const notes = { biz: '지급한 사업자는 다음 달 10일까지 원천세 신고·납부, 다음 달 말일까지 간이지급명세서를 냅니다. 받은 사람은 5월 종합소득세 신고로 정산합니다.', other: '기타소득금액이 연 300만원 이하면 분리과세(8.8%로 끝)와 종합과세 중 고를 수 있습니다.' + (r.min ? ' 지금은 기타소득금액이 5만원 이하라 세금을 떼지 않습니다(과세최저한).' : ''), daily: '일용근로소득은 원천징수로 납세가 끝나 따로 신고하지 않습니다. 소득세가 1,000원 미만이면 떼지 않습니다(소액부징수).', int: '연 이자·배당이 2,000만원을 넘으면 넘는 부분은 종합과세됩니다.' };
+  const notes = { wage: '4대보험(근로자 부담)은 따로 뺍니다 → 4대보험 탭. 근거: ' + (r.src || '소득세법 시행령 별표 2') + '. 연말정산 때 실제 세액과 정산합니다.', biz: '지급한 사업자는 다음 달 10일까지 원천세 신고·납부, 다음 달 말일까지 간이지급명세서를 냅니다. 받은 사람은 5월 종합소득세 신고로 정산합니다.', other: '기타소득금액이 연 300만원 이하면 분리과세(8.8%로 끝)와 종합과세 중 고를 수 있습니다.' + (r.min ? ' 지금은 기타소득금액이 5만원 이하라 세금을 떼지 않습니다(과세최저한).' : ''), daily: '일용근로소득은 원천징수로 납세가 끝나 따로 신고하지 않습니다. 소득세가 1,000원 미만이면 떼지 않습니다(소액부징수).', int: '연 이자·배당이 2,000만원을 넘으면 넘는 부분은 종합과세됩니다.' };
   $('#wNote').textContent = notes[type];
 }
 
@@ -240,9 +242,9 @@ function calcDuty(){
 }
 
 /* ---------- 저장·이벤트 ---------- */
-const IDS = ['vS1', 'vS2', 'vS3', 'vS0', 'vB1', 'vB2', 'vB0', 'vPre', 'vOut', 'vIn', 'vInd', 'vSs', 'vSc', 'vSb', 'vSp', 'iRev', 'iExp', 'iSr', 'iBr', 'iMain', 'iOther', 'iDep', 'iDed', 'iCr', 'iWh', 'iMid', 'wAmt', 'wDays', 'cNet', 'cAdj', 'cLoss', 'cCr', 'cPre', 'cSme', 'sPay', 'sNon', 'sSize', 'sInd', 'dGrp', 'dPrev', 'dCur'];
+const IDS = ['vS1', 'vS2', 'vS3', 'vS0', 'vB1', 'vB2', 'vB0', 'vPre', 'vOut', 'vIn', 'vInd', 'vSs', 'vSc', 'vSb', 'vSp', 'iRev', 'iExp', 'iSr', 'iBr', 'iMain', 'iOther', 'iDep', 'iDed', 'iCr', 'iWh', 'iMid', 'wAmt', 'wDays', 'wNon', 'wFam', 'wKid', 'cNet', 'cAdj', 'cLoss', 'cCr', 'cPre', 'cSme', 'sPay', 'sNon', 'sSize', 'sInd', 'dGrp', 'dPrev', 'dCur'];
 const CHK = ['vE', 'iDouble', 'iStd', 'iBook', 'wExp', 'wEi', 'dPro'];
-const RAD = ['vType', 'vBiz', 'iWay', 'wType', 'wDir', 'cy', 'sy'];
+const RAD = ['vType', 'vBiz', 'iWay', 'wType', 'wDir', 'wRatio', 'cy', 'sy'];
 function saveState(){
   const s = { who: whoSel() }; IDS.forEach(i => s[i] = $('#' + i).value); CHK.forEach(i => s[i] = $('#' + i).checked); RAD.forEach(n => s[n] = radio(n));
   s.iYear = $('#iYear').value; store.set(KEY, s);
@@ -257,7 +259,8 @@ function loadState(){
 function all(){ renderCal(); calcVat(); calcInc(); calcWh(); calcCorp(); calcIns(); calcDuty(); saveState(); }
 function setup(){
   const y = today().getFullYear();
-  $('#calYear').innerHTML = [y, y + 1].map(v => `<option value="${v}">${v}년</option>`).join('');
+  const cy = $('#calYear').value;
+  $('#calYear').innerHTML = Array.from({ length: 12 }, (_, i) => y - 1 + i).map(v => `<option value="${v}"${String(v) === (cy || String(y)) ? ' selected' : ''}>${v}년</option>`).join('');
   $('#iYear').innerHTML = [y - 1, y].map(v => `<option value="${v}"${v === (today().getMonth() < 5 ? y - 1 : y) ? ' selected' : ''}>${v}년 소득 (${v + 1}년 5월 신고)</option>`).join('');
   $('#cYears').innerHTML = [['2025', '2025년 이전 시작 (9·19·21·24%)'], ['2026', '2026년 이후 시작 (10·20·22·25%)']].map(([v, n]) => `<label><input type="radio" name="cy" value="${v}"${v === '2026' ? ' checked' : ''}><span>${n}</span></label>`).join('');
   const ys = [...new Set(RULES.insurance.map(x => +x.from.slice(0, 4)))].filter(v => v >= y && v <= y + 1);
@@ -293,3 +296,5 @@ $$('[data-clear]').forEach(b => b.onclick = () => { $$(`[data-pane="${b.dataset.
 })();
 all();
 onRulesLoaded(() => { setup(); loadState(); all(); });
+WageTax.refresh(all);
+fetch('../data/holidays.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => { if (j) { KHol.setOfficial(j); all(); } }).catch(() => {});

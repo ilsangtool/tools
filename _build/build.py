@@ -93,6 +93,17 @@ def related(slug):
     return (f'<details class="related" id="related"><summary>함께 쓰면 좋은 무료 도구 <small>{len(tools)}개 · 많이 쓰는 순</small></summary>'
             f'<ol>{items}</ol></details>')
 
+WAGE_PATH = os.path.join(os.path.dirname(ROOT), 'data', 'wage-table.json')
+def libs_js(m):
+    out = ''
+    for name in m.get('libs', []):
+        js = read(os.path.join(ROOT, 'lib', name + '.js'))
+        if '__WAGE__' in js:
+            W = json.load(open(WAGE_PATH, encoding='utf-8'))
+            js = js.replace('__WAGE__', json.dumps({'versions': W['versions']}, ensure_ascii=False, separators=(',', ':')))
+        out += js + '\n'
+    return out
+
 def build(slug):
     d = os.path.join(ROOT, 'tools', slug)
     m = json.loads(tpl(open(os.path.join(d, 'meta.json'), encoding='utf-8').read()))
@@ -167,7 +178,7 @@ def build(slug):
 <script>
 (function(){{
 {common_js}
-{''.join(read(os.path.join(d, f)) + chr(10) for f in sorted(os.listdir(d)) if f.startswith('lib_') and f.endswith('.js'))}{read(os.path.join(d, 'app.js'))}
+{libs_js(m)}{''.join(read(os.path.join(d, f)) + chr(10) for f in sorted(os.listdir(d)) if f.startswith('lib_') and f.endswith('.js'))}{read(os.path.join(d, 'app.js'))}
 }})();
 </script>
 <!-- 앱 관제 오비트 이용자 카운터 (방문 수만 집계, 입력 내용·개인정보 전송 없음) -->

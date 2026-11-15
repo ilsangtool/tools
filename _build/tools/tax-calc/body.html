@@ -3,7 +3,7 @@
       <button type="button" class="on" data-tab="cal">신고 일정</button>
       <button type="button" data-tab="vat">부가세</button>
       <button type="button" data-tab="inc">종합소득세</button>
-      <button type="button" data-tab="wh">원천징수 3.3%·8.8%</button>
+      <button type="button" data-tab="wh">원천징수 (월급·3.3%·8.8%)</button>
       <button type="button" data-tab="corp">법인세</button>
       <button type="button" data-tab="ins">4대보험</button>
       <button type="button" data-tab="duty">장부 의무 판정</button>
@@ -28,8 +28,9 @@
         <div id="next"></div>
         <div class="period"><select id="calYear" aria-label="연도"></select></div>
         <div class="tbl-wrap"><table class="t" id="calTbl"></table></div>
+        <details class="hols"><summary>이 해 공휴일 보기</summary><div id="holList"></div></details>
         <div class="actions"><button type="button" id="icsBtn">휴대폰 달력에 넣기 (.ics)</button><button type="button" class="ghost" id="calCopy">일정 복사</button></div>
-        <p class="hint">기한이 토·일요일이나 공휴일이면 다음 평일로 미뤘습니다. 임시공휴일은 국세청 공지를 함께 확인하세요.</p>
+        <p class="hint" id="holNote">기한이 토·일요일이나 공휴일이면 다음 평일로 미뤘습니다.</p>
       </section>
     </div>
 
@@ -160,7 +161,8 @@
       <section class="card">
         <h2><span class="num">1</span>소득 종류</h2>
         <div class="radio-group">
-          <label><input type="radio" name="wType" value="biz" checked><span>사업소득 3.3% (프리랜서)</span></label>
+          <label><input type="radio" name="wType" value="wage" checked><span>직원 월급 (간이세액표)</span></label>
+          <label><input type="radio" name="wType" value="biz"><span>사업소득 3.3% (프리랜서)</span></label>
           <label><input type="radio" name="wType" value="other"><span>기타소득 8.8% (강연·원고료)</span></label>
           <label><input type="radio" name="wType" value="daily"><span>일용근로 (일당)</span></label>
           <label><input type="radio" name="wType" value="int"><span>이자·배당 15.4%</span></label>
@@ -173,6 +175,19 @@
         <div class="row">
           <div><label class="f" for="wAmt" id="wAmtL">지급액 (세전)</label><input type="text" id="wAmt" class="m" inputmode="numeric" placeholder="예: 1,000,000"></div>
           <div id="wDaysBox" class="hidden"><label class="f" for="wDays">근무 일수</label><input id="wDays" type="number" min="1" value="1" inputmode="numeric"></div>
+        </div>
+        <div id="wWageBox">
+          <div class="row3">
+            <div><label class="f" for="wNon">비과세 (식대 등)</label><input type="text" id="wNon" class="m" inputmode="numeric" value="200,000"></div>
+            <div><label class="f" for="wFam">공제대상가족 <small>(본인·배우자 포함)</small></label><input type="number" id="wFam" min="1" value="1" inputmode="numeric"></div>
+            <div><label class="f" for="wKid">그중 8~20세 자녀</label><input type="number" id="wKid" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <label class="f">원천징수 비율 (근로자 선택)</label>
+          <div class="radio-group">
+            <label><input type="radio" name="wRatio" value="80"><span>80%</span></label>
+            <label><input type="radio" name="wRatio" value="100" checked><span>100%</span></label>
+            <label><input type="radio" name="wRatio" value="120"><span>120%</span></label>
+          </div>
         </div>
         <label class="chk hidden" id="wExpBox"><input type="checkbox" id="wExp" checked><span>필요경비 60% 인정 (강연료·원고료·심사료 등 일시적 인적용역)</span></label>
         <label class="chk hidden" id="wEiBox"><input type="checkbox" id="wEi" checked><span>일용직 고용보험 0.9%도 뺌</span></label>

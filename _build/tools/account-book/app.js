@@ -489,27 +489,16 @@ function renderPartners(){
 }
 
 /* ---- 급여대장 ---- */
-function progressive(base, br){ let tax = 0, prev = 0; for (const [cap, r] of br) { const top = cap == null ? Infinity : cap; if (base > prev) tax += (Math.min(base, top) - prev) * r; prev = top; if (base <= top) break; } return tax; }
-function wageTaxYear(gross, dep, insYear, at){
-  const it = ruleAt(RULES.incomeTax, at);
-  let ded = gross <= 5e6 ? gross * .7 : gross <= 15e6 ? 3.5e6 + (gross - 5e6) * .4 : gross <= 45e6 ? 7.5e6 + (gross - 15e6) * .15 : gross <= 1e8 ? 12e6 + (gross - 45e6) * .05 : 14.75e6 + (gross - 1e8) * .02;
-  ded = Math.min(ded, 2e7);
-  const base = Math.max(0, gross - ded - it.basicDeduct * Math.max(1, dep) - insYear);
-  const calc = progressive(base, it.brackets);
-  let cr = calc <= 1.3e6 ? calc * .55 : 715000 + (calc - 1.3e6) * .3;
-  const cap = gross <= 3.3e7 ? 740000 : gross <= 7e7 ? Math.max(740000 - (gross - 3.3e7) * .008, 660000) : gross <= 1.2e8 ? Math.max(660000 - (gross - 7e7) * .5, 500000) : Math.max(500000 - (gross - 1.2e8) * .5, 200000);
-  return Math.max(0, calc - Math.min(cr, cap) - it.stdCreditWage);
-}
 function payCalc(month){
   const at = month + '-01', R = ruleAt(RULES.insurance, at);
   return (B.emps || []).map(p => {
     const taxable = Math.max(0, (p.pay || 0) - (p.nontax || 0));
     const ins = p.ins !== false;
     const np = ins ? f10(taxable * R.np) : 0, hi = ins ? f10(taxable * R.hi) : 0, ltc = ins ? f10(hi * R.ltcRatio) : 0, ei = ins ? f10(taxable * R.ei) : 0;
-    const est = f10(wageTaxYear(taxable * 12, p.dep || 1, (np + hi + ltc + ei) * 12, at) / 12);
+    const W = WageTax.calc(taxable, p.dep || 1, p.kids || 0, p.ratio || 100, val('payDate') || at), est = W.it;
     const ov = (B.payTax[month] || {})[p.id];
-    const it = ov != null && ov !== '' ? N(ov) : (est < 1000 ? 0 : est);
-    const lt = f10(it * 0.1);
+    const it = ov != null && ov !== '' ? N(ov) : est;
+    const lt = ov != null && ov !== '' ? f10(it * 0.1) : W.lt;
     const ded = np + hi + ltc + ei + it + lt;
     const er = ins ? np + hi + ltc + f10(taxable * (R.ei + 0.0025)) : 0;
     return { p, pay: p.pay || 0, np, hi, ltc, ei, it, lt, ded, net: (p.pay || 0) - ded, er, est, ov: ov != null && ov !== '' };
@@ -517,15 +506,15 @@ function payCalc(month){
 }
 function renderEmps(){
   const tb = $('#empTbl tbody');
-  tb.innerHTML = (B.emps || []).map(p => `<tr data-id="${p.id}"><td><input type="text" data-k="name" value="${esc(p.name || '')}" placeholder="이름"></td><td><input type="text" class="n" data-k="pay" inputmode="numeric" value="${p.pay ? fmt(p.pay) : ''}" placeholder="2,500,000"></td><td><input type="text" class="n" data-k="nontax" inputmode="numeric" value="${p.nontax ? fmt(p.nontax) : ''}" placeholder="200,000"></td><td><input type="text" class="n" data-k="dep" inputmode="numeric" value="${p.dep || 1}" style="min-width:56px"></td><td><select data-k="ins"><option value="1"${p.ins !== false ? ' selected' : ''}>가입</option><option value="0"${p.ins === false ? ' selected' : ''}>미가입</option></select></td><td><button type="button" class="ghost sm" data-rm="${p.id}">삭제</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">직원을 추가하세요</td></tr>';
+  tb.innerHTML = (B.emps || []).map(p => `<tr data-id="${p.id}"><td><input type="text" data-k="name" value="${esc(p.name || '')}" placeholder="이름"></td><td><input type="text" class="n" data-k="pay" inputmode="numeric" value="${p.pay ? fmt(p.pay) : ''}" placeholder="2,500,000"></td><td><input type="text" class="n" data-k="nontax" inputmode="numeric" value="${p.nontax ? fmt(p.nontax) : ''}" placeholder="200,000"></td><td><input type="text" class="n" data-k="dep" inputmode="numeric" value="${p.dep || 1}" style="min-width:56px"></td><td><input type="text" class="n" data-k="kids" inputmode="numeric" value="${p.kids || 0}" style="min-width:48px"></td><td><select data-k="ratio">${[80, 100, 120].map(r => `<option value="${r}"${(p.ratio || 100) === r ? ' selected' : ''}>${r}%</option>`).join('')}</select></td><td><select data-k="ins"><option value="1"${p.ins !== false ? ' selected' : ''}>가입</option><option value="0"${p.ins === false ? ' selected' : ''}>미가입</option></select></td><td><button type="button" class="ghost sm" data-rm="${p.id}">삭제</button></td></tr>`).join('') || '<tr><td colspan="8" class="empty">직원을 추가하세요</td></tr>';
 }
 $('#empTbl').addEventListener('input', ev => {
   const tr = ev.target.closest('tr'), p = tr && B.emps.find(x => x.id === tr.dataset.id); if (!p) return;
   const k = ev.target.dataset.k;
-  if (k === 'name') p.name = ev.target.value; else if (k === 'ins') p.ins = ev.target.value === '1'; else { if (k !== 'dep') moneyInput(ev.target); p[k] = N(ev.target.value); }
+  if (k === 'name') p.name = ev.target.value; else if (k === 'ins') p.ins = ev.target.value === '1'; else if (k === 'ratio') p.ratio = +ev.target.value; else { if (k !== 'dep' && k !== 'kids') moneyInput(ev.target); p[k] = N(ev.target.value); }
   save(); renderPay();
 });
-$('#empTbl').addEventListener('change', ev => { if (ev.target.dataset.k === 'ins') { const p = B.emps.find(x => x.id === ev.target.closest('tr').dataset.id); p.ins = ev.target.value === '1'; save(); renderPay(); } });
+$('#empTbl').addEventListener('change', ev => { const k = ev.target.dataset.k; if (k === 'ins' || k === 'ratio') { const p = B.emps.find(x => x.id === ev.target.closest('tr').dataset.id); if (k === 'ins') p.ins = ev.target.value === '1'; else p.ratio = +ev.target.value; save(); renderPay(); } });
 $('#empTbl').addEventListener('click', ev => { const id = ev.target.dataset && ev.target.dataset.rm; if (!id) return; B.emps = B.emps.filter(x => x.id !== id); save(); renderEmps(); renderPay(); });
 let payTable = {};
 function renderPay(){
@@ -533,7 +522,8 @@ function renderPay(){
   const L = payCalc(month), T = {};
   ['pay', 'np', 'hi', 'ltc', 'ei', 'it', 'lt', 'ded', 'net', 'er'].forEach(k => T[k] = L.reduce((s, x) => s + x[k], 0));
   const posted = B.payPosted[month] && B.entries.some(e => e.id === B.payPosted[month]);
-  $('#payOut').innerHTML = L.length ? `<thead><tr><th>이름</th><th class="n">지급액</th><th class="n">국민연금</th><th class="n">건강</th><th class="n">장기요양</th><th class="n">고용</th><th class="n">소득세</th><th class="n">지방소득세</th><th class="n">공제 계</th><th class="n">실지급액</th></tr></thead><tbody>${L.map(x => `<tr><td>${esc(x.p.name || '(이름 없음)')}</td><td class="n">${fmt(x.pay)}</td><td class="n">${fmt(x.np)}</td><td class="n">${fmt(x.hi)}</td><td class="n">${fmt(x.ltc)}</td><td class="n">${fmt(x.ei)}</td><td class="n"><input type="text" class="n it" data-id="${x.p.id}" inputmode="numeric" value="${fmt(x.it)}" title="어림값 ${fmt(x.est)}원" style="min-width:90px${x.ov ? ';border-color:var(--accent)' : ''}"></td><td class="n">${fmt(x.lt)}</td><td class="n">${fmt(x.ded)}</td><td class="n"><b>${fmt(x.net)}</b></td></tr>`).join('')}<tr class="sum"><td>합계</td>${['pay', 'np', 'hi', 'ltc', 'ei', 'it', 'lt', 'ded', 'net'].map(k => `<td class="n">${fmt(T[k])}</td>`).join('')}</tr></tbody>` : '<tr><td class="empty">위에 직원을 먼저 추가하세요</td></tr>';
+  $('#payOut').innerHTML = L.length ? `<thead><tr><th>이름</th><th class="n">지급액</th><th class="n">국민연금</th><th class="n">건강</th><th class="n">장기요양</th><th class="n">고용</th><th class="n">소득세</th><th class="n">지방소득세</th><th class="n">공제 계</th><th class="n">실지급액</th></tr></thead><tbody>${L.map(x => `<tr><td>${esc(x.p.name || '(이름 없음)')}</td><td class="n">${fmt(x.pay)}</td><td class="n">${fmt(x.np)}</td><td class="n">${fmt(x.hi)}</td><td class="n">${fmt(x.ltc)}</td><td class="n">${fmt(x.ei)}</td><td class="n"><input type="text" class="n it" data-id="${x.p.id}" inputmode="numeric" value="${fmt(x.it)}" title="간이세액표 ${fmt(x.est)}원" style="min-width:90px${x.ov ? ';border-color:var(--accent)' : ''}"></td><td class="n">${fmt(x.lt)}</td><td class="n">${fmt(x.ded)}</td><td class="n"><b>${fmt(x.net)}</b></td></tr>`).join('')}<tr class="sum"><td>합계</td>${['pay', 'np', 'hi', 'ltc', 'ei', 'it', 'lt', 'ded', 'net'].map(k => `<td class="n">${fmt(T[k])}</td>`).join('')}</tr></tbody>` : '<tr><td class="empty">위에 직원을 먼저 추가하세요</td></tr>';
+  $('#paySrc').textContent = '소득세는 ' + (WageTax.source(val('payDate') || month + '-01') || '근로소득 간이세액표') + ' 기준입니다. 직접 고친 칸은 테두리가 표시되고 고친 값이 우선합니다(지우면 다시 표 값).';
   $('#payPost').textContent = posted ? '이 달 급여 기록 다시 쓰기 (이미 기록됨)' : '이 달 급여를 장부에 기록';
   payTable = { title: `${month} 급여대장`, head: ['이름', '지급액', '국민연금', '건강보험', '장기요양', '고용보험', '소득세', '지방소득세', '공제계', '실지급액', '사업주 4대보험'], rows: L.map(x => [x.p.name, x.pay, x.np, x.hi, x.ltc, x.ei, x.it, x.lt, x.ded, x.net, x.er]).concat([['합계', T.pay, T.np, T.hi, T.ltc, T.ei, T.it, T.lt, T.ded, T.net, T.er]]), L, T, month };
 }
@@ -761,7 +751,7 @@ $('#fMonth').addEventListener('change', renderList); $('#fQ').addEventListener('
 $('#vPeriod').addEventListener('change', renderVat);
 $('#pOpen').addEventListener('change', renderPartners);
 $('#payMonth').addEventListener('change', () => { const m = $('#payMonth').value; if (m) $('#payDate').value = m + '-' + String(lastDay(+m.slice(0, 4), +m.slice(5))).padStart(2, '0'); renderPay(); });
-$('#empAdd').onclick = () => { B.emps.push({ id: uid(), name: '', pay: 0, nontax: 200000, dep: 1, ins: true }); save(); renderEmps(); renderPay(); const i = $$('#empTbl tbody input[data-k=name]').pop(); if (i) i.focus(); };
+$('#empAdd').onclick = () => { B.emps.push({ id: uid(), name: '', pay: 0, nontax: 200000, dep: 1, kids: 0, ratio: 100, ins: true }); save(); renderEmps(); renderPay(); const i = $$('#empTbl tbody input[data-k=name]').pop(); if (i) i.focus(); };
 $('#bkPaste').addEventListener('input', bkParse);
 ['cDate', 'cDesc', 'cOut', 'cIn'].forEach(id => $('#' + id).addEventListener('change', () => bkBuild()));
 
@@ -774,4 +764,5 @@ $('#bkPaste').addEventListener('input', bkParse);
   $('#sFrom').value = t.slice(0, 4) + '-01-01'; $('#sTo').value = t;
   switchBook(S.cur);
   onRulesLoaded(() => { renderPay(); });
+  WageTax.refresh(() => renderPay());
 })();
