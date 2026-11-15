@@ -60,7 +60,7 @@
     el.className = 'fb-sheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-labelledby', 'fb-t');
     el.innerHTML =
       '<button type="button" class="fb-x" aria-label="닫기">×</button>' +
-      '<h2 id="fb-t">더 편해질 수 있는 부분이 있을까요?</h2>' +
+      '<h2 id="fb-t">더 개선할 점이 있을까요?</h2>' +
       '<p class="fb-sub">짧게 남겨 주시면 다음 업데이트에 반영하겠습니다. 그냥 닫으셔도 괜찮습니다.</p>' +
       '<div class="fb-moods" role="group" aria-label="사용 느낌 (선택)">' +
       MOODS.map(function (m) { return '<button type="button" data-m="' + m[0] + '" aria-pressed="false">' + m[1] + '</button>'; }).join('') + '</div>' +
