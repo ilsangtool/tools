@@ -16,6 +16,8 @@
 | 더치페이·모임 정산 계산기 | 1차·2차 결제자가 달라도 누가 누구에게 얼마 보내면 되는지 송금 횟수를 최소로 정리합니다. | [열기](https://ilsangtool.github.io/tools/dutch-pay/) |
 | D-day·전역일·만나이 계산기 | 디데이, 100일·1000일 기념일, 날짜 더하기, 군 전역일, 만 나이를 한 화면에서. | [열기](https://ilsangtool.github.io/tools/date-calc/) |
 | 사진 용량 줄이기·HEIC 변환 | 서버 업로드 없이 여러 장을 목표 용량(KB) 이하로 줄이고, 아이폰 HEIC를 JPG로 바꿉니다. | [열기](https://ilsangtool.github.io/tools/image-resize/) |
+| 장부·회계 프로그램 | 회계·경리 통합. 거래 입력 → 복식부기 자동 분개, 분개장·원장·현금출납장, 손익계산서·재무상태표·시산표, 부가세 집계, 거래처 잔액, 급여대장(4대보험), 정기 거래, 통장 내역 붙여넣기, 여러 장부, JSON 백업·CSV | [열기](https://ilsangtool.github.io/tools/account-book/) |
+| 세무 계산기·신고 일정 | 부가세(일반·간이), 종합소득세(장부·단순·기준경비율), 원천징수(3.3%·8.8%·일용·이자), 법인세(2026년 10~25%), 4대보험 사업주 부담, 장부 의무 판정, 휴일 반영 신고 달력(.ics) | [열기](https://ilsangtool.github.io/tools/tax-calc/) |
 | 증명사진 규격 자르기 | 여권·반명함·비자 규격으로 자르고 편의점에서 뽑는 4×6 인화용 판까지 만듭니다. | [열기](https://ilsangtool.github.io/tools/id-photo/) |
 
 ## 구조
@@ -32,6 +34,8 @@
 /id-photo/             증명사진 규격 자르기
 /short-video/          숏폼 영상 만들기 (music/: FreePD.com CC0 1.0 배경음, 출처 표 music/README.md)
 /pdf-to-hwp/           PDF 한글 변환·나누기·합치기
+/account-book/         장부·회계 프로그램 (경리 업무 포함, 데이터는 브라우저 localStorage)
+/tax-calc/             세무 계산기·신고 일정
 /vendor/               변환 라이브러리 자체 호스팅 (pdf.js, Tesseract) — vendor/README.md 참고
 robots.txt, sitemap.xml   검색엔진 등록용
 ```
@@ -54,6 +58,7 @@ robots.txt, sitemap.xml   검색엔진 등록용
 | 청약철회 기간 | 전자상거래법·시행령 | 개정 감지 → 확인 요청 |
 | 노쇼 위약금 상한 | 소비자분쟁해결기준(공정위 고시) | 개정 감지 → 확인 요청 |
 | 군 복무기간 | 병역법·시행령 | 개정 감지 → 확인 요청 |
+| 종합소득세율·법인세율·부가세(간이 기준·카드공제)·원천징수율·장부의무 기준 (`incomeTax`·`corpTax`·`vat`·`withholding`·`bookDuty`) | 소득세법·법인세법·부가가치세법 | 자동 점검 없음 → 세법 개정(매년 12월) 때 직접 수정 |
 
 이슈 말머리
 - `[공식 반영]` 원문 값으로 바뀜 (이미 적용, 확인만) · `[공식 확인]` 기존 값이 원문과 일치

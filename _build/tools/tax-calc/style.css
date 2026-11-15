@@ -1,0 +1,22 @@
+  .period{display:flex;gap:8px;margin:14px 0 8px}
+  .period select{width:auto;min-width:140px;min-height:42px;padding:8px 40px 8px 12px}
+  .who label{font-size:14px}
+  label.f small{font-weight:500;color:var(--faint)}
+  .next{display:grid;gap:8px;margin:6px 0 4px}
+  .next div{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;background:var(--fill)}
+  .next div.soon{background:var(--accent-soft);border-color:var(--accent-line)}
+  .next b.dd{font-family:var(--serif);font-size:20px;color:var(--accent);min-width:72px;font-variant-numeric:tabular-nums}
+  .next span small{display:block;color:var(--sub);font-size:13px}
+  table.t tr.past td{color:var(--faint)}
+  table.t tr.sum td{font-weight:700;border-top:1px solid var(--ink)}
+  table.t td small{color:var(--faint)}
+  .chip{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--sub);background:#fff;margin:0 3px 0 0;white-space:nowrap}
+  .direct{margin-top:14px;font-size:14px}
+  .direct summary{cursor:pointer;color:var(--sub);font-weight:600}
+  .verdict{border:1px solid var(--line);border-radius:var(--r-s);padding:14px 16px;margin-bottom:8px}
+  .verdict b{display:block;font-family:var(--serif);font-size:17px;margin-bottom:2px}
+  .verdict.on{border-color:var(--accent-line);background:var(--accent-soft)}
+  .verdict.on b{color:var(--accent)}
+  .verdict p{margin:0;font-size:14px;color:var(--sub)}
+  .tbl-wrap{overflow-x:auto}
+  .stat .neg b{color:var(--ok)}
