@@ -266,10 +266,28 @@ def article(text, no, nxt):
     e = re.search(r'제\s*' + a + (r'\s*조의\s*' + b if b else r'\s*조') + r'\s*\(', text[m.end():])
     return text[m.start(): m.end() + (e.start() if e else 6000)]
 
+def article_json(j, no):
+    """API 응답(JSON)에서 제no조 제1항(표가 든 첫 호까지)의 글자. 장·절 제목 줄은 건너뜀"""
+    units = (((j or {}).get('법령') or {}).get('조문') or {}).get('조문단위') or []
+    units = units if isinstance(units, list) else [units]
+    for u in units:
+        if str(u.get('조문번호')) != str(no) or u.get('조문가지번호') or u.get('조문여부') == '전문': continue
+        out = [str(u.get('조문내용') or '')]
+        hang = u.get('항') or []
+        hang = hang if isinstance(hang, list) else [hang]
+        if hang:
+            h = hang[0]; out.append(str(h.get('항내용') or ''))
+            ho = h.get('호') or []
+            for x in (ho if isinstance(ho, list) else [ho]):
+                out.append(str(x.get('호내용') or ''))
+                if '┌' in str(x.get('호내용') or ''): break
+        return '\n'.join(out)
+    return None
+
 def parse_brackets(seg):
     """세율표: '○○원 이하' 경계와 'N퍼센트'/'100분의 N' 세율. 실패하면 None"""
     if not seg: return None
-    first = re.split(r'②', seg, maxsplit=1)[0]
+    first = seg if '┌' in seg or not re.search(r'②', seg) else re.split(r'②', seg, maxsplit=1)[0]
     th = [kamount(m) for m in re.findall(MONEY + r'\s*이하', first)]
     rates = [float(a or b) / 100 for a, b in re.findall(r'100분의\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*퍼센트', first)]
     th = [t for i, t in enumerate(th) if i == 0 or t > th[i - 1]]
@@ -294,22 +312,24 @@ def tax_law_check(api, R, S, notes):
         vers = api.law_versions(law)
         if vers is None: continue
         ok += 1
-        for v in sorted(vers, key=lambda x: x['eff'] or ''):
-            if not v['eff'] or v['eff'] < f'{TODAY.year - 1}-01-01': continue
-            t = api.law_text(v['mst'], v['eff'])
-            if not t: continue
-            got = fn(article(t, no, nxt))
+        cur_v = [v for v in vers if v['status'] == '현행' and v['eff']]
+        check = sorted(cur_v, key=lambda x: x['eff'])[-1:] + [v for v in vers if v['status'] == '시행예정' and v['eff'] and v['eff'] > TODAY.isoformat()
+                                                              and (not cur_v or v['prom'] >= max(c['prom'] or '' for c in cur_v))]
+        failed = []
+        for v in sorted(check, key=lambda x: x['eff']):
+            j = api.call('lawService.do', target='eflaw', MST=v['mst'], efYd=v['eff'].replace('-', ''))
+            if not j: continue
+            seg = article_json(j, no)
+            got = fn(seg) if seg else None
             if got is None or (field in RANGE and not RANGE[field][0] <= got <= RANGE[field][1]):
-                notes.append((f'[확인 필요] {law} 제{no}조에서 {label}을 읽지 못함',
-                              f'시행 {v["eff"]} 판의 조문 표현이 바뀌었을 수 있습니다. 값은 바꾸지 않았습니다.\n{law_link(law)}'))
-                continue
+                failed.append(v['eff']); continue
             cur = rule_at(R[key], v['eff']).get(field)
             if cur == got: continue
             odd = (field == 'brackets' and cur and (len(cur) != len(got) or any(abs(a[1] - b[1]) > 0.05 for a, b in zip(cur, got)))) or \
                   (field != 'brackets' and cur and not 0.5 <= got / cur <= 2)
             if odd:
                 notes.append((f'[확인 필요] {law} 제{no}조 {label}이 크게 달라 자동 반영하지 않음',
-                              f'시행 {v["eff"]} 판에서 읽은 값: {got}\n지금 값: {cur}\n구간 수가 바뀌었거나 5%p 넘게 달라졌습니다. 원문을 확인해 data/rules.json에 직접 넣어 주세요.\n{law_link(law)}'))
+                              f'시행 {v["eff"]} 판에서 읽은 값: {got}\n지금 값: {cur}\n원문을 확인해 data/rules.json에 직접 넣어 주세요.\n{law_link(law)}'))
                 continue
             ent = next((x for x in R[key] if x['from'] == v['eff']), None)
             if not ent: ent = {'from': v['eff']}; R[key].append(ent); R[key].sort(key=lambda x: x['from'])
@@ -317,6 +337,9 @@ def tax_law_check(api, R, S, notes):
             ent['source'] = (ent.get('source', '') + ' / ' if ent.get('source') else '') + f'{field}: {law} 제{no}조 (시행 {v["eff"]}, {OFFICIAL})'
             show = ', '.join(f'{"초과" if c is None else f"{c:,}원 이하"} {r*100:g}%' for c, r in got) if field == 'brackets' else f'{got:,}원'
             notes.append((f'[공식 반영] {v["eff"]} 시행 {label} 변경', f'근거: {law} 제{no}조\n새 값: {show}\n이전 값: {cur}\n원문: {law_link(law)}\n\n시행일부터 장부·세무 계산기에 자동 적용됩니다.'))
+        if failed:   # 법령마다 한 건만, 같은 실패는 한 번만 알림 (once 키가 제목·본문 기준)
+            notes.append((f'[확인 필요] {law} 제{no}조에서 {label}을 읽지 못함',
+                          f'조문 표현이 바뀌었을 수 있습니다. 값은 바꾸지 않았습니다.\n{law_link(law)}'))
     return ok
 
 # --- 근로소득 간이세액표 (소득세법 시행령 별표 2) ---
@@ -360,7 +383,9 @@ def parse_wage_text(text):
         if not p: continue
         over.append([int(m.group(2).replace(',', '')) if m.group(2) else None, int(p.group(1).replace(',', '')),
                      int(p.group(2)) / 100 if p.group(2) else 1, int(p.group(3)) / 100, int(add[0].replace(',', '')) if add else 0])
-    if len(over) < 3 or over[-1][0] is not None: over = None
+    for i in range(len(over) - 1): over[i][0] = over[i + 1][1]   # 구간 끝 = 다음 구간 시작
+    if over: over[-1][0] = None
+    if len(over) < 3 or any(over[i][1] >= over[i + 1][1] for i in range(len(over) - 1)): over = None
     return rows, child, over
 
 def wage_table_check(api, S, notes):
@@ -427,16 +452,15 @@ def holiday_sync(notes):
     changed = []
     for y in range(TODAY.year - 1, TODAY.year + 3):
         got = {}
-        for mo in range(1, 13):
-            url = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?' + urllib.parse.urlencode(
-                {'serviceKey': key, 'solYear': y, 'solMonth': f'{mo:02d}', 'numOfRows': 50, '_type': 'json'}, safe='%')
-            try: j = json.loads(http(url))
-            except Exception as e: log('공휴일 API 실패', y, mo, e); got = None; break
-            items = (((j.get('response') or {}).get('body') or {}).get('items') or {})
-            items = items.get('item', []) if isinstance(items, dict) else []
-            for it in (items if isinstance(items, list) else [items]):
-                if it.get('isHoliday') == 'Y' and ymd8(it.get('locdate')):
-                    d = ymd8(it['locdate']); got[d] = (got[d] + '·' if d in got else '') + str(it.get('dateName', '공휴일'))
+        url = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?' + urllib.parse.urlencode(
+            {'serviceKey': key, 'solYear': y, 'numOfRows': 100, '_type': 'json'}, safe='%')
+        try: j = json.loads(http(url, timeout=40))
+        except Exception as e: log('공휴일 API 실패', y, e); continue
+        items = (((j.get('response') or {}).get('body') or {}).get('items') or {})
+        items = items.get('item', []) if isinstance(items, dict) else []
+        for it in (items if isinstance(items, list) else [items]):
+            if it.get('isHoliday') == 'Y' and ymd8(it.get('locdate')):
+                d = ymd8(it['locdate']); got[d] = (got[d] + '·' if d in got else '') + str(it.get('dateName', '공휴일'))
         if got is None or len(got) < 10: continue   # 아직 발표 전인 해는 계산값을 그대로 씀
         if years.get(str(y)) != got:
             old = years.get(str(y)) or {}
