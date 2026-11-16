@@ -1,0 +1,31 @@
+  .sub{font-family:inherit;font-size:12.5px;color:var(--faint);font-weight:500}
+  .kor{font-size:13px;color:var(--accent);min-height:18px;margin-top:4px}
+  .tagline{font-size:13px;margin-top:6px;min-height:18px}
+  .tagline b{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);font-size:12px;margin-right:4px}
+  .tagline b.ok{background:var(--ok-soft);color:var(--ok);border-color:#cfe2d6}
+  .row3 .f small,.row .f small{font-weight:500;color:var(--faint)}
+  .bars{margin:6px 0 14px;display:grid;gap:6px}
+  .bars div{display:grid;grid-template-columns:130px 1fr 110px;gap:10px;align-items:center;font-size:13.5px}
+  .bars i{display:block;height:10px;border-radius:5px;background:#e6ddd2}
+  .bars i span{display:block;height:100%;border-radius:5px;background:#b9a99a}
+  .bars .min i span{background:var(--accent)}
+  .bars .min{font-weight:700;color:var(--accent)}
+  .bars em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums}
+  .notes{font-size:13.5px;color:var(--sub);line-height:1.7}
+  .notes p{margin:6px 0}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .quick button{min-height:34px;padding:5px 12px;font-size:13px}
+  .filters,.period{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
+  .filters input,.filters select,.period select{width:auto;flex:1;min-width:140px;min-height:42px;padding:8px 12px}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sched{max-height:520px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r-s)}
+  .sched thead th{position:sticky;top:0;background:#fff}
+  table.t.loans td{padding:6px 4px;vertical-align:middle}
+  table.t.loans input,table.t.loans select{min-height:38px;padding:6px 8px;font-size:14px}
+  table.t.loans input.n{text-align:right;min-width:96px}
+  table.t.loans tr.sel td{background:var(--accent-soft)}
+  table.t tr.sum td{font-weight:700;border-top:1px solid var(--ink)}
+  table.t tr.best td{background:var(--ok-soft)}
+  table.t td small{color:var(--faint)}
+  .bad{color:var(--bad)}
+  @media(max-width:600px){.bars div{grid-template-columns:96px 1fr 92px}#owner label{flex:1 1 calc(50% - 8px)}}

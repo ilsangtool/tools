@@ -113,9 +113,9 @@ def fraction_after(text, anchor, span=160):
     pat = r'\s*'.join(map(re.escape, anchor.replace(' ', '')))
     for m in re.finditer(pat, text):
         seg = text[m.end(): m.end() + span]
-        f = re.search(r'(\d*)\s*(백만|십만|만|천)분의\s*([\d.]+)', seg)
+        f = re.search(r'(\d*)\s*(백만|십만|만|천)분의\s*(\d[\d,]*(?:\.\d+)?)', seg)
         if f:
-            return float(f.group(3)) / (int(f.group(1) or 1) * DEN[f.group(2)])
+            return float(f.group(3).replace(',', '')) / (int(f.group(1) or 1) * DEN[f.group(2)])
     return None
 
 def parse_min_wage(text, eff):
@@ -130,8 +130,8 @@ def parse_min_wage(text, eff):
 
 # ---------- 공식 점검 ----------
 VALUE_LAWS = {
-    '국민건강보험법 시행령': [('hi', '직장가입자의 보험료율은', (0.06, 0.095))],
-    '노인장기요양보험법 시행령': [('ltcIncome', '장기요양보험료율은', (0.006, 0.016))],
+    '국민건강보험법 시행령': [('hi', '직장가입자의 보험료율 및', (0.06, 0.095))],
+    '노인장기요양보험법 시행령': [('ltcIncome', '따른 장기요양보험료율은', (0.006, 0.016))],
     '고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 시행령': [('ei', '실업급여의 보험료율', (0.014, 0.026))],
 }
 WATCH_ONLY_LAWS = {
@@ -144,8 +144,14 @@ WATCH_ONLY_LAWS = {
     '조세특례제한법': 'tax-calc (중소기업 감면·최저한세 등)',
     '관공서의 공휴일에 관한 규정': 'tax-calc 신고 일정 (공휴일·대체공휴일 규칙) — _build/lib/holidays.js',
     '공휴일에 관한 법률': 'tax-calc 신고 일정 (공휴일 종류) — _build/lib/holidays.js',
+    '지방세법': 'home-loan 취득 비용 (주택 취득세율·중과 제11조·제13조의2)',
+    '지방세특례제한법': 'home-loan 취득 비용 (생애최초 감면 제36조의3)',
+    '공인중개사법 시행규칙': 'home-loan 취득 비용 (중개보수 상한 별표 1)',
+    '주택임대차보호법 시행령': 'home-loan 전월세 전환율 (제9조)',
+    '인지세법': 'home-loan 취득 비용 (인지세)',
 }
-WATCH_ONLY_ADMRUL = {'소비자분쟁해결기준': 'noshow-policy (외식업 예약부도 위약금)'}
+WATCH_ONLY_ADMRUL = {'소비자분쟁해결기준': 'noshow-policy (외식업 예약부도 위약금)',
+                     '은행업감독규정': 'home-loan (주택담보대출 LTV·DTI 별표 6, 규제지역 지정에 따른 대출 규제) — data/rules.json의 mortgage 확인'}
 LABEL = {'hi': '건강보험료율', 'ei': '실업급여 보험료율', 'ltcRatio': '장기요양보험료율'}
 
 def set_insurance(R, frm, field, val, src):
@@ -505,6 +511,10 @@ HEADS_UP = [
     ('전자상거래법 청약철회 개정', ['청약철회'], ['개정', '변경'], None),
     ('병 복무기간 단축', ['복무기간', '복무 기간'], ['단축', '개정', '변경'], None),
     ('주휴수당 근로기준법 개정', ['주휴수당'], ['개정', '폐지', '국회 통과'], None),
+    ('스트레스 DSR 변경', ['스트레스 DSR', '스트레스DSR', '스트레스 금리'], ['시행', '연장', '상향', '하향', '유예', '종료'], None),
+    ('주택담보대출 LTV 규제 변경', ['LTV', '주담대 한도', '주택담보대출 한도'], ['강화', '완화', '변경', '하향', '상향', '시행'], None),
+    ('규제지역 지정·해제', ['규제지역', '투기과열지구', '조정대상지역'], ['지정', '해제'], None),
+    ('한국은행 기준금리 결정', ['기준금리'], ['인상', '인하', '동결'], r'\d\.\d+\s*%'),
 ]
 
 # ---------- GitHub 이슈 ----------

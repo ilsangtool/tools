@@ -20,6 +20,7 @@ TOOLS = [
     ('short-video', '영상 도구', '숏폼 영상 만들기'),
     ('account-book', '회계·세무', '장부·회계 프로그램'),
     ('tax-calc', '회계·세무', '세무 계산기·신고 일정'),
+    ('home-loan', '부동산', '부동산 대출·자금 계산기'),
 ]
 
 def read(p, default=''):
@@ -69,7 +70,7 @@ ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 
 
 # 이용자 수를 받기 전(첫 방문·통신 실패)에 쓰는 순서: 검색 수요가 많은 도구부터
 POP_FALLBACK = ['pdf-to-hwp', 'image-resize', 'weekly-pay', 'date-calc', 'id-photo', 'dutch-pay',
-                'short-video', 'account-book', 'tax-calc', 'refund-policy', 'review-policy', 'noshow-policy', 'closed-notice']
+                'short-video', 'home-loan', 'account-book', 'tax-calc', 'refund-policy', 'review-policy', 'noshow-policy', 'closed-notice']
 
 # 한국어 줄바꿈: '문자·매장'처럼 가운뎃점으로 이은 말 앞뒤에서 줄이 바뀌지 않게 낱말 잇기 문자(U+2060)를 넣음
 # (script·style·pre·textarea·title 안과 태그 속성은 건드리지 않음)
