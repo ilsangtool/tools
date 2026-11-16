@@ -140,6 +140,10 @@ WATCH_ONLY_LAWS = {
     '전자상거래 등에서의 소비자보호에 관한 법률': 'refund-policy (청약철회 제17조·제18조)',
     '전자상거래 등에서의 소비자보호에 관한 법률 시행령': 'refund-policy',
     '병역법': 'date-calc (복무기간)', '병역법 시행령': 'date-calc (복무기간)',
+    '부가가치세법 시행령': 'tax-calc·account-book (간이과세 업종별 부가가치율 제111조)',
+    '조세특례제한법': 'tax-calc (중소기업 감면·최저한세 등)',
+    '관공서의 공휴일에 관한 규정': 'tax-calc 신고 일정 (공휴일·대체공휴일 규칙) — _build/lib/holidays.js',
+    '공휴일에 관한 법률': 'tax-calc 신고 일정 (공휴일 종류) — _build/lib/holidays.js',
 }
 WATCH_ONLY_ADMRUL = {'소비자분쟁해결기준': 'noshow-policy (외식업 예약부도 위약금)'}
 LABEL = {'hi': '건강보험료율', 'ei': '실업급여 보험료율', 'ltcRatio': '장기요양보험료율'}
@@ -233,6 +237,217 @@ def official_check(api, R, S, notes):
               f'국가법령정보센터 행정규칙에서 새 버전이 확인됐습니다.\nhttps://www.law.go.kr/행정규칙/{urllib.parse.quote(q)}')
     return ok
 
+
+# ---------- 세무 앱(장부·세무 계산기) 값: 세율표·간이과세 기준·간이세액표·공휴일 ----------
+WAGE_P = os.path.join(REPO_ROOT, 'data', 'wage-table.json')
+HOL_P = os.path.join(REPO_ROOT, 'data', 'holidays.json')
+
+def kamount(s):
+    """'1억5천만' → 150000000, '3천억' → 300000000000, '1,400만' → 14000000"""
+    s = re.sub(r'[\s,]', '', s or '')
+    def small(t):
+        if not t: return 0
+        m = re.fullmatch(r'(?:(\d+)천)?(?:(\d+)백)?(\d+)?', t)
+        if not m: raise ValueError(t)
+        return int(m.group(1) or 0) * 1000 + int(m.group(2) or 0) * 100 + int(m.group(3) or 0)
+    total = 0
+    if '억' in s:
+        a, s = s.split('억', 1); total += small(a) * 10 ** 8
+    if s.endswith('만'): total += small(s[:-1]) * 10 ** 4
+    elif s: total += small(s)
+    return total
+
+MONEY = r'(\d[\d,]*(?:\s*[억천백만]\s*\d*[\d,]*)*\s*[억천백만]?)원'
+def article(text, no, nxt):
+    """본문에서 '제55조(' ~ 다음 조문 앞까지 (조문 제목이 붙은 첫 위치)"""
+    m = re.search(r'제\s*' + no + r'\s*조\s*\(', text)
+    if not m: return None
+    a, _, b = nxt.partition('조의')
+    e = re.search(r'제\s*' + a + (r'\s*조의\s*' + b if b else r'\s*조') + r'\s*\(', text[m.end():])
+    return text[m.start(): m.end() + (e.start() if e else 6000)]
+
+def parse_brackets(seg):
+    """세율표: '○○원 이하' 경계와 'N퍼센트'/'100분의 N' 세율. 실패하면 None"""
+    if not seg: return None
+    first = re.split(r'②', seg, maxsplit=1)[0]
+    th = [kamount(m) for m in re.findall(MONEY + r'\s*이하', first)]
+    rates = [float(a or b) / 100 for a, b in re.findall(r'100분의\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*퍼센트', first)]
+    th = [t for i, t in enumerate(th) if i == 0 or t > th[i - 1]]
+    if len(th) < 3 or len(rates) < len(th) + 1: return None
+    rates = rates[:len(th) + 1]
+    if any(not 0 < r < 0.6 for r in rates) or any(rates[i] >= rates[i + 1] for i in range(len(rates) - 1)): return None
+    return [[t, r] for t, r in zip(th, rates)] + [[None, rates[-1]]]
+
+TAX_VALUE_LAWS = [  # (법령, 조, 다음 조, rules 키, 필드, 해석 함수, 이름)
+    ('소득세법', '55', '56', 'incomeTax', 'brackets', parse_brackets, '종합소득세 세율'),
+    ('법인세법', '55', '55조의2', 'corpTax', 'brackets', parse_brackets, '법인세 세율'),
+    ('부가가치세법 시행령', '109', '110', 'vat', 'simpleLimit',
+     lambda s: (lambda m: kamount(m.group(1)) if m else None)(re.search(MONEY + r'을\s*말한다', s or '')), '간이과세 기준금액'),
+    ('부가가치세법', '69', '70', 'vat', 'simpleExempt',
+     lambda s: (lambda m: kamount(m.group(1)) if m else None)(re.search(MONEY + r'\s*미만', s or '')), '간이과세자 납부의무 면제 기준'),
+]
+RANGE = {'simpleLimit': (5e7, 3e8), 'simpleExempt': (2e7, 1.5e8)}
+
+def tax_law_check(api, R, S, notes):
+    ok = 0
+    for law, no, nxt, key, field, fn, label in TAX_VALUE_LAWS:
+        vers = api.law_versions(law)
+        if vers is None: continue
+        ok += 1
+        for v in sorted(vers, key=lambda x: x['eff'] or ''):
+            if not v['eff'] or v['eff'] < f'{TODAY.year - 1}-01-01': continue
+            t = api.law_text(v['mst'], v['eff'])
+            if not t: continue
+            got = fn(article(t, no, nxt))
+            if got is None or (field in RANGE and not RANGE[field][0] <= got <= RANGE[field][1]):
+                notes.append((f'[확인 필요] {law} 제{no}조에서 {label}을 읽지 못함',
+                              f'시행 {v["eff"]} 판의 조문 표현이 바뀌었을 수 있습니다. 값은 바꾸지 않았습니다.\n{law_link(law)}'))
+                continue
+            cur = rule_at(R[key], v['eff']).get(field)
+            if cur == got: continue
+            odd = (field == 'brackets' and cur and (len(cur) != len(got) or any(abs(a[1] - b[1]) > 0.05 for a, b in zip(cur, got)))) or \
+                  (field != 'brackets' and cur and not 0.5 <= got / cur <= 2)
+            if odd:
+                notes.append((f'[확인 필요] {law} 제{no}조 {label}이 크게 달라 자동 반영하지 않음',
+                              f'시행 {v["eff"]} 판에서 읽은 값: {got}\n지금 값: {cur}\n구간 수가 바뀌었거나 5%p 넘게 달라졌습니다. 원문을 확인해 data/rules.json에 직접 넣어 주세요.\n{law_link(law)}'))
+                continue
+            ent = next((x for x in R[key] if x['from'] == v['eff']), None)
+            if not ent: ent = {'from': v['eff']}; R[key].append(ent); R[key].sort(key=lambda x: x['from'])
+            ent[field] = got; ent['official'] = True
+            ent['source'] = (ent.get('source', '') + ' / ' if ent.get('source') else '') + f'{field}: {law} 제{no}조 (시행 {v["eff"]}, {OFFICIAL})'
+            show = ', '.join(f'{"초과" if c is None else f"{c:,}원 이하"} {r*100:g}%' for c, r in got) if field == 'brackets' else f'{got:,}원'
+            notes.append((f'[공식 반영] {v["eff"]} 시행 {label} 변경', f'근거: {law} 제{no}조\n새 값: {show}\n이전 값: {cur}\n원문: {law_link(law)}\n\n시행일부터 장부·세무 계산기에 자동 적용됩니다.'))
+    return ok
+
+# --- 근로소득 간이세액표 (소득세법 시행령 별표 2) ---
+def parse_wage_text(text):
+    """별표 2 PDF를 글자로 바꾼 내용에서 표·자녀 공제·10,000천원 초과 계산식을 읽음. 이상하면 ValueError"""
+    rows, last = [], None
+    for line in text.splitlines():
+        s = line.replace('　', ' ')
+        if re.search(r'10,000\s*천원(?!\s*(초과|을))', s) and not re.search(r'초과|이하|미만', s):
+            nums = re.findall(r'\d[\d,]*|-', s.split('천원', 1)[1])
+            if len(nums) >= 11: last = [0 if x == '-' else int(x.replace(',', '')) for x in nums[:11]]
+            continue
+        toks = re.findall(r'(?<![\d.])\d[\d,]*(?![\d.])|(?<!\S)[-－](?!\S)', s)
+        if len(toks) < 13: continue
+        vals = [0 if x in '-－' else int(x.replace(',', '')) for x in toks[:13]]
+        lo, hi = vals[0], vals[1]
+        if 500 <= lo < hi <= 10000: rows.append([lo, hi] + vals[2:13])
+    rows.sort(key=lambda r: r[0])
+    uniq = []
+    for r in rows:
+        if not uniq or uniq[-1][0] != r[0]: uniq.append(r)
+    rows = uniq
+    if len(rows) < 600 or not last: raise ValueError(f'표 줄을 {len(rows)}개만 읽음 (10,000천원 줄 {"있음" if last else "없음"})')
+    for a, b in zip(rows, rows[1:]):
+        if a[1] != b[0]: raise ValueError(f'구간이 끊김: {a[:2]} → {b[:2]}')
+        if any(b[i] < a[i] for i in range(2, 13)): raise ValueError(f'월급이 늘었는데 세액이 줄어듦: {b[:2]}')
+    if rows[-1][1] != 10000: raise ValueError('마지막 구간이 10,000천원이 아님')
+    for r in rows + [[0, 0] + last]:
+        if any(r[i] < r[i + 1] for i in range(2, 12)): raise ValueError(f'가족이 늘었는데 세액이 늘어남: {r[:2]}')
+    rows.append([10000, 10000] + last)
+    flat_t = re.sub(r'\s+', ' ', text)
+    c1 = re.search(r'자녀가\s*1명인\s*경우\s*:?\s*([\d,]+)\s*원', flat_t)
+    c2 = re.search(r'자녀가\s*2명인\s*경우\s*:?\s*([\d,]+)\s*원', flat_t)
+    c3 = re.search(r'3명\s*이상인\s*경우\s*:?\s*[\d,]+\s*원\s*\+\s*2명\s*초과\s*자녀\s*1명당\s*([\d,]+)\s*원', flat_t)
+    child = [int(m.group(1).replace(',', '')) for m in (c1, c2, c3)] if c1 and c2 and c3 else None
+    over = []
+    for m in re.finditer(r'([\d,]+)\s*천원\s*초과\s*(?:([\d,]+)\s*천원\s*이하)?\s*[^()]{0,40}?\(\s*10,000\s*천원인\s*경우의\s*해당\s*세액\s*\)(.{0,160}?)상당액', flat_t):
+        body = m.group(3)
+        p = re.search(r'([\d,]+)\s*천원을\s*초과하는\s*금액(?:에\s*(\d+)\s*%를\s*곱한\s*금액)?의\s*(\d+)\s*%', body)
+        add = re.findall(r'\(\s*([\d,]+)\s*원\s*\)', body) or re.findall(r'\(\s*([\d,]+)\s*원\s*\)', flat_t[m.end(): m.end() + 30])
+        if not p: continue
+        over.append([int(m.group(2).replace(',', '')) if m.group(2) else None, int(p.group(1).replace(',', '')),
+                     int(p.group(2)) / 100 if p.group(2) else 1, int(p.group(3)) / 100, int(add[0].replace(',', '')) if add else 0])
+    if len(over) < 3 or over[-1][0] is not None: over = None
+    return rows, child, over
+
+def wage_table_check(api, S, notes):
+    """법제처 별표 목록에서 소득세법 시행령 별표 2가 새로 공포되면 PDF를 받아 data/wage-table.json에 새 시행일 판을 더함"""
+    j = api.call('lawSearch.do', target='licbyl', query='근로소득 간이세액표', display=50)
+    if not j: return 0
+    found = []
+    def walk(o):
+        if isinstance(o, dict):
+            if any('별표명' in k for k in o): found.append(o)
+            for v in o.values(): walk(v)
+        elif isinstance(o, list):
+            for v in o: walk(v)
+    walk(j)
+    cand = [r for r in found if '간이세액표' in str(r.get('별표명', '')) and '소득세법' in str(r.get('관련법령명', '')) and '시행령' in str(r.get('관련법령명', ''))]
+    if not cand: return 1
+    r = max(cand, key=lambda x: str(x.get('공포일자', '')))
+    prom = ymd8(r.get('공포일자'))
+    sig = f'{r.get("별표일련번호")}|{prom}'
+    base = S.setdefault('official', {})
+    if base.get('wageTable') == sig: return 1
+    W = json.load(open(WAGE_P, encoding='utf-8'))
+    if prom and any(prom <= v['from'] for v in W['versions']) and base.get('wageTable') is None:
+        base['wageTable'] = sig; return 1   # 처음 실행: 이미 넣어 둔 판과 같음
+    links = [str(v) for k, v in r.items() if 'PDF' in k.upper() and v] + [str(v) for k, v in r.items() if '링크' in k and 'flDownload' in str(v)]
+    link = next((l for l in links if l), None)
+    page = law_link('소득세법 시행령')
+    if not link:
+        notes.append(('[확인 필요] 근로소득 간이세액표 개정 감지 — PDF 주소를 찾지 못함', f'공포 {prom}. 별표 2 원문을 확인해 주세요.\n{page}')); return 1
+    url = link if link.startswith('http') else 'https://www.law.go.kr' + link
+    try:
+        import subprocess, tempfile
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as resp: pdf = resp.read()
+        fd, path = tempfile.mkstemp(suffix='.pdf'); os.write(fd, pdf); os.close(fd)
+        text = subprocess.run(['pdftotext', '-layout', path, '-'], capture_output=True, text=True, timeout=120).stdout
+        rows, child, over = parse_wage_text(text)
+    except Exception as e:
+        notes.append(('[확인 필요] 근로소득 간이세액표 개정 감지 — 자동 반영 실패', f'공포 {prom}, 원문 {url}\n오류: {e}\n\n표는 바꾸지 않았습니다. 다음 점검 때 다시 시도합니다.')); return 1
+    vers = api.law_versions('소득세법 시행령') or []
+    eff = min([v['eff'] for v in vers if v['prom'] == prom and v['eff']] or [prom])
+    cur = {}
+    for v in sorted(W['versions'], key=lambda x: x['from']):
+        if v['from'] <= eff: cur.update(v)
+    new = {'from': eff, 'source': f'소득세법 시행령 별표 2 ({prom.replace("-", ".")} 개정, {OFFICIAL} 원문 자동 반영)', 'official': True}
+    if rows != cur.get('rows'): new['rows'] = rows
+    if child and child != cur.get('child'): new['child'] = child
+    if over and over != cur.get('over'): new['over'] = over
+    changed = [k for k in ('rows', 'child', 'over') if k in new]
+    W['versions'] = [v for v in W['versions'] if v['from'] != eff] + [new]
+    W['versions'].sort(key=lambda x: x['from']); W['checkedAt'] = TODAY.isoformat()
+    txt = json.dumps({k: v for k, v in W.items() if k != 'versions'}, ensure_ascii=False, indent=2)[:-2] + ',\n  "versions": [\n' + ',\n'.join(
+        '    ' + json.dumps(v, ensure_ascii=False, separators=(', ', ': ')) for v in W['versions']) + '\n  ]\n}\n'
+    open(WAGE_P, 'w', encoding='utf-8').write(txt)
+    base['wageTable'] = sig
+    notes.append((f'[공식 반영] 근로소득 간이세액표 {eff} 적용분', f'근거: 소득세법 시행령 별표 2 (공포 {prom})\n원문: {url}\n바뀐 부분: {", ".join(changed) or "없음(표 본문 같음)"}\n표 {len(rows)}줄, 자녀 공제 {child or "기존 값 유지"}\n\n{eff}부터 장부 급여대장·세무 계산기에 자동 적용됩니다.'))
+    return 1
+
+# --- 공휴일: 한국천문연구원 특일정보 (공공데이터포털, 비밀값 HOLIDAY_KEY) ---
+def holiday_sync(notes):
+    key = (os.environ.get('HOLIDAY_KEY') or '').strip()
+    if not key: return None
+    H = json.load(open(HOL_P, encoding='utf-8')) if os.path.exists(HOL_P) else {'years': {}}
+    years = H.setdefault('years', {})
+    changed = []
+    for y in range(TODAY.year - 1, TODAY.year + 3):
+        got = {}
+        for mo in range(1, 13):
+            url = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?' + urllib.parse.urlencode(
+                {'serviceKey': key, 'solYear': y, 'solMonth': f'{mo:02d}', 'numOfRows': 50, '_type': 'json'}, safe='%')
+            try: j = json.loads(http(url))
+            except Exception as e: log('공휴일 API 실패', y, mo, e); got = None; break
+            items = (((j.get('response') or {}).get('body') or {}).get('items') or {})
+            items = items.get('item', []) if isinstance(items, dict) else []
+            for it in (items if isinstance(items, list) else [items]):
+                if it.get('isHoliday') == 'Y' and ymd8(it.get('locdate')):
+                    d = ymd8(it['locdate']); got[d] = (got[d] + '·' if d in got else '') + str(it.get('dateName', '공휴일'))
+        if got is None or len(got) < 10: continue   # 아직 발표 전인 해는 계산값을 그대로 씀
+        if years.get(str(y)) != got:
+            old = years.get(str(y)) or {}
+            years[str(y)] = got
+            add = sorted(set(got) - set(old))
+            if old: changed.append(f'{y}년: ' + ', '.join(f'{d} {got[d]}' for d in add) if add else f'{y}년 명칭·구성 변경')
+    H['source'] = '한국천문연구원 특일정보 (공공데이터포털)'; H['checkedAt'] = TODAY.isoformat()
+    json.dump(H, open(HOL_P, 'w', encoding='utf-8'), ensure_ascii=False, indent=1); open(HOL_P, 'a').write('\n')
+    if changed: notes.append(('[공식 반영] 공휴일 변경 (임시공휴일 등)', '\n'.join(changed) + '\n\n세무 신고 일정의 기한 계산에 자동 반영됩니다.'))
+    return True
+
 # ---------- 언론 보도: 미리 알림만 (반영 안 함) ----------
 def news(query, days=21):
     if os.environ.get('NEWS_FIXTURE'):
@@ -287,6 +502,8 @@ def main():
     if oc:
         api = LawAPI(oc)
         n = official_check(api, R, S, notes)
+        n += tax_law_check(api, R, S, notes)
+        n += wage_table_check(api, S, notes)
         status = {'officialOk': n, 'officialError': api.error}
         if n == 0:
             # 사이트 점검·일시 장애는 흔하므로, 연속 2회 실패할 때만 알림 (점검 중이면 알림 안 함)
@@ -306,6 +523,12 @@ def main():
              '지금은 공식 원문을 읽지 못해 **어떤 값도 자동으로 바꾸지 않고** 보도 알림만 보냅니다.\n\n'
              '1. https://open.law.go.kr 가입 → OPEN API 신청 (법령·행정규칙 체크)\n'
              '2. 승인 후 가입 이메일의 @ 앞부분(OC)을 저장소 Settings → Secrets and variables → Actions → New repository secret 에 이름 `LAW_OC`로 저장\n'
+             '3. Actions → 법령 기준값 자동 점검 → Run workflow')
+    if holiday_sync(notes) is None:
+        once('setup:holiday_key', '[설정 필요] 임시공휴일까지 자동 반영하려면 HOLIDAY_KEY가 필요합니다',
+             '지금도 설·추석·대체공휴일·선거일은 규칙과 음력 계산으로 해마다 자동 계산됩니다. 정부가 따로 지정하는 **임시공휴일**까지 넣으려면:\n\n'
+             '1. https://www.data.go.kr/data/15012690/openapi.do (한국천문연구원_특일 정보) 활용신청 — 바로 승인\n'
+             '2. 마이페이지의 일반 인증키(Decoding)를 저장소 Settings → Secrets and variables → Actions에 이름 `HOLIDAY_KEY`로 저장\n'
              '3. Actions → 법령 기준값 자동 점검 → Run workflow')
     for title, body in notes:
         once('note:' + hashlib.sha1((title + body).encode()).hexdigest()[:12], title, body)

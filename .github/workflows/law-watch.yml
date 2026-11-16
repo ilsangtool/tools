@@ -9,6 +9,7 @@ on:
     paths:
       - '_build/**'
       - 'data/rules.json'
+      - 'data/wage-table.json'
       - '.github/workflows/law-watch.yml'
 
 permissions:
@@ -31,9 +32,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: "PDF 글자 추출 도구 (간이세액표 별표 원문 읽기용)"
+        if: github.event_name != 'push'
+        run: sudo apt-get install -y -qq poppler-utils >/dev/null || true
+
       - name: "법령·기준값 점검 (뉴스 교차확인 + 선택: 국가법령정보센터)"
         if: github.event_name != 'push'
         env:
+          HOLIDAY_KEY: ${{ secrets.HOLIDAY_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LAW_OC: ${{ secrets.LAW_OC }}
           LAW_API_OC: ${{ secrets.LAW_API_OC }}
