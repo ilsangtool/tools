@@ -24,19 +24,19 @@
       <div class="grp-t">👤 소득</div>
       <div class="row">
         <div><label class="f" for="income">연소득 (세전, 부부 합산 가능)</label><input type="text" id="income" class="m" inputmode="numeric" placeholder="예: 60,000,000"><div class="kor" id="incomeKor"></div></div>
-        <div><label class="f">대출 받을 곳</label>
-          <div class="radio-group seg two"><label><input type="radio" name="sector" value="bank" checked><span>은행<small>DSR 40%</small></span></label><label><input type="radio" name="sector" value="nonbank"><span>보험·저축은행 등<small>DSR 50%</small></span></label></div></div>
+        <div><label class="f" for="sector">대출 받을 곳</label><select id="sector"><option value="" selected disabled>선택하세요</option><option value="bank">은행 (DSR 40%)</option><option value="nonbank">보험·저축은행·상호금융 (DSR 50%)</option></select></div>
       </div>
       <div class="grp-t">💳 대출 조건</div>
       <div class="row3">
         <div><label class="f" for="rate">대출 금리 (연 %)</label><input type="number" id="rate" step="0.01" inputmode="decimal" placeholder="예: 4.2"></div>
-        <div><label class="f" for="term">만기 (년)</label><input type="number" id="term" min="1" max="50" inputmode="numeric" placeholder="예: 30"></div>
-        <div><label class="f" for="method">상환 방식</label><select id="method"><option value="annuity">원리금균등</option><option value="equal">원금균등</option></select></div>
+        <div><label class="f" for="term">만기 (년)</label><select id="term"><option value="" selected disabled>선택하세요</option><option value="5">5년</option><option value="10">10년</option><option value="15">15년</option><option value="20">20년</option><option value="25">25년</option><option value="30">30년</option><option value="35">35년</option><option value="40">40년</option><option value="50">50년</option></select></div>
+        <div><label class="f" for="method">상환 방식</label><select id="method"><option value="" selected disabled>선택하세요</option><option value="annuity">원리금균등 (매달 같음)</option><option value="equal">원금균등 (점점 감소)</option><option value="grad">체증식 (점점 증가)</option></select></div>
       </div>
+      <div class="row3 hidden" id="gradBox"><div><label class="f" for="grow">체증률 (해마다 늘어나는 비율, 연 %)</label><input type="number" id="grow" step="0.1" min="0" max="10" inputmode="decimal" placeholder="예: 2"></div></div>
       <details class="more" id="more"><summary>더 정확하게 (금리 유형·기존 대출)</summary>
         <div class="row3">
-          <div><label class="f" for="rtype">금리 유형</label><select id="rtype"><option value="var">변동금리</option><option value="mixed">혼합형 (고정 후 변동)</option><option value="periodic">주기형 (일정 주기로 변경)</option><option value="fixed">전 기간 고정</option></select></div>
-          <div id="fyBox"><label class="f" for="fyears">고정 기간·변동 주기 (년)</label><input type="number" id="fyears" min="1" max="50" inputmode="numeric" placeholder="예: 5"></div>
+          <div><label class="f" for="rtype">금리 유형</label><select id="rtype"><option value="" selected>선택 안 함 (변동금리로 계산)</option><option value="var">변동금리</option><option value="mixed">혼합형 (고정 후 변동)</option><option value="periodic">주기형 (일정 주기로 변경)</option><option value="fixed">전 기간 고정</option></select></div>
+          <div id="fyBox"><label class="f" for="fyears">고정 기간·변동 주기 (년)</label><select id="fyears"><option value="" selected disabled>선택하세요</option><option value="1">1년</option><option value="2">2년</option><option value="3">3년</option><option value="5">5년</option><option value="7">7년</option><option value="10">10년</option><option value="15">15년</option><option value="20">20년</option><option value="25">25년</option><option value="30">30년</option></select></div>
           <div><label class="f" for="other">기존 대출 연간 원리금</label><input type="text" id="other" class="m" inputmode="numeric" placeholder="예: 6,000,000"></div>
         </div>
         <p class="hint">금리 유형을 고르지 않으면 가장 보수적인 변동금리로 계산합니다. 기존 대출은 여기에 연간 원리금을 직접 넣거나, 「대출 계산기」 탭에 넣고 DSR을 체크하세요.</p>
@@ -105,8 +105,8 @@
         <h2>세금·수수료 조건</h2>
         <p class="hint">주택 가격·소재지는 「내 조건 입력」 값을 씁니다. <button type="button" class="ghost sm goIn">조건 보기</button></p>
         <div class="row">
-          <div><label class="f" for="houses">이번 집까지 합친 주택 수 (세대 기준)</label><select id="houses"><option value="1">1주택</option><option value="2">2주택</option><option value="3">3주택</option><option value="4">4주택 이상</option></select></div>
-          <div><label class="f" for="area">전용면적</label><select id="area"><option value="s">85㎡ 이하</option><option value="l">85㎡ 초과</option></select></div>
+          <div><label class="f" for="houses">이번 집까지 합친 주택 수 (세대 기준)</label><select id="houses"><option value="" selected disabled>선택하세요</option><option value="1">1주택</option><option value="2">2주택</option><option value="3">3주택</option><option value="4">4주택 이상</option></select></div>
+          <div><label class="f" for="area">전용면적</label><select id="area"><option value="" selected disabled>선택하세요</option><option value="s">85㎡ 이하</option><option value="l">85㎡ 초과</option></select></div>
         </div>
         <label class="chk"><input type="checkbox" id="temp2"><span>일시적 2주택 (종전 주택을 기한 안에 처분)</span></label>
         <label class="chk"><input type="checkbox" id="firstCut"><span>생애최초 취득세 감면 (본인·배우자 무주택, 12억 이하)</span></label>
