@@ -73,13 +73,13 @@
 </style>
 </head>
 <body>
-<div class="topbar"><div class="wrap"><a class="brand" href="./"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#6d1f2c"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a><span class="tr"><small>무료 도구 11</small><button type="button" class="admin hidden" id="adminBtn" aria-label="의견함 관리 열기">의견함<b id="adminNew" class="hidden"></b></button></span></div></div>
+<div class="topbar"><div class="wrap"><a class="brand" href="./"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#6d1f2c"/><path d="M9 10h14M9 16h14M9 22h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>일상툴</a><span class="tr"><small id="toolCount">무료 도구 14</small><button type="button" class="admin hidden" id="adminBtn" aria-label="의견함 관리 열기">의견함<b id="adminNew" class="hidden"></b></button></span></div></div>
 <div class="wrap">
 <div class="hero">
   <p class="eyebrow">무료 · 가입 없음 · 기록 없음</p>
   <h1>기록을 남기지 않는<br>생활⁠·⁠업무 도구</h1>
-  <p class="lead">PDF 변환, 사진 용량 줄이기, 주휴수당 계산, 매장 안내문까지. 설치 없이 브라우저에서 바로 쓰고, 입력한 내용은 서버로 보내지 않습니다.</p>
-  <label class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a2324" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="도구 찾기 (예: PDF, 주휴수당, 부가세, 주담대)" aria-label="도구 찾기"></label>
+  <p class="lead">PDF 변환, 사진 용량 줄이기, 주휴수당⁠·⁠세금⁠·⁠대출 계산, 장부 정리까지. 설치 없이 브라우저에서 바로 쓰고, 입력한 내용은 서버로 보내지 않습니다.</p>
+  <label class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a2324" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="도구 찾기 (예: PDF, 부가세, 대출)" aria-label="도구 찾기"></label>
 </div>
 <main>
   <section class="grp" data-g="문서 도구">
@@ -123,6 +123,7 @@
 </div>
 <script>
 (function(){
+  var tc=document.getElementById('toolCount'); if(tc) tc.textContent='무료 도구 '+document.querySelectorAll('a.tool').length;
   var q=document.getElementById('q'),cards=[].slice.call(document.querySelectorAll('a.tool')),grps=[].slice.call(document.querySelectorAll('section.grp'));
   var norm=function(s){return s.toLowerCase().replace(/[\s\u2060]+/g,'')};
   q.addEventListener('input',function(){

@@ -84,7 +84,11 @@ def keep_dots(page):
             if m: skip = None if m.group(1) else m.group(2).lower()
             out.append(part); continue
         if skip or '·' not in part: out.append(part); continue
-        out.append(_re.sub(r'(?<=[가-힣A-Za-z0-9)\]%])·(?=[가-힣A-Za-z0-9(\[])', _WJ + '·' + _WJ, part))
+        # 2~3개를 잇는 짧은 묶음('문자·매장')은 통째로, 4개 이상 긴 나열은 '·' 뒤에서만 줄이 바뀌게 함(낱말 중간이 잘리지 않도록)
+        def join(m):
+            run = m.group(0)
+            return run.replace('·', _WJ + '·' + (_WJ if run.count('·') <= 2 else ''))
+        out.append(_re.sub(r'[가-힣A-Za-z0-9()\[\]%]+(?:·[가-힣A-Za-z0-9()\[\]%]+)+', join, part))
     return ''.join(out)
 
 def related(slug):

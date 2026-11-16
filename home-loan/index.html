@@ -351,7 +351,7 @@
     <div data-pane="loans" class="hidden">
       <section class="card">
         <h2>내 대출 목록</h2>
-        <p class="hint">주담대⁠·⁠신용⁠·⁠전세⁠·⁠마이너스⁠·⁠자동차 등 대출을 각각 조건대로 넣으면 상환표와 합계가 나옵니다. 「DSR」을 체크한 대출은 대출 한도⁠·⁠필요 연봉 계산의 기존 대출로 들어갑니다.</p>
+        <p class="hint">주담대⁠·신용⁠·전세⁠·마이너스⁠·자동차 등 대출을 각각 조건대로 넣으면 상환표와 합계가 나옵니다. 「DSR」을 체크한 대출은 대출 한도⁠·⁠필요 연봉 계산의 기존 대출로 들어갑니다.</p>
         <div class="filters"><input type="search" id="lq" placeholder="대출 이름·종류로 찾기" aria-label="대출 찾기"><select id="lkind" aria-label="종류로 거르기"><option value="">모든 종류</option></select></div>
         <div class="tbl-wrap"><table class="t loans" id="loanTbl"></table></div>
         <label class="chk"><input type="checkbox" id="jeonseDsr"><span>전세대출 이자도 DSR에 넣기 (수도권·규제지역 1주택자가 받은 전세대출)</span></label>
@@ -740,7 +740,7 @@ function renderLoans(){
 }
 function renderSched(){
   const L = S.loans.find(l => l.id === selId) || S.loans[0];
-  if (!L || !ready(L)) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액⁠·⁠금리⁠·⁠기간(월)⁠·⁠상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
+  if (!L || !ready(L)) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액⁠·금리⁠·기간(월)⁠·상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
   $('#schedCard').classList.remove('hidden'); selId = L.id;
   const s = schedule(L), tot = s.reduce((t, x) => [t[0] + x[1], t[1] + x[2]], [0, 0]);
   $('#schedName').textContent = `${L.name} · ${KIND[L.kind] || ''} ${wk(L.amount)} · 연 ${L.rate}% · ${L.months}개월 · ${MET[L.method]}${L.grace ? ` · 거치 ${L.grace}개월` : ''}`;
