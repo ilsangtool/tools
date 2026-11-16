@@ -434,10 +434,16 @@ def wage_table_check(api, S, notes):
     if child and child != cur.get('child'): new['child'] = child
     if over and over != cur.get('over'): new['over'] = over
     changed = [k for k in ('rows', 'child', 'over') if k in new]
+    base['wageTable'] = sig
+    if not changed:   # 별표가 다시 공포됐지만 표·자녀 공제·계산식이 그대로면 파일은 두고 확인만 알림
+        notes.append((f'[공식 확인] 근로소득 간이세액표 재공포({prom}) — 내용 같음', f'원문: {url}\n표 {len(rows)}줄·자녀 공제·10,000천원 초과 계산식이 지금 값과 같아 바꾸지 않았습니다.'))
+        return 1
     W['versions'] = [v for v in W['versions'] if v['from'] != eff] + [new]
     W['versions'].sort(key=lambda x: x['from']); W['checkedAt'] = TODAY.isoformat()
-    txt = json.dumps({k: v for k, v in W.items() if k != 'versions'}, ensure_ascii=False, indent=2)[:-2] + ',\n  "versions": [\n' + ',\n'.join(
-        '    ' + json.dumps(v, ensure_ascii=False, separators=(', ', ': ')) for v in W['versions']) + '\n  ]\n}\n'
+    def dump(v):
+        head = '    ' + json.dumps({k: x for k, x in v.items() if k != 'rows'}, ensure_ascii=False)
+        return head if 'rows' not in v else head[:-1] + ', "rows": [\n' + ',\n'.join('      ' + json.dumps(r) for r in v['rows']) + '\n    ]}'
+    txt = json.dumps({k: v for k, v in W.items() if k != 'versions'}, ensure_ascii=False, indent=2)[:-2] + ',\n  "versions": [\n' + ',\n'.join(dump(v) for v in W['versions']) + '\n  ]\n}\n'
     open(WAGE_P, 'w', encoding='utf-8').write(txt)
     base['wageTable'] = sig
     notes.append((f'[공식 반영] 근로소득 간이세액표 {eff} 적용분', f'근거: 소득세법 시행령 별표 2 (공포 {prom})\n원문: {url}\n바뀐 부분: {", ".join(changed) or "없음(표 본문 같음)"}\n표 {len(rows)}줄, 자녀 공제 {child or "기존 값 유지"}\n\n{eff}부터 장부 급여대장·세무 계산기에 자동 적용됩니다.'))
