@@ -28,6 +28,7 @@ function yearPay(P, ry, years, method, prinYears){
   if (method === 'equal') { let s = 0, b = P; const p = P / n; for (let k = 0; k < Math.min(12, n); k++) { s += p + b * ry / 12; b -= p; } return s * (n < 12 ? 12 / n : 1); }
   return pmt(P, ry, n) * 12;
 }
+const ready = l => l.amount > 0 && l.months > 0;
 function schedule(L){ // 월별 상환표
   const n = Math.max(1, Math.round(L.months)), g = Math.min(Math.max(0, Math.round(L.grace || 0)), n - 1), r = L.rate / 100 / 12, out = [];
   let b = L.amount; const rest = n - g, annu = L.method === 'annuity' ? pmt(b, L.rate / 100, rest) : 0, eqp = b / rest;
@@ -42,9 +43,9 @@ function schedule(L){ // 월별 상환표
 
 /* ---- 지역·규제 ---- */
 function regions(){
-  const R = M().regulated || {}, opts = [['seoul', '서울특별시 (전 지역 · 규제지역)']];
-  (R['경기도'] || []).forEach(n => opts.push(['gg:' + n, '경기 ' + n + ' (규제지역)']));
-  opts.push(['metro', '그 밖의 수도권 (인천·경기 비규제)'], ['local', '지방 (서울·경기·인천 밖)']);
+  const R = M().regulated || {}, opts = [['seoul', '서울 전 지역 (규제)']];
+  (R['경기도'] || []).forEach(n => opts.push(['gg:' + n, '경기 ' + n + ' (규제)']));
+  opts.push(['metro', '인천·경기 그 밖 (비규제)'], ['local', '지방 (수도권 밖)']);
   return opts;
 }
 function zone(code){
@@ -67,11 +68,11 @@ function stressOf(z, rtype, fyears, term){
 
 /* ---- 기존 대출 (대출 계산기에서 DSR 체크) ---- */
 let S = store.get(KEY) || {};
-S.loans = S.loans || [{ id: uid(), name: '신용대출', kind: 'credit', amount: 30000000, rate: 5.2, months: 12, method: 'bullet', grace: 0, dsr: true, fixed: false }];
+S.loans = S.loans || [];
 function existing(z){
   const D = M(), credTot = S.loans.filter(l => l.dsr && (l.kind === 'credit' || l.kind === 'minus')).reduce((s, l) => s + l.amount, 0);
   let pay = 0, interest = 0, bal = 0; const rows = [];
-  S.loans.filter(l => l.dsr).forEach(l => {
+  S.loans.filter(l => l.dsr && ready(l)).forEach(l => {
     const ry = l.rate / 100; let p = 0, note = '';
     if (l.kind === 'credit' || l.kind === 'minus') {
       const st = credTot > D.stress.creditThreshold ? D.stress.other * (l.fixed && l.months >= 60 ? 0 : l.fixed && l.months >= 36 ? 0.6 : 1) : 0;
@@ -97,8 +98,11 @@ function maxBy(limitPay, ry, years, method){ // 연 상환액 limitPay 안에서
 function inputs(){
   const z = zone(), D = M(); let term = Math.max(1, +val('term') || 30);
   const termCut = metroLike(z) && term > D.maxTermMetro; if (termCut) term = D.maxTermMetro;
-  return { price: N(val('price')), z, owner: radio('owner'), income: N(val('income')), sector: radio('sector'), rate: (+val('rate') || 0) / 100,
-    term, termCut, method: $('#method').value, rtype: $('#rtype').value, fyears: Math.max(1, +val('fyears') || 5) };
+  const miss = [];
+  if (!N(val('price'))) miss.push('주택 가격'); if (!radio('owner')) miss.push('주택 보유 (생애최초·무주택 등)'); if (!N(val('income'))) miss.push('연소득');
+  if (val('rate') === '') miss.push('대출 금리'); if (val('term') === '') miss.push('만기');
+  return { price: N(val('price')), z, owner: radio('owner') || 'none', income: N(val('income')), sector: radio('sector') || 'bank', rate: (+val('rate') || 0) / 100,
+    term, termCut, method: $('#method').value, rtype: $('#rtype').value, fyears: Math.max(1, +val('fyears') || 5), miss };
 }
 function limitCalc(I, priceOverride){
   const D = M(), price = priceOverride != null ? priceOverride : I.price;
@@ -116,8 +120,10 @@ const OWN = { first: '생애최초', none: '무주택', oneSell: '처분조건�
 let lastLimit = null;
 function renderLimit(){
   const I = inputs(), r = limitCalc(I); lastLimit = r;
-  $('#regionTag').innerHTML = `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b> LTV ${pct(r.ltvRate)} · ${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
-  if (!I.price || !I.income) { $('#lStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">집값과 연소득을 넣으세요</b></div>'; $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; return; }
+  $('#regionTag').innerHTML = `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
+  $('#lMiss').classList.toggle('on', I.miss.length > 0);
+  $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
+  if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
   const items = [['LTV ' + pct(r.ltvRate), r.ltv], metroLike(I.z) ? ['수도권·규제 총액', r.cap] : null, ['DSR ' + pct(r.dsrLim) + (r.dsrApplies ? '' : ' (미적용)'), r.dsrApplies ? r.dsrMax : null], ['DTI ' + pct(r.dtiLim), r.dtiMax]].filter(x => x && x[1] != null);
   const mx = Math.max(...items.map(x => x[1]), 1), lowV = Math.min(...items.map(x => x[1]));
   const bind = items.find(x => x[1] === lowV)[0].split(' ')[0];
@@ -145,6 +151,7 @@ function renderLimit(){
   if (!metroLike(I.z) && M().stress.localMortgage < M().stress.other) notes.push(`지방 주담대 스트레스 금리는 ${pct(M().stress.localMortgage)}(유예)입니다. 유예가 끝나면 ${pct(M().stress.other)}로 오릅니다.`);
   notes.push('정책대출(디딤돌·보금자리론)은 소득·집값 요건과 한도가 따로 있으며 DSR 대신 DTI(60%)를 적용합니다.');
   $('#lNotes').innerHTML = notes.map(n => `<p>· ${n}</p>`).join('') + `<p class="hint">규제 기준: ${esc(RULES.mortgage.filter(x => x.from <= ymd(today())).map(x => x.source).filter(Boolean).join(' / '))}</p>`;
+  updateBar();
   $('#otherInfo').textContent = r.ex.manual ? '직접 입력한 기존 대출 원리금을 씁니다.' : r.ex.rows.length ? `기존 대출 ${r.ex.rows.length}건(대출 계산기 탭에서 DSR 체크)의 연간 원리금 ${fmt(r.ex.pay)}원을 반영했습니다.` : '';
 }
 const rows = L => L.map(r => r === '-' ? '' : `<tr class="${r[2] || ''}"><td>${r[0]}</td><td class="n">${typeof r[1] === 'number' ? fmt(r[1]) + '원' : r[1]}</td></tr>`).join('');
@@ -155,7 +162,8 @@ function renderIncome(){
   const I = inputs(), D = M(), want = N(val('want'));
   const st = stressOf(I.z, I.rtype, I.fyears, I.term), ex = existing(I.z);
   if (lastLimit) $('#wantQuick').innerHTML = [['LTV 최대', lastLimit.ltv], metroLike(I.z) ? ['총액 한도', Math.min(lastLimit.ltv, lastLimit.cap)] : null].filter(Boolean).map(([n, v]) => `<button type="button" class="ghost" data-v="${v}">${n} ${wk(v)}</button>`).join('');
-  if (!want) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = ''; } else {
+  const need0 = ['rate', 'term'].filter(i => val(i) === '');
+  if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">위 「내 조건 입력」에서 ${need0.map(i => i === 'rate' ? '대출 금리' : '만기').join('·')}를 넣으세요</td></tr>` : ''; } else {
     const payS = yearPay(want, I.rate + st.rate, I.term, I.method), pay0 = yearPay(want, I.rate, I.term, I.method);
     const need = lim => (payS + ex.pay) / lim, needDti = (pay0 + ex.interest) / D.dti[I.z];
     const main = Math.max(need(D.dsr[I.sector]), (want + ex.bal > D.dsr.threshold) ? 0 : 0, needDti);
@@ -173,7 +181,7 @@ function renderIncome(){
   }
   // 살 수 있는 집값
   const cash = N(val('cash'));
-  if (!cash || !I.income) { $('#aStat').innerHTML = ''; $('#aNote').textContent = '연소득과 현금을 넣으면 살 수 있는 최대 집값을 찾습니다.'; return; }
+  if (!cash || !I.income || I.miss.length) { $('#aStat').innerHTML = ''; $('#aNote').textContent = '연소득과 현금을 넣으면 살 수 있는 최대 집값을 찾습니다.'; return; }
   const costOf = p => $('#cashCost').checked ? acqCost(p, null).total : 0;
   let lo = 0, hi = 1e11;
   for (let i = 0; i < 70; i++) { const m = (lo + hi) / 2, L = limitCalc(I, m).final; if (m - L + costOf(m) <= cash) lo = m; else hi = m; }
@@ -189,13 +197,13 @@ let selId = S.loans[0] && S.loans[0].id;
 $('#lkind').innerHTML += Object.entries(KIND).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
 function saveS(){ store.set(KEY, Object.assign(S, { form: formState() })); }
 function loanRow(l){
-  return `<tr data-id="${l.id}" class="${l.id === selId ? 'sel' : ''}"><td><input type="text" data-k="name" value="${esc(l.name)}" style="min-width:110px"></td>
+  return `<tr data-id="${l.id}" class="${l.id === selId ? 'sel' : ''}"><td><input type="text" data-k="name" value="${esc(l.name)}" placeholder="예: 주담대" style="min-width:110px"></td>
   <td><select data-k="kind">${Object.entries(KIND).map(([k, n]) => `<option value="${k}"${l.kind === k ? ' selected' : ''}>${n}</option>`).join('')}</select></td>
-  <td><input type="text" class="n" data-k="amount" inputmode="numeric" value="${fmt(l.amount)}"></td>
-  <td><input type="number" class="n" data-k="rate" step="0.01" value="${l.rate}" style="min-width:70px"></td>
-  <td><input type="number" class="n" data-k="months" value="${l.months}" style="min-width:64px" title="개월"></td>
+  <td><input type="text" class="n" data-k="amount" inputmode="numeric" value="${l.amount ? fmt(l.amount) : ''}" placeholder="예: 300,000,000"></td>
+  <td><input type="number" class="n" data-k="rate" step="0.01" value="${l.rate || ''}" placeholder="예: 4.2" style="min-width:70px"></td>
+  <td><input type="number" class="n" data-k="months" value="${l.months || ''}" placeholder="예: 360" style="min-width:64px" title="개월"></td>
   <td><select data-k="method">${Object.entries(MET).map(([k, n]) => `<option value="${k}"${l.method === k ? ' selected' : ''}>${n}</option>`).join('')}</select></td>
-  <td><input type="number" class="n" data-k="grace" value="${l.grace || 0}" style="min-width:56px" title="거치 개월"></td>
+  <td><input type="number" class="n" data-k="grace" value="${l.grace || ''}" placeholder="0" style="min-width:56px" title="거치 개월"></td>
   <td style="text-align:center"><input type="checkbox" data-k="fixed"${l.fixed ? ' checked' : ''} title="고정금리"></td>
   <td style="text-align:center"><input type="checkbox" data-k="dsr"${l.dsr ? ' checked' : ''}></td>
   <td style="white-space:nowrap"><button type="button" class="ghost sm" data-act="view">상환표</button> <button type="button" class="ghost sm" data-act="del">×</button></td></tr>`;
@@ -203,13 +211,14 @@ function loanRow(l){
 function renderLoans(){
   const q = val('lq').toLowerCase(), kd = $('#lkind').value;
   const list = S.loans.filter(l => (!q || (l.name + KIND[l.kind]).toLowerCase().includes(q)) && (!kd || l.kind === kd));
-  $('#loanTbl').innerHTML = `<thead><tr><th>이름</th><th>종류</th><th class="n">금액</th><th class="n">금리 %</th><th class="n">기간(월)</th><th>상환</th><th class="n">거치(월)</th><th>고정</th><th>DSR</th><th></th></tr></thead><tbody>${list.map(loanRow).join('') || '<tr><td colspan="10" class="hint">조건에 맞는 대출이 없습니다</td></tr>'}</tbody>`;
-  const T = S.loans.reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 });
+  $('#loanTbl').innerHTML = !S.loans.length ? '<tbody><tr><td class="hint">아직 대출이 없습니다. 아래 [대출 추가]를 누르세요.</td></tr></tbody>' : `<thead><tr><th>이름</th><th>종류</th><th class="n">금액</th><th class="n">금리 %</th><th class="n">기간(월)</th><th>상환</th><th class="n">거치(월)</th><th>고정</th><th>DSR</th><th></th></tr></thead><tbody>${list.map(loanRow).join('') || '<tr><td colspan="10" class="hint">조건에 맞는 대출이 없습니다</td></tr>'}</tbody>`;
+  const T = S.loans.filter(ready).reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 });
   $('#sumStat').innerHTML = statBox([['대출 잔액 합계', wk(T.b)], ['이번 달 상환액 합계', fmt(T.m) + '원', 'main'], ['남은 이자 합계', wk(T.i)]]);
   renderSched();
 }
 function renderSched(){
-  const L = S.loans.find(l => l.id === selId) || S.loans[0]; if (!L) { $('#schedCard').classList.add('hidden'); return; }
+  const L = S.loans.find(l => l.id === selId) || S.loans[0];
+  if (!L || !ready(L)) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액·금리·기간(월)을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
   $('#schedCard').classList.remove('hidden'); selId = L.id;
   const s = schedule(L), tot = s.reduce((t, x) => [t[0] + x[1], t[1] + x[2]], [0, 0]);
   $('#schedName').textContent = `${L.name} · ${KIND[L.kind]} ${wk(L.amount)} · 연 ${L.rate}% · ${L.months}개월 · ${MET[L.method]}${L.grace ? ` · 거치 ${L.grace}개월` : ''}`;
@@ -227,11 +236,11 @@ $('#loanTbl').addEventListener('input', ev => {
   const tr = ev.target.closest('tr'), l = tr && S.loans.find(x => x.id === tr.dataset.id); if (!l) return;
   const k = ev.target.dataset.k, t = ev.target;
   if (k === 'name') l.name = t.value; else if (k === 'amount') { moneyInput(t); l.amount = N(t.value); }
-  else if (k === 'rate') l.rate = +t.value || 0; else if (k === 'months') l.months = Math.max(1, +t.value || 1); else if (k === 'grace') l.grace = Math.max(0, +t.value || 0);
+  else if (k === 'rate') l.rate = +t.value || 0; else if (k === 'months') l.months = Math.max(0, +t.value || 0); else if (k === 'grace') l.grace = Math.max(0, +t.value || 0);
   else if (k === 'kind' || k === 'method') l[k] = t.value; else if (k === 'dsr' || k === 'fixed') l[k] = t.checked;
   selId = l.id; saveS(); $$('#loanTbl tbody tr').forEach(x => x.classList.toggle('sel', x.dataset.id === selId)); renderSched(); renderSum(); renderLimit(); renderIncome();
 });
-function renderSum(){ const T = S.loans.reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 }); $('#sumStat').innerHTML = statBox([['대출 잔액 합계', wk(T.b)], ['이번 달 상환액 합계', fmt(T.m) + '원', 'main'], ['남은 이자 합계', wk(T.i)]]); }
+function renderSum(){ const T = S.loans.filter(ready).reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 }); $('#sumStat').innerHTML = statBox([['대출 잔액 합계', wk(T.b)], ['이번 달 상환액 합계', fmt(T.m) + '원', 'main'], ['남은 이자 합계', wk(T.i)]]); }
 $('#loanTbl').addEventListener('change', ev => { if (ev.target.tagName === 'SELECT' || ev.target.type === 'checkbox') ev.target.dispatchEvent(new Event('input', { bubbles: true })); });
 $('#loanTbl').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return; const id = b.closest('tr').dataset.id;
@@ -239,7 +248,7 @@ $('#loanTbl').addEventListener('click', ev => {
   else { selId = id; $('#schedCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   saveS(); renderLoans(); renderLimit();
 });
-$('#loanAdd').onclick = () => { const l = { id: uid(), name: '대출 ' + (S.loans.length + 1), kind: 'mortgage', amount: 300000000, rate: 4.2, months: 360, method: 'annuity', grace: 0, dsr: false, fixed: false }; S.loans.push(l); selId = l.id; saveS(); renderLoans(); };
+$('#loanAdd').onclick = () => { const l = { id: uid(), name: '', kind: 'mortgage', amount: 0, rate: 0, months: 0, method: 'annuity', grace: 0, dsr: false, fixed: false }; S.loans.push(l); selId = l.id; saveS(); renderLoans(); };
 $('#schedCsv').onclick = () => {
   const L = S.loans.find(l => l.id === selId); if (!L) return;
   const body = [['회차', '원금', '이자', '납입액', '잔액']].concat(schedule(L).map(x => x.map(Math.round))).map(r => r.join(',')).join('\r\n');
@@ -267,6 +276,7 @@ function acqCost(price, loan){
 function renderCost(){
   const price = N(val('price')); if (!price) { $('#cStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">위에 주택 가격을 넣으세요</b></div>'; $('#cTbl').innerHTML = ''; return; }
   const loan = val('loanAmt') !== '' ? N(val('loanAmt')) : (lastLimit ? lastLimit.final : 0), c = acqCost(price, loan);
+  $('#loanAmt').placeholder = lastLimit ? '한도 결과 ' + fmt(lastLimit.final) : '예: 400,000,000';
   $('#cStat').innerHTML = statBox([['부대비용 합계', wk(c.total), 'main'], ['취득세 등 세금', wk(c.tax - c.cut + c.edu + c.farm)], ['중개보수', wk(c.broker)]]);
   $('#cTbl').innerHTML = rows([
     ['취득세 <small>(' + (c.heavy ? '중과 ' : '') + (Math.round(c.rate * 100000) / 1000) + '%' + (zone() === 'reg' ? ', 조정대상지역' : '') + ')</small>', c.tax],
@@ -310,16 +320,38 @@ function loadForm(){
 function fillRegions(){ const cur = $('#region').value; $('#region').innerHTML = regions().map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join(''); if (cur && regions().some(r => r[0] === cur)) $('#region').value = cur; }
 function renderAll(){
   $('#fyBox').classList.toggle('hidden', ['var', 'fixed'].includes($('#rtype').value));
-  $('#priceKor').textContent = kor(N(val('price'))); $('#incomeKor').textContent = kor(N(val('income')));
+  ['price', 'income', 'want', 'cash'].forEach(i => $('#' + i + 'Kor').textContent = kor(N(val(i))));
   renderLimit(); renderIncome(); renderCost(); renderRent(); saveS();
 }
-fillRegions(); loadForm(); if (!S.form) { $('#region').value = 'seoul'; }
+fillRegions(); loadForm();
 bindTabs();
+let curTab = 'limit';
+function setTab(t){
+  curTab = t; const useShared = ['limit', 'income', 'cost'].includes(t);
+  $('#shared').classList.toggle('hidden', !useShared); $('#main').classList.toggle('two', useShared);
+  // 넓은 화면: 탭 위치로 / 휴대폰: 고른 탭의 결과(내용)가 바로 보이게 그 위치로 이동
+  const tabsH = $('#tabs').offsetHeight + 60, pane = $(`[data-pane="${t}"]`);
+  const target = window.innerWidth >= 960 || !pane ? $('#tabs').getBoundingClientRect().top + window.scrollY - 60 : pane.getBoundingClientRect().top + window.scrollY - tabsH;
+  if (setTab.ready) window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  setTab.ready = true;
+  updateBar();
+}
+$('#tabs').onTab = setTab;
+let barSeen = false;
+function updateBar(){
+  const show = curTab === 'limit' && lastLimit && !barSeen && window.innerWidth < 960;
+  $('#sumbar').classList.toggle('hidden', !show);
+  if (lastLimit) $('#sumText').innerHTML = `대출 가능 <b>${wk(lastLimit.final)}</b>`;
+}
+if ('IntersectionObserver' in window) new IntersectionObserver(es => { barSeen = es[0].isIntersecting; updateBar(); }).observe($('#limitCard'));
+document.addEventListener('click', ev => { if (ev.target.closest('.goIn')) $('#shared').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('#sumGo').onclick = () => $('#limitCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+$$('input[name=owner]').forEach(r => r.addEventListener('change', () => { $('#firstCut').checked = radio('owner') === 'first'; }));
 $('#main').addEventListener('input', ev => { if (ev.target.closest('#loanTbl')) return; if (ev.target.classList.contains('m')) moneyInput(ev.target); renderAll(); });
 $('#main').addEventListener('change', ev => { if (ev.target.closest('#loanTbl')) return; renderAll(); });
 $('#wantQuick').addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) { $('#want').value = fmt(+b.dataset.v); renderAll(); } });
 $('#lq').addEventListener('input', renderLoans); $('#lkind').addEventListener('change', renderLoans); $('#schedView').addEventListener('change', renderSched);
 $('#lCopy').onclick = () => copy('주담대 한도 계산\n' + $('#lStat').innerText.replace(/\n/g, ' ') + '\n' + $('#lTbl').innerText);
 $('#cCopy').onclick = () => copy('취득 비용\n' + $('#cTbl').innerText);
-renderLoans(); renderAll();
+renderLoans(); renderAll(); setTab('limit');
 onRulesLoaded(() => { fillRegions(); renderLoans(); renderAll(); });
