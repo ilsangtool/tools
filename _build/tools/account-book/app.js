@@ -611,28 +611,32 @@ function renderSetup(){
   $('#sName').value = B.name; $('#sType').value = B.type; $$('input[name=tax]').forEach(r => r.checked = r.value === B.tax);
   const ob = B.ob || { date: ymd(today()).slice(0, 4) + '-01-01', lines: [{ a: '101', v: 0 }, { a: '103', v: 0 }], eq: B.type === 'corp' ? '375' : '331' };
   $('#obDate').value = ob.date; $('#obEq').innerHTML = opt(['331', '375'].map(acc), ob.eq);
-  $('#obTbl').innerHTML = '<thead><tr><th>계정</th><th class="n">잔액</th><th></th></tr></thead><tbody>' + ob.lines.map(obRow).join('') + '</tbody>';
+  $('#obTbl').innerHTML = '<thead><tr><th>계정</th><th>거래처 <small>(선택)</small></th><th class="n">잔액</th><th></th></tr></thead><tbody>' + ob.lines.map(obRow).join('') + '</tbody>';
   $('#bkAcct').innerHTML = opt(cashAccs(), '103');
   const g = {}; accs().forEach(a => (g[a.t] = g[a.t] || []).push(a));
   $('#accAll').innerHTML = ['A', 'L', 'Q', 'R', 'E'].map(t => `<div class="grp">${TNAME[t]}</div>` + g[t].map(a => `<span class="${B.accounts.includes(a) ? 'u' : ''}">${esc(a.name)}${B.accounts.includes(a) ? `<button type="button" data-rma="${a.code}" aria-label="삭제">×</button>` : ''}</span>`).join('')).join('');
   $('#lastBk').textContent = B.lastBackup ? '마지막 백업: ' + B.lastBackup : '아직 백업한 적이 없습니다.';
 }
-function obRow(l){ return `<tr><td><select>${optGroups(accs().filter(a => a.t === 'A' || a.t === 'L'), l.a)}</select></td><td><input type="text" class="n" inputmode="numeric" value="${l.v ? fmt(l.v) : ''}" placeholder="0"></td><td><button type="button" class="ghost sm">×</button></td></tr>`; }
+function obRow(l){ return `<tr><td><select>${optGroups(accs().filter(a => 'ALQ'.includes(a.t)), l.a)}</select></td><td><input type="text" class="p" value="${esc(l.p || '')}" list="partnerList" placeholder="예: ○○상사"></td><td><input type="text" class="n v" inputmode="numeric" value="${l.v ? (l.v < 0 ? '-' : '') + fmt(Math.abs(l.v)) : ''}" placeholder="0"></td><td><button type="button" class="ghost sm">×</button></td></tr>`; }
 $('#obTbl').addEventListener('click', ev => { if (ev.target.tagName === 'BUTTON') ev.target.closest('tr').remove(); });
-$('#obTbl').addEventListener('input', ev => { if (ev.target.tagName === 'INPUT') moneyInput(ev.target); });
+$('#obTbl').addEventListener('input', ev => { if (ev.target.classList.contains('v')) moneyInput(ev.target); });
 $('#obAdd').onclick = () => $('#obTbl tbody').insertAdjacentHTML('beforeend', obRow({ a: '108', v: 0 }));
-$('#obSave').onclick = () => {
-  const date = val('obDate'); if (!date) return toast('시작일을 고르세요');
-  const lines = $$('#obTbl tbody tr').map(tr => ({ a: tr.querySelector('select').value, v: N(tr.querySelector('input').value) })).filter(l => l.v);
-  B.ob = { date, lines, eq: $('#obEq').value };
+function buildOb(){ // B.ob → 기초 잔액 분개 (거래처별로 나눠 거래처 잔액에도 나오게)
   B.entries = B.entries.filter(e => e.kind !== 'ob');
-  if (lines.length) {
-    const jl = lines.map(l => acc(l.a).t === 'A' ? { a: l.a, d: l.v, c: 0 } : { a: l.a, d: 0, c: l.v });
+  const groups = {};
+  (B.ob.lines || []).forEach(l => (groups[l.p || ''] = groups[l.p || ''] || []).push(l));
+  Object.entries(groups).forEach(([p, ls]) => {
+    const jl = ls.map(l => { const debit = acc(l.a).t === 'A' ? l.v >= 0 : l.v < 0; return debit ? { a: l.a, d: Math.abs(l.v), c: 0 } : { a: l.a, d: 0, c: Math.abs(l.v) }; });
     const diff = jl.reduce((s, l) => s + l.d - l.c, 0);
     if (diff) jl.push(diff > 0 ? { a: B.ob.eq, d: 0, c: diff } : { a: B.ob.eq, d: -diff, c: 0 });
-    B.entries.push({ id: uid(), date, kind: 'ob', memo: '기초 잔액', partner: '', lines: jl });
-  }
-  save(); toast('기초 잔액을 저장했습니다');
+    if (jl.length) B.entries.push({ id: uid(), date: B.ob.date, kind: 'ob', memo: '기초 잔액', partner: p, lines: jl });
+  });
+  save(); refreshPartners();
+}
+$('#obSave').onclick = () => {
+  const date = val('obDate'); if (!date) return toast('시작일을 고르세요');
+  const lines = $$('#obTbl tbody tr').map(tr => ({ a: tr.querySelector('select').value, p: tr.querySelector('input.p').value.trim(), v: N(tr.querySelector('input.v').value) })).filter(l => l.v);
+  B.ob = { date, lines, eq: $('#obEq').value }; buildOb(); toast('기초 잔액을 저장했습니다');
 };
 $('#aAdd').onclick = () => {
   const name = val('aName'), t = $('#aType').value; if (!name) return toast('계정 이름을 넣으세요');
@@ -646,7 +650,7 @@ $('#accAll').addEventListener('click', ev => {
   if (B.entries.some(e => e.lines.some(l => l.a === c))) return toast('이 계정을 쓴 거래가 있어 지울 수 없습니다');
   B.accounts = B.accounts.filter(a => a.code !== c); save(); renderSetup();
 });
-$('#sName').addEventListener('input', () => { B.name = val('sName') || '내 사업장'; save(); renderBooks(); });
+$('#sName').addEventListener('input', () => { B.name = val('sName') || '내 사업장'; save(); renderBooks(); if (!$('#bookMgr').classList.contains('hidden')) renderBookList(); });
 $('#sType').addEventListener('change', () => { B.type = $('#sType').value; save(); });
 $$('input[name=tax]').forEach(r => r.addEventListener('change', () => { B.tax = radio('tax'); save(); setupForm(true); renderVatPeriods(); }));
 
@@ -700,20 +704,92 @@ $('#bkFile').onchange = async ev => {
   } catch (_) { toast('장부 백업 파일이 아닙니다'); }
   ev.target.value = '';
 };
-armReset($('#bookDel'), () => {
-  delete S.books[B.id];
-  if (!Object.keys(S.books).length) { const b = newBook(); S.books[b.id] = b; }
-  switchBook(Object.keys(S.books)[0]); toast('장부를 삭제했습니다');
-});
-
 /* ---- 장부 전환·탭 ---- */
 function switchBook(id){
   S.cur = id; B = S.books[id];
   ['accounts', 'entries', 'tpls', 'emps'].forEach(k => B[k] = B[k] || []); B.payTax = B.payTax || {}; B.payPosted = B.payPosted || {};
   save(); renderBooks(); resetForm(); refreshPartners(); renderList(); renderSetup(); renderEmps(); renderVatPeriods(); renderTab(curTab);
+  if (!$('#bookMgr').classList.contains('hidden')) renderBookList();
 }
 $('#bookSel').addEventListener('change', () => switchBook($('#bookSel').value));
-$('#bookNew').onclick = () => { const b = newBook('새 장부 ' + (Object.keys(S.books).length + 1)); S.books[b.id] = b; switchBook(b.id); $$('#tabs button').find(x => x.dataset.tab === 'setup').click(); $('#sName').focus(); $('#sName').select(); toast('새 장부를 만들었습니다. 상호를 넣으세요'); };
+/* ---- 장부 추가·삭제·이름 바꾸기·이월 ---- */
+let confirmId = null, lastDeleted = null, undoTimer = null;
+const bookStat = b => { const e = (b.entries || []).filter(x => x.kind !== 'ob'); return { n: e.length, last: e.reduce((m, x) => x.date > m ? x.date : m, '') }; };
+function renderBookList(){
+  const L = Object.values(S.books);
+  $('#bookList').innerHTML = '<thead><tr><th>장부 이름</th><th class="n">거래</th><th class="hide-m">마지막 거래</th><th></th></tr></thead><tbody>' + L.map(b => {
+    const st = bookStat(b), cur = b.id === S.cur;
+    if (confirmId === b.id) return `<tr class="confirm" data-id="${b.id}"><td colspan="4"><b>‘${esc(b.name)}’ 장부를 삭제할까요?</b> 거래 ${st.n}건${(b.emps || []).length ? `, 직원 ${b.emps.length}명` : ''}이 함께 지워집니다.<div class="actions" style="margin-top:8px"><button type="button" class="sm" data-act="bkdel">백업 받고 삭제</button><button type="button" class="ghost sm" data-act="del">그냥 삭제</button><button type="button" class="ghost sm" data-act="cancel">취소</button></div></td></tr>`;
+    return `<tr class="${cur ? 'cur' : ''}" data-id="${b.id}"><td><input type="text" data-act="name" value="${esc(b.name)}" aria-label="장부 이름" style="min-width:130px">${cur ? ' <span class="chip s">지금 장부</span>' : ''}</td><td class="n">${st.n}건</td><td class="hide-m">${st.last || '–'}</td><td class="ops">${cur ? '' : '<button type="button" class="ghost sm" data-act="open">열기</button>'}<button type="button" class="ghost sm" data-act="ask">삭제</button></td></tr>`;
+  }).join('') + '</tbody>';
+  const fromName = B.name;
+  $('#nbCarryInfo').textContent = `‘${fromName}’의 기준일 잔액(현금·통장·외상·대출·자본)을 새 장부의 기초 잔액으로 넣고, 그동안의 이익은 ${B.type === 'corp' ? '이월이익잉여금' : '자본금'}에 더합니다. 계정과목·직원·정기 거래도 복사합니다.`;
+}
+function toggleMgr(open){ const o = open != null ? open : $('#bookMgr').classList.contains('hidden'); $('#bookMgr').classList.toggle('hidden', !o); $('#bookMgrBtn').setAttribute('aria-expanded', o); $('#bookMgrBtn').textContent = o ? '닫기' : '장부 추가·삭제'; if (o) { confirmId = null; renderBookList(); } }
+$('#bookMgrBtn').onclick = () => toggleMgr();
+$('#nbClose').onclick = () => toggleMgr(false);
+$('#bookDel').onclick = () => { toggleMgr(true); confirmId = B.id; renderBookList(); $('#bookMgr').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+function backupFile(){ const d = ymd(today()); Object.values(S.books).forEach(b => b.lastBackup = d); store.set(KEY, S); download(new Blob([JSON.stringify({ app: 'ilsang-account-book', v: 1, saved: new Date().toISOString(), data: S })], { type: 'application/json' }), `장부백업_${d}.json`); }
+function deleteBook(id){
+  const b = S.books[id]; if (!b) return;
+  lastDeleted = { book: b, wasCur: id === S.cur }; delete S.books[id]; confirmId = null;
+  if (!Object.keys(S.books).length) { const nb = newBook('새 장부'); S.books[nb.id] = nb; lastDeleted.autoNew = nb.id; }
+  switchBook(id === S.cur ? Object.keys(S.books)[0] : S.cur); renderBookList();
+  $('#undoText').textContent = `‘${b.name}’ 장부를 삭제했습니다`; $('#undoBar').classList.remove('hidden');
+  clearTimeout(undoTimer); undoTimer = setTimeout(() => { $('#undoBar').classList.add('hidden'); lastDeleted = null; }, 10000);
+}
+$('#undoBtn').onclick = () => {
+  if (!lastDeleted) return; const { book, wasCur, autoNew } = lastDeleted;
+  if (autoNew && S.books[autoNew] && !S.books[autoNew].entries.length) delete S.books[autoNew];
+  S.books[book.id] = book; lastDeleted = null; $('#undoBar').classList.add('hidden');
+  switchBook(wasCur ? book.id : S.cur); renderBookList(); toast(`‘${book.name}’ 장부를 되살렸습니다`);
+};
+$('#bookList').addEventListener('click', ev => {
+  const btn = ev.target.closest('button'); if (!btn) return; const id = btn.closest('tr').dataset.id, act = btn.dataset.act;
+  if (act === 'open') { switchBook(id); renderBookList(); toast(`‘${S.books[id].name}’ 장부를 열었습니다`); }
+  if (act === 'ask') { confirmId = id; renderBookList(); }
+  if (act === 'cancel') { confirmId = null; renderBookList(); }
+  if (act === 'bkdel') { backupFile(); deleteBook(id); }
+  if (act === 'del') deleteBook(id);
+});
+$('#bookList').addEventListener('change', ev => {
+  if (ev.target.dataset.act !== 'name') return; const id = ev.target.closest('tr').dataset.id, v = ev.target.value.trim();
+  if (!v) { ev.target.value = S.books[id].name; return toast('이름을 비울 수 없습니다'); }
+  S.books[id].name = v; save(); renderBooks(); if (id === S.cur) $('#sName').value = v; toast('이름을 바꿨습니다');
+});
+$('#nbFrom').addEventListener('change', () => {
+  const c = $('#nbFrom').value === 'carry'; $('#nbCarryBox').classList.toggle('hidden', !c);
+  if (c && !$('#nbDate').value) { const y = today().getFullYear(); $('#nbDate').placeholder = `${y - 1}-12-31`; }
+  if ($('#nbFrom').value !== 'empty') { if (!$('#nbType').value) $('#nbType').value = B.type; if (!$('#nbTax').value) $('#nbTax').value = B.tax; }
+});
+// 기준일까지의 계정·거래처별 잔액으로 기초 잔액 줄 만들기
+function carryLines(src, date){
+  const accOf = code => BASE.concat(src.accounts || []).find(a => a.code === code) || { t: 'E' };
+  const m = {};
+  src.entries.forEach(e => { if (e.date > date) return; e.lines.forEach(l => { const a = accOf(l.a); if (!'ALQ'.includes(a.t)) return; const p = ['108','110','120','131','114','251','252','253','259'].includes(l.a) ? (e.partner || '') : ''; const k = l.a + '|' + p; m[k] = (m[k] || 0) + (l.d || 0) - (l.c || 0); }); });
+  const eqAcc = src.type === 'corp' ? '375' : '331', lines = [];
+  Object.entries(m).forEach(([k, dc]) => { const [a, p] = k.split('|'), t = accOf(a).t; if (!dc) return;
+    if (t === 'Q' && (src.type !== 'corp' || a !== '331')) return; // 개인: 자본 계정은 모두 자본금으로 합침 / 법인: 자본금만 따로
+    lines.push({ a, v: t === 'A' ? dc : -dc, p }); });
+  return { lines, eq: eqAcc };
+}
+$('#nbMake').onclick = () => {
+  const name = val('nbName'), from = $('#nbFrom').value, type = $('#nbType').value, tax = $('#nbTax').value;
+  const miss = [!name && '장부 이름', !from && '시작 방식', !type && '사업자 형태', !tax && '과세 유형'].filter(Boolean);
+  if (from === 'carry' && !val('nbDate')) miss.push('이월 기준일');
+  if (miss.length) return toast(miss.join('·') + '을(를) 넣으세요');
+  if (Object.values(S.books).some(b => b.name === name)) return toast('같은 이름의 장부가 있습니다');
+  const src = B, nb = newBook(name); nb.type = type; nb.tax = tax;
+  if (from !== 'empty') { nb.accounts = JSON.parse(JSON.stringify(src.accounts || [])); nb.emps = JSON.parse(JSON.stringify(src.emps || [])); nb.tpls = JSON.parse(JSON.stringify(src.tpls || [])).map(t => Object.assign(t, { id: uid() })); }
+  S.books[nb.id] = nb; switchBook(nb.id);
+  if (from === 'carry') {
+    const d = val('nbDate'), c = carryLines(src, d), next = ymd(addDays(parseDate(d), 1));
+    B.ob = { date: next, lines: c.lines, eq: type === 'corp' ? '375' : '331' }; buildOb(); renderSetup();
+    toast(`‘${name}’ 장부를 만들고 ${d} 잔액 ${c.lines.length}줄을 기초 잔액으로 넣었습니다`);
+  } else toast(`‘${name}’ 장부를 만들었습니다`);
+  ['nbName', 'nbDate'].forEach(i => $('#' + i).value = ''); ['nbFrom', 'nbType', 'nbTax'].forEach(i => $('#' + i).value = ''); $('#nbCarryBox').classList.add('hidden');
+  renderBookList();
+};
 
 let curTab = 'input';
 function renderTab(t){

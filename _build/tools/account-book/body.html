@@ -2,7 +2,26 @@
     <div class="bk-row">
       <label class="f" for="bookSel" style="margin:0">장부</label>
       <select id="bookSel" aria-label="장부 선택"></select>
-      <button type="button" class="ghost sm" id="bookNew">새 장부</button>
+      <button type="button" class="ghost sm" id="bookMgrBtn" aria-expanded="false" aria-controls="bookMgr">장부 추가·삭제</button>
+    </div>
+    <div class="bkmgr hidden" id="bookMgr">
+      <h3 class="h3">장부 목록</h3>
+      <div class="tbl-wrap"><table class="t" id="bookList"></table></div>
+      <h3 class="h3">새 장부 만들기</h3>
+      <div class="row">
+        <div><label class="f" for="nbName">장부 이름 (상호)</label><input type="text" id="nbName" placeholder="예: ○○상회 2027"></div>
+        <div><label class="f" for="nbFrom">시작 방식</label>
+          <select id="nbFrom"><option value="" selected disabled>선택하세요</option><option value="empty">빈 장부로 시작</option><option value="copy">지금 장부의 설정만 복사 (계정과목·직원·정기 거래)</option><option value="carry">지금 장부의 잔액을 이어받기 (새 해 이월)</option></select></div>
+      </div>
+      <div class="row">
+        <div><label class="f" for="nbType">사업자 형태</label><select id="nbType"><option value="" selected disabled>선택하세요</option><option value="ind">개인사업자</option><option value="corp">법인</option></select></div>
+        <div><label class="f" for="nbTax">과세 유형</label><select id="nbTax"><option value="" selected disabled>선택하세요</option><option value="general">일반과세자</option><option value="simple">간이과세자</option><option value="exempt">면세사업자</option></select></div>
+      </div>
+      <div id="nbCarryBox" class="hidden">
+        <label class="f" for="nbDate">이월 기준일 (이 날까지의 잔액을 가져옴)</label><input type="date" id="nbDate">
+        <p class="hint" id="nbCarryInfo"></p>
+      </div>
+      <div class="actions"><button type="button" id="nbMake">장부 만들기</button><button type="button" class="ghost" id="nbClose">닫기</button></div>
     </div>
     <div class="kpi" id="kpi"></div>
   </section>
@@ -221,7 +240,7 @@
       </section>
       <section class="card">
         <h2><span class="num">2</span>기초 잔액 <span class="opt">처음 한 번</span></h2>
-        <p class="hint">장부를 시작하는 날의 현금·통장 잔액, 남은 외상·대출 등을 넣으세요. 차액은 자본금(개인은 자본금, 법인은 이월이익잉여금으로 바꿀 수 있음)으로 맞춥니다.</p>
+        <p class="hint">장부를 시작하는 날의 현금·통장 잔액, 거래처별 외상, 대출 등을 넣으세요(거래처를 적으면 거래처 잔액에 나옵니다). 차액은 자본금(개인은 자본금, 법인은 이월이익잉여금으로 바꿀 수 있음)으로 맞춥니다.</p>
         <div class="row"><div><label class="f" for="obDate">시작일</label><input type="date" id="obDate"></div><div><label class="f" for="obEq">차액을 넣을 계정</label><select id="obEq"></select></div></div>
         <div class="tbl-wrap"><table class="t" id="obTbl"></table></div>
         <div class="actions"><button type="button" class="ghost sm" id="obAdd">계정 추가</button><button type="button" id="obSave">기초 잔액 저장</button></div>
@@ -246,9 +265,10 @@
           <input type="file" id="bkFile" accept=".json,application/json" class="hidden">
         </div>
         <p class="hint" id="lastBk"></p>
-        <div class="actions danger"><button type="button" class="ghost" id="bookDel">이 장부 삭제</button></div>
+        <div class="actions danger"><button type="button" class="ghost" id="bookDel">이 장부 삭제하기…</button></div>
       </section>
     </div>
   </div>
 
+  <div class="undo hidden" id="undoBar" role="status"><span id="undoText"></span><button type="button" id="undoBtn">되돌리기</button></div>
   <div id="printArea" class="print-only"></div>
