@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   // 구글 시트 Apps Script 웹 앱 주소. 비어 있으면 의견 창을 띄우지 않음 (보낼 곳이 없으므로)
-  var ENDPOINT = '';
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxdl0_i4fD8NOrcK8Nc_oR58PKYFzARh3SSIdR2OCd4mHktKQ9938Y1W6phGYYThw0/exec';
   window.ILSANG_FEEDBACK_URL = ENDPOINT;
   var MAX = 1000;
   var ASK_AGAIN_DAYS = 14, AFTER_SENT_DAYS = 120, MAX_LATER = 2;
@@ -55,8 +55,8 @@
   var MOODS = [['good', '편했어요'], ['ok', '보통이에요'], ['bad', '불편했어요']];
 
   var shown = false;
-  function open(reason) {
-    if (shown || !canAsk() || document.querySelector('.fb-sheet')) return;
+  function open(reason, force) {
+    if (shown || (!force && !canAsk()) || document.querySelector('.fb-sheet')) return;
     shown = true;
     if (!document.getElementById('fb-css')) { var st = document.createElement('style'); st.id = 'fb-css'; st.textContent = css; document.head.appendChild(st); }
     var el = document.createElement('section');
@@ -135,4 +135,6 @@
     }, true);
   });
   setInterval(function () { if (acts >= 5 && Date.now() - t0 > 60000) used('use'); }, 15000);
+  // 개발자 시험용: 주소 끝에 #fbtest 를 붙이면 바로 창을 띄움 (이전에 보냈거나 '다음에'를 눌렀어도)
+  if (location.hash === '#fbtest') setTimeout(function () { open('use', true); }, 600);
 })();
