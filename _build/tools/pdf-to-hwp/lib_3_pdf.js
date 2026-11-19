@@ -14,6 +14,37 @@ function loadPdfjs(){
 }
 
 const BOLD_NAME = /bold|black|heavy|extrabold|semibold|demibold|[-_,]B$|[-_]Bd|굵은|견고딕|헤드라인|중고딕/i;
+/* PDF 글꼴 이름 → 한글·워드에서 쓸 글꼴 (모르는 글꼴은 명조/고딕 계열로) */
+function fontFace(name, serif){
+  const n = String(name || '').replace(/^[A-Z]{6}\+/, '').toLowerCase().replace(/[\s_-]/g, '');
+  const T = [
+    [/함초롬바탕|hcrbatang|hamchorombatang/, '함초롬바탕'], [/함초롬돋움|hcrdotum|hamchoromdotum/, '함초롬돋움'],
+    [/휴먼명조|humanmyeongjo|humanmj|hmkmm/, '휴먼명조'], [/hy신명조|hysinmyeongjo|hysmyeongjo|hysm/, 'HY신명조'], [/hy견명조|hygyeonmyeongjo/, 'HY견명조'],
+    [/hy헤드라인|hyheadline/, 'HY헤드라인M'], [/hy견고딕|hygyeongothic|hygothicextra/, 'HY견고딕'], [/hy중고딕|hygothicmedium|hygothic/, 'HY중고딕'],
+    [/맑은고딕|malgun/, '맑은 고딕'], [/나눔고딕|nanumgothic/, '나눔고딕'], [/나눔명조|nanummyeongjo/, '나눔명조'], [/나눔스퀘어|nanumsquare/, '나눔스퀘어'],
+    [/돋움체|dotumche/, '돋움체'], [/굴림체|gulimche/, '굴림체'], [/바탕체|batangche/, '바탕체'], [/궁서|gungsuh/, '궁서'],
+    [/돋움|dotum/, '돋움'], [/굴림|gulim/, '굴림'], [/바탕|batang/, '바탕'], [/명조|myeongjo|myungjo|mincho|serif|times|georgia/, '바탕'],
+    [/고딕|gothic|godic|sans|arial|helvetica|pretendard|spoqa|apple/, '맑은 고딕']
+  ];
+  for (const [re, f] of T) if (re.test(n)) return f;
+  return serif ? '바탕' : '맑은 고딕';
+}
+// 글꼴별 공백 너비(글자 크기 대비). 이 기기에 그 글꼴이 있으면 실제로 재고, 없으면 0.33
+const SPACE_EM = {};
+function spaceEm(face){
+  if (SPACE_EM[face] == null) {
+    let v = 0.33;
+    try {
+      const ctx = document.createElement('canvas').getContext('2d');
+      const gap = f => { ctx.font = f; return ctx.measureText('가 가').width - ctx.measureText('가가').width; };
+      const a = gap(`100px "${face}", monospace`), m = gap('100px monospace');
+      if (Math.abs(a - m) > 0.5) v = Math.max(0.2, Math.min(0.6, a / 100)); // 이 기기에 글꼴이 있을 때만 실측값
+    } catch (_) {}
+    SPACE_EM[face] = v;
+  }
+  return SPACE_EM[face];
+}
+
 async function pageTextRuns(page, vp){
   const lib = window.pdfjsLib;
   const tc = await page.getTextContent();
@@ -24,10 +55,14 @@ async function pageTextRuns(page, vp){
     if (Math.abs(m[1]) > Math.abs(m[0]) * 0.5 + 0.01) continue; // 세로·회전 글자는 건너뜀
     const sz = Math.hypot(m[2], m[3]) || Math.abs(m[0]);
     if (sz < 1) continue;
-    let bold = false;
-    try { const f = page.commonObjs.get(it.fontName); bold = !!(f && (f.bold || f.black || BOLD_NAME.test(f.name || '') || BOLD_NAME.test(f.loadedName || ''))); } catch (_) {}
+    let bold = false, ff = '';
+    try {
+      const f = page.commonObjs.get(it.fontName);
+      bold = !!(f && (f.bold || f.black || BOLD_NAME.test(f.name || '') || BOLD_NAME.test(f.loadedName || '')));
+      ff = fontFace(f && f.name, f && (f.isSerifFont || /serif/i.test(f.fallbackName || '') && !/sans/i.test(f.fallbackName || '')));
+    } catch (_) {}
     const w = it.width * vp.scale;
-    runs.push({ t: it.str.replace(/\u00a0/g, ' ').replace(/[\uE000-\uF8FF\uFFFD\u200B-\u200D\uFEFF]/g, ''), x1: m[4], x2: m[4] + w, yT: m[5] - sz * 0.88, yB: m[5] + sz * 0.18, sz, b: bold });
+    runs.push({ t: it.str.replace(/\u00a0/g, ' ').replace(/[\uE000-\uF8FF\uFFFD\u200B-\u200D\uFEFF]/g, ''), x1: m[4], x2: m[4] + w, yT: m[5] - sz * 0.88, yB: m[5] + sz * 0.18, sz, b: bold, ff });
   }
   return runs;
 }

@@ -130,6 +130,7 @@ async function convert(){
     }
     setStatus('문서로 정리하는 중…', 99);
     const removed = o.strip ? stripRepeats(pages) : 0;
+    const lineH = measureLineH(pages);
     const allSz = [];
     pages.forEach(p => p.layout.lines.forEach(l => { for (let k = 0; k < Math.min(40, l.text.length); k++) allSz.push(l.sz); }));
     const bodySz = median(allSz) || 10;
@@ -139,9 +140,8 @@ async function convert(){
       if (o.pagebreak && i > 0 && bl.length) bl[0].pb = true;
       blocks.push(...bl);
     });
-    result = { blocks, pages, removed, ocrPages, conf: ocrPages ? confSum / ocrPages : 0, fmt: o.fmt };
+    result = { blocks, pages, removed, ocrPages, conf: ocrPages ? confSum / ocrPages : 0, fmt: o.fmt, page: { ...pageSetup(pages), lineH } };
     showResult();
-    saveAs(o.fmt);
     setStatus('', null);
   } catch (e) {
     if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
@@ -149,6 +149,18 @@ async function convert(){
   } finally {
     busy = false; $('#convert').disabled = !pdf; $('#stop').classList.add('hidden');
   }
+}
+
+// 쪽 크기·여백: PDF 첫 쪽 크기, 여백은 글자·표가 놓인 범위에서 (5~32mm 사이로)
+function pageSetup(pages){
+  const p0 = pages[0]; if (!p0) return null;
+  let x1 = Infinity, x2 = -Infinity, y1 = Infinity;
+  pages.forEach(p => {
+    p.layout.lines.forEach(l => { x1 = Math.min(x1, l.x1); x2 = Math.max(x2, l.x2); y1 = Math.min(y1, l.yT); });
+    p.layout.tables.forEach(t => { x1 = Math.min(x1, t.x1); x2 = Math.max(x2, t.x2); y1 = Math.min(y1, t.y1); });
+  });
+  const cl = v => Math.max(14, Math.min(90, Number.isFinite(v) ? v : 56));
+  return { W: p0.W, H: p0.H, ml: cl(x1 - 1), mr: cl(p0.W - x2 - 1), mt: cl(y1 - 2), mb: cl(42) };
 }
 
 function showResult(){
@@ -168,28 +180,33 @@ function showResult(){
   $('#notes').innerHTML = notes.map(t => `<li>${esc(t)}</li>`).join('');
   $('#notes').classList.toggle('hidden', !notes.length);
   $('#resultCard').classList.remove('hidden');
-  $('#savedMsg').innerHTML = `<b>${FMT_NAME[r.fmt]} 파일(${fileName}.${r.fmt})을 저장했습니다.</b> 내려받기가 안 됐으면 아래 버튼을 누르세요. 다른 형식도 다시 변환하지 않고 바로 받을 수 있습니다.`;
-  $('#saveBtns').querySelectorAll('button[data-f]').forEach(b => b.classList.toggle('ghost', b.dataset.f !== r.fmt));
+  $('#savedMsg').innerHTML = `변환을 마쳤습니다. <b>'받기'</b>를 누르면 ${FMT_NAME[r.fmt]} 파일(${esc(fileName)}.${r.fmt})로 저장됩니다.`;
+  $('#saveAgain').textContent = `${FMT_NAME[r.fmt]} 받기 (.${r.fmt})`;
+  $('#hwpHint').classList.toggle('hidden', r.fmt !== 'hwpx');
   $('#preview').innerHTML = previewHtml(r.blocks);
   $('#resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function previewHtml(blocks){
+  $('#preview').style.lineHeight = String(LINE_H);
   const k = Math.min(1.33, Math.max(0.9, ($('#preview').clientWidth || 600) / 520)); // 화면 폭에 맞춘 미리보기 배율
+  const fam = f => /바탕|명조|궁서/.test(f || '') ? `'${f}','Noto Serif KR','Batang',serif` : `'${f || '맑은 고딕'}','Malgun Gothic','Noto Sans KR','Pretendard',sans-serif`;
   const pHtml = p => {
     const st = [`text-align:${{ J: 'justify', L: 'left', C: 'center', R: 'right' }[p.align || 'J']}`];
     if (p.ml) st.push(`padding-left:${(p.ml * k).toFixed(0)}px`);
+    if (p.mr) st.push(`padding-right:${(p.mr * k).toFixed(0)}px`);
     if (p.fi) st.push(`text-indent:${(p.fi * k).toFixed(0)}px`);
-    return `<p style="${st.join(';')}">${p.runs.map(r => `<span style="font-size:${(r.sz * k).toFixed(1)}px${r.b ? ';font-weight:700' : ''}">${esc(r.t)}</span>`).join('') || '&nbsp;'}</p>`;
+    if (p.sb) st.push(`margin-top:${(p.sb * k).toFixed(0)}px`);
+    return `<p style="${st.join(';')}">${p.runs.map(r => `<span style="font-size:${(r.sz * k).toFixed(1)}px;font-family:${fam(r.ff)}${r.b ? ';font-weight:700' : ''}">${esc(r.t)}</span>`).join('') || '&nbsp;'}</p>`;
   };
   let h = '';
   for (const b of blocks) {
     if (b.pb) h += '<hr class="pg">';
     if (b.type === 'p') { h += pHtml(b); continue; }
     const tot = b.cols.reduce((a, c) => a + c, 0);
-    h += `<div class="tw"><table><colgroup>${b.cols.map(c => `<col style="width:${(c / tot * 100).toFixed(2)}%">`).join('')}</colgroup>`;
-    b.rows.forEach((_, r) => {
-      h += '<tr>' + b.cells.filter(c => c.r === r).sort((x, y) => x.c - y.c).map(c => `<td${c.rs > 1 ? ` rowspan="${c.rs}"` : ''}${c.cs > 1 ? ` colspan="${c.cs}"` : ''}>${c.paras.map(pHtml).join('')}</td>`).join('') + '</tr>';
+    h += `<div class="tw"${b.x1 > 3 ? ` style="padding-left:${(b.x1 * k).toFixed(0)}px"` : ''}><table style="width:${(tot * k).toFixed(0)}px;max-width:100%"><colgroup>${b.cols.map(c => `<col style="width:${(c / tot * 100).toFixed(2)}%">`).join('')}</colgroup>`;
+    b.rows.forEach((rh, r) => {
+      h += `<tr style="height:${(rh * k).toFixed(0)}px">` + b.cells.filter(c => c.r === r).sort((x, y) => x.c - y.c).map(c => `<td${c.rs > 1 ? ` rowspan="${c.rs}"` : ''}${c.cs > 1 ? ` colspan="${c.cs}"` : ''} style="vertical-align:${c.va === 'T' ? 'top' : 'middle'}">${c.paras.map(pHtml).join('')}</td>`).join('') + '</tr>';
     });
     h += '</table></div>';
   }
@@ -272,7 +289,6 @@ function showImages(kind, pages){
   $('#imgList').querySelectorAll('img').forEach(im => { const r = imgResults[+im.dataset.i]; if (+im.dataset.i < 30) { im.src = URL.createObjectURL(new Blob([r.bytes], { type: r.type })); im.onload = () => URL.revokeObjectURL(im.src); } else im.remove(); });
   $('#imgZip').classList.toggle('hidden', imgResults.length < 2);
   $('#imgOut').classList.remove('hidden'); $('#imgOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  if (imgResults.length === 1) { const r = imgResults[0]; download(new Blob([r.bytes], { type: r.type }), r.name); }
 }
 $('#imgList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const r = imgResults[+b.dataset.i]; download(new Blob([r.bytes], { type: r.type }), r.name); });
 $('#imgZip').addEventListener('click', () => imgResults.length && download(zipStore(imgResults.map(r => [r.name, r.bytes]), 'application/zip'), `${fileName}_이미지.zip`));
@@ -288,12 +304,12 @@ $('#convert').addEventListener('click', convert);
 $('#stop').addEventListener('click', () => { stopFlag = true; if (ocr) { ocr.stop(); ocr = null; } setStatus('멈추는 중…', 0); });
 function saveAs(f){
   if (!result) return;
-  if (f === 'hwpx') download(makeHwpx(result.blocks, fileName), fileName + '.hwpx');
-  else if (f === 'docx') download(makeDocx(result.blocks, fileName), fileName + '.docx');
+  if (f === 'hwpx') download(makeHwpx(result.blocks, fileName, result.page), fileName + '.hwpx');
+  else if (f === 'docx') download(makeDocx(result.blocks, fileName, result.page), fileName + '.docx');
   else if (f === 'xlsx') { const x = makeXlsx(result.blocks, fileName); download(x.blob, fileName + '.xlsx'); if (x.sheets.length > 1) toast(`엑셀 시트 ${x.sheets.length}개: ${x.sheets.join(', ')}`); }
   else if (f === 'txt') download(new Blob(['\ufeff' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt');
 }
-$('#saveBtns').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if (b) saveAs(b.dataset.f); });
+$('#saveAgain').addEventListener('click', () => result && saveAs(result.fmt));
 $('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
 
 /* =========================================================
@@ -403,6 +419,8 @@ $('#sFile').addEventListener('change', e => { sOpen(e.target.files[0]); e.target
 
 /* ---- 합치기 ---- */
 const mFiles = [];
+let mDone = null;
+$('#mResult').addEventListener('click', e => { if (e.target.closest('button') && mDone) download(new Blob([mDone.bytes], { type: 'application/pdf' }), mDone.name); });
 async function mAdd(files){
   const list = [...files].filter(isPdf); if (!list.length) { toast('PDF 파일만 넣을 수 있습니다'); return; }
   $('#mCard').classList.remove('hidden');
@@ -413,6 +431,7 @@ async function mAdd(files){
   mRender();
 }
 function mRender(){
+  $('#mOut').classList.add('hidden'); mDone = null;
   $('#mList').innerHTML = mFiles.map((m, i) => `<li><b>${i + 1}</b><span class="nm">${esc(m.name)}<small>${m.n}쪽 · ${mb(m.size)}${m.unlocked ? ' · 보안 풂' : ''}</small></span>
     <input type="text" data-i="${i}" value="${esc(m.range)}" placeholder="전체" aria-label="${i + 1}번 파일에서 넣을 쪽" inputmode="numeric">
     <button type="button" class="ghost" data-a="up" data-i="${i}" aria-label="위로" ${i ? '' : 'disabled'}>위</button><button type="button" class="ghost" data-a="dn" data-i="${i}" aria-label="아래로" ${i < mFiles.length - 1 ? '' : 'disabled'}>아래</button><button type="button" class="ghost" data-a="del" data-i="${i}">빼기</button></li>`).join('');
@@ -437,8 +456,9 @@ $('#mGo').addEventListener('click', async () => {
   const btn = $('#mGo'); btn.disabled = true; btn.textContent = '합치는 중…';
   try {
     const bytes = await buildPdf(parts), name = (val('mName').trim() || '합친문서').replace(/[\\/:*?"<>|]/g, '_');
-    download(new Blob([bytes], { type: 'application/pdf' }), name + '.pdf');
-    toast(`${parts.reduce((a, p) => a + p[1].length, 0)}쪽 PDF를 저장했습니다 (${mb(bytes.length)})`);
+    mDone = { bytes, name: name + '.pdf' };
+    $('#mResult').innerHTML = `<li><span class="nm">${esc(mDone.name)}<small>${parts.reduce((a, p) => a + p[1].length, 0)}쪽 · ${mb(bytes.length)}</small></span><button type="button">받기</button></li>`;
+    $('#mOut').classList.remove('hidden'); $('#mOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) { console.error(e); toast('합치는 중 문제가 생겼습니다: ' + (e.message || e)); }
   btn.textContent = '합치기'; btn.disabled = false;
 });

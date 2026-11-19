@@ -75,14 +75,12 @@
     <div class="stat" id="stats" style="margin-top:10px"></div>
     <ul class="notes hidden" id="notes"></ul>
     <p class="hint" id="savedMsg" style="margin:10px 0 0"></p>
-    <div class="actions" id="saveBtns">
-      <button type="button" id="saveHwpx" data-f="hwpx">한글 (.hwpx)</button>
-      <button type="button" id="saveDocx" data-f="docx">워드 (.docx)</button>
-      <button type="button" id="saveXlsx" data-f="xlsx">엑셀 (.xlsx)</button>
-      <button type="button" id="saveTxt" data-f="txt">텍스트 (.txt)</button>
+    <div class="actions">
+      <button type="button" id="saveAgain">받기</button>
       <button type="button" id="copyTxt" class="ghost">글자 복사</button>
     </div>
-    <p class="hint">엑셀은 표마다 시트 하나(표1, 표2…)와 본문 시트로 나눠 담고, 숫자 칸은 계산할 수 있는 숫자로 넣습니다. 옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요. 미리보기는 대략적인 모양이며, 실제 한글·워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
+    <p class="hint hidden" id="hwpHint">옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요.</p>
+    <p class="hint">다른 형식이 필요하면 위 '바꿀 형식'에서 고르고 다시 변환하세요. 미리보기는 대략적인 모양이며, 실제 한글·워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
     <h2 style="margin-top:14px;font-size:14px;color:var(--sub);font-weight:500">미리보기</h2>
     <div class="pv" id="preview"></div>
   </section>
@@ -177,6 +175,10 @@
     <p class="hint" id="mInfo" style="margin:8px 0 0"></p>
     <div class="actions"><button type="button" id="mGo">합치기</button><button type="button" class="ghost" id="mClear">모두 빼기</button></div>
     <p class="hint">인쇄·편집을 막아 둔 PDF도 보안을 풀어 합치고, 여는 암호가 있으면 물어봅니다. 합친 파일에는 보안이 없으니 권한이 있는 문서에만 쓰세요. 크기가 다른 쪽(A4·B5·가로)도 원래 크기 그대로 들어갑니다.</p>
+  </section>
+  <section class="card hidden" id="mOut">
+    <h2><span class="num">2</span>결과</h2>
+    <ul class="flist" id="mResult"></ul>
   </section>
 </div>
   <div class="pwask hidden" id="pwAsk" role="dialog" aria-label="PDF 암호 입력">

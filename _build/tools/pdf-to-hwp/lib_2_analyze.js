@@ -3,6 +3,7 @@ const LIST_RE = /^(?:\d{1,2}[.)]|[가-힣][.)](?=\s)|\(\d{1,2}\)|\([가-힣]\)|[
 const PAGE_NO_RE = /^[-–—\s]*(?:\d{1,4}|[ivxIVX]{1,6})\s*[-–—]?\s*(?:[\/|]\s*\d{1,4})?\s*(?:쪽|페이지|page)?[-–—\s]*$/i;
 // 줄이 낱말 중간에서 끊겼는지: 다음 줄이 조사·어미로 시작하면 붙여 씀
 const TAIL_RE = /^(?:습니다|읍니다|랍니다|합니다|입니다|됩니다|니다|시오|다|요|음|함|됨|임|을|를|은|는|이|가|의|에|에서|에게|으로|로|와|과|도|만|께|며|고|서|여|하여|하고|하며|한|할|된|될|되어|해|했|및)(?=[\s.,·)」』'"]|$)/;
+const GAP = '\uE000'; // 넓은 띄움 자리표 (문단 정리 때 공백으로 바뀜)
 const median = a => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
 
 /* 글자 조각(run): {t, x1, x2, yT, yB, sz, b} 좌표는 pt, 위쪽이 0 */
@@ -43,13 +44,19 @@ function groupLines(runs){
     let prev = null;
     for (const r of rs) {
       let t = r.t;
+      if (!t.trim()) continue; // 공백만 있는 조각은 버리고 위치로 띄어쓰기를 다시 만듦 (넓은 띄움을 살리려고)
       if (prev) {
-        const gap = r.x1 - prev.x2;
-        if (gap > Math.min(r.sz, prev.sz) * (r.ocr ? (/[A-Za-z0-9.,%)]$/.test(prev.t) && /^[A-Za-z0-9(]/.test(t) ? 0.12 : 0.4) : 0.22) && !/\s$/.test(prev.t) && !/^\s/.test(t)) t = ' ' + t;
+        const gap = r.x1 - prev.x2, sz = Math.min(r.sz, prev.sz);
+        if (!r.ocr && gap > sz * 1.0 && prev.t.trim() && t.trim()) {
+          // 넓게 띄운 자리(예: '제 26-23호 ……… 접수일')는 공백 여러 칸으로 살림. 줄이 넘치지 않게 한 칸 덜 넣음
+          const n = Math.max(2, Math.floor(gap / (sz * spaceEm(r.ff || prev.ff || '맑은 고딕'))) - 1);
+          t = GAP.repeat(n) + t.replace(/^\s+/, '');
+          if (/\s$/.test(prev.t) && out.length) out[out.length - 1].t = out[out.length - 1].t.replace(/\s+$/, '');
+        } else if (gap > sz * (r.ocr ? (/[A-Za-z0-9.,%)]$/.test(prev.t) && /^[A-Za-z0-9(]/.test(t) ? 0.12 : 0.4) : 0.22) && !/\s$/.test(prev.t) && !/^\s/.test(t)) t = ' ' + t;
       }
       const last = out[out.length - 1];
-      if (last && last.b === r.b && Math.abs(last.sz - r.sz) < 0.6) last.t += t;
-      else out.push({ t, b: r.b, sz: r.sz });
+      if (last && last.b === r.b && last.ff === r.ff && Math.abs(last.sz - r.sz) < 0.6) last.t += t;
+      else out.push({ t, b: r.b, sz: r.sz, ff: r.ff || '' });
       prev = r;
     }
     if (rs[0].ocr && out.length) out[0].t = out[0].t.replace(/^[Oo0]\s/, '○ ').replace(/^(?:ㅁ|\[|ㄷ|口)\s/, '□ ').replace(/^[ㆍ·•]\s?/, '· ');
@@ -73,8 +80,10 @@ function buildParas(lines, area, opt){
   const fullW = lines.filter(l => l.x2 - l.x1 > span * 0.6).map(l => l.x2);
   const rightEdge = fullW.length ? median(fullW) : right;
   const alignOf = l => {
+    if (opt.force) return opt.force;
     const w = l.x2 - l.x1, c = (l.x1 + l.x2) / 2;
     const tol = opt.cell ? 0.12 : 0.06, ind = opt.cell ? 0.04 : 0.08;
+    if (opt.cell) { const gl = l.x1 - left, gr = right - l.x2; if (gl > span * 0.25 && gr < gl * 0.5) return 'R'; }
     if (w < span * 0.85 && Math.abs(c - mid) < span * tol && l.x1 > left + span * ind) return 'C';
     if (opt.cell) { const gl = l.x1 - left, gr = right - l.x2; if (gl > 2 && gr > 2 && Math.abs(gl - gr) <= Math.max(3, Math.max(gl, gr) * 0.3)) return 'C'; }
     if (w < span * 0.6 && Math.abs(l.x2 - right) < span * 0.04 && l.x1 > mid) return 'R';
@@ -115,21 +124,23 @@ function buildParas(lines, area, opt){
           else if (!/\s$/.test(prevT) && !(/[가-힣A-Za-z0-9]$/.test(prevT) && TAIL_RE.test(t))) t = ' ' + t;
         }
         const last = parts[parts.length - 1];
-        if (last && last.b === pp.b && Math.abs(last.sz - pp.sz) < 0.6) last.t += t; else parts.push({ t, b: pp.b, sz: pp.sz });
+        if (last && last.b === pp.b && last.ff === pp.ff && Math.abs(last.sz - pp.sz) < 0.6) last.t += t; else parts.push({ t, b: pp.b, sz: pp.sz, ff: pp.ff });
       });
     });
-    parts.forEach(r => r.t = r.t.replace(/\s{2,}/g, ' '));
+    parts.forEach(r => r.t = r.t.replace(/\s{2,}/g, ' ').replace(/\uE000/g, ' '));
     if (parts.length) parts[parts.length - 1].t = parts[parts.length - 1].t.replace(/\s+$/, '');
-    let ml = 0, fi = 0;
-    if (P.align === 'J') {
+    let ml = 0, fi = 0, mr = 0;
+    if (P.align === 'R') mr = Math.max(0, right - Math.max(...P.lines.map(l => l.x2)));
+    if (P.align === 'L' || P.align === 'J') {
       const fx = f.x1 - left, sx = s ? s.x1 - left : fx;
       ml = Math.max(0, Math.min(fx, sx)); fi = fx - ml;
       if (s && sx > fx + body * 0.4) { ml = sx; fi = fx - sx; } // 내어쓰기(목록 기호)
       if (ml < body * 0.4) ml = 0;
       if (Math.abs(fi) < body * 0.4) fi = 0;
     }
+    if (mr < body * 0.5) mr = 0;
     const single = P.lines.length === 1;
-    return { type: 'p', runs: parts.map(r => ({ t: r.t, b: r.b, sz: Math.round(r.sz * 2) / 2 })), align: single && P.align === 'J' && !ml ? 'J' : P.align, ml, fi, yT: f.yT, yB: P.lines[P.lines.length - 1].yB };
+    return { type: 'p', runs: parts.map(r => ({ t: r.t, b: r.b, sz: Math.round(r.sz * 2) / 2, ff: r.ff })), align: single && P.align === 'J' && !ml ? 'J' : P.align, ml, fi, mr: Math.round(mr), sz: Math.max(...P.lines.map(l => l.sz)), yT: f.yT, yB: P.lines[P.lines.length - 1].yB };
   }).filter(p => p.runs.some(r => r.t.trim()));
 }
 
@@ -227,10 +238,37 @@ function layoutPage(runs, segs, page, opt){
   return { lines, tables };
 }
 
+const CELL_PAD = 5;   // 칸 안쪽 여백(pt). 한글·워드 표의 기본 안쪽 여백과 비슷하게
+let LINE_H = 1.6;     // 줄 간격(글자 크기 배수). PDF에서 재서 바꿈 (measureLineH)
+// 문단 사이 띄운 만큼을 '문단 앞 간격'(sb, pt)으로 기록. 보통 줄 간격보다 넓을 때만
+function spaceParas(paras, prevY, minGap){
+  let y = prevY;
+  for (const p of paras) {
+    if (y != null) {
+      const sz = p.sz || 10, extra = (p.yT - y) - sz * (LINE_H - 1.06);
+      if (extra > minGap) p.sb = Math.round(extra);
+    }
+    y = p.yB;
+  }
+  return paras;
+}
+
+// 문서의 줄 간격 재기: 같은 크기 글자가 이어진 줄 사이 거리 ÷ 글자 크기의 중앙값
+function measureLineH(pages){
+  const r = [];
+  const take = ls => { for (let i = 1; i < ls.length; i++) { const a = ls[i - 1], b = ls[i]; if (Math.abs(a.sz - b.sz) > 0.6) continue; const pitch = b.yT - a.yT; if (pitch > a.sz * 0.95 && pitch < a.sz * 2.3) r.push(pitch / a.sz); } };
+  pages.forEach(p => { take(p.layout.lines); p.layout.tables.forEach(t => t.cells.forEach(c => take(groupLines(c.lines)))); });
+  LINE_H = r.length >= 3 ? Math.max(1.0, Math.min(2.4, median(r))) : 1.6;
+  return LINE_H;
+}
+
 function finishPage(pl, page, opt, bodySz){
   const blocks = [];
   const area = { x1: Math.min(...pl.lines.map(l => l.x1), page.W * 0.12), x2: Math.max(...pl.lines.map(l => l.x2), page.W * 0.88) };
-  if (pl.lines.length) { area.x1 = Math.min(...pl.lines.map(l => l.x1)); area.x2 = Math.max(...pl.lines.map(l => l.x2)); }
+  if (pl.lines.length || pl.tables.length) { // 본문 폭 = 글자 줄과 표를 모두 감싸는 범위
+    area.x1 = Math.min(...pl.lines.map(l => l.x1), ...pl.tables.map(t => t.x1));
+    area.x2 = Math.max(...pl.lines.map(l => l.x2), ...pl.tables.map(t => t.x2));
+  }
   // 표 위아래로 본문을 나눠 문단을 만든 뒤 위치 순으로 합침
   const tables = [...pl.tables].sort((a, b) => a.y1 - b.y1);
   const blank = () => ({ type: 'p', runs: [], align: 'J', ml: 0, fi: 0, blank: true });
@@ -239,8 +277,7 @@ function finishPage(pl, page, opt, bodySz){
   for (let i = 0; i <= tables.length; i++) {
     const top = i ? tables[i - 1].y2 - 1 : -Infinity, bottom = i < tables.length ? tables[i].y1 : Infinity;
     const seg = pl.lines.filter(l => l.yT >= top && l.yT < bottom);
-    const ps = buildParas(seg, area, { bodySz });
-    if (ps.length && i > 0 && gapNeeded(ps[0].yT)) blocks.push(blank()); // 표 다음 띄운 줄
+    const ps = spaceParas(buildParas(seg, area, { bodySz }), lastY, bodySz * 0.9);
     ps.forEach(p => blocks.push(p));
     if (ps.length) lastY = ps[ps.length - 1].yB;
     if (i < tables.length) {
@@ -248,15 +285,34 @@ function finishPage(pl, page, opt, bodySz){
       if (blocks.length && gapNeeded(t.y1)) blocks.push(blank()); // 표 앞 띄운 줄
       const cells = t.cells.map(c => {
         const ls = groupLines(c.lines);
-        return { r: c.r, c: c.c, rs: c.rs, cs: c.cs, paras: buildParas(ls, { x1: c.x1 + 2, x2: c.x2 - 2 }, { bodySz, cell: true }).map(p => ({ ...p, ml: 0, fi: 0, align: p.align === 'J' ? 'L' : p.align })) };
+        const box = { x1: c.x1 + CELL_PAD, x2: c.x2 - CELL_PAD };
+        // 여러 줄이면 줄들의 왼쪽 끝이 맞는지(왼쪽 정렬), 가운데가 맞는지(가운데 정렬) 보고 칸 전체 정렬을 정함
+        let force = '';
+        if (ls.length >= 2) {
+          const cs = ls.map(l => (l.x1 + l.x2) / 2), cm = median(cs), x0 = Math.min(...ls.map(l => l.x1));
+          const centered = cs.every(v => Math.abs(v - cm) < 3);
+          const selfC = l => { const gl = l.x1 - box.x1, gr = box.x2 - l.x2; return gl > 4 && Math.abs(gl - gr) <= Math.max(6, Math.max(gl, gr) * 0.2); };
+          const lefts = ls.filter(l => Math.abs(l.x1 - x0) < 1.5 && !selfC(l)).length;
+          if (!centered && lefts >= 2) force = 'L';
+          else if (centered && ls.some(l => l.x1 - box.x1 > 4)) force = 'C';
+        }
+        const paras = buildParas(ls, box, { bodySz, cell: true, force }).map(p => ({ ...p, align: p.align === 'J' ? 'L' : p.align, ml: p.align === 'C' ? 0 : p.ml, fi: p.align === 'C' ? 0 : p.fi }));
+        // 세로 위치: 위아래 여백이 비슷하면 가운데, 아니면 위에서부터 (첫 문단 앞 여백으로 위치 맞춤)
+        let va = 'C';
+        if (paras.length) {
+          const top = paras[0].yT - c.y1, bot = c.y2 - paras[paras.length - 1].yB;
+          if (Math.abs(top - bot) > Math.max(6, Math.max(top, bot) * 0.3)) va = 'T';
+        }
+        spaceParas(paras, va === 'T' ? c.y1 + 1.5 : null, 2);
+        return { r: c.r, c: c.c, rs: c.rs, cs: c.cs, va, paras, forced: !!force };
       });
       // 같은 열 칸이 대부분 가운데 정렬이면 그 열은 모두 가운데로 (숫자·짧은 글 칸의 흔들림 정리)
       for (let q = 0; q < t.C; q++) {
-        const col = cells.filter(c => c.c === q && c.cs === 1 && c.paras.length);
+        const col = cells.filter(c => c.c === q && c.cs === 1 && c.paras.length && !c.forced);
         const cen = col.filter(c => c.paras.every(p => p.align === 'C')).length;
         if (col.length >= 2 && cen / col.length >= 0.5) col.forEach(c => c.paras.forEach(p => { if (p.align === 'L') p.align = 'C'; }));
       }
-      blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1 });
+      blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1, x1: t.x1 - area.x1 });
       lastY = t.y2;
     }
   }
