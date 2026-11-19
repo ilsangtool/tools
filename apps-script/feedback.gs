@@ -31,8 +31,27 @@ const MAX = 1000;
 function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 function rev_(o, v) { for (const k in o) if (o[k] === v) return k; return ''; }
 
+// 시트 안(확장 프로그램 → Apps Script)에서 만들었으면 그 시트를,
+// script.google.com에서 따로 만들었으면 처음 한 번 '일상툴 의견함' 시트를 내 드라이브에 새로 만들어 씀
+function book_() {
+  const act = SpreadsheetApp.getActiveSpreadsheet();
+  if (act) return act;
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('SHEET_ID');
+  if (id) { try { return SpreadsheetApp.openById(id); } catch (e) {} }
+  const ss = SpreadsheetApp.create('일상툴 의견함');
+  props.setProperty('SHEET_ID', ss.getId());
+  return ss;
+}
+
+// 처음 한 번 실행(▶): 권한 허용 + 의견함 시트 만들기. 실행 로그에 시트 주소가 나옴
+function setup() {
+  const ss = book_(); sheet_();
+  Logger.log('의견함 시트: ' + ss.getUrl());
+}
+
 function sheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = book_();
   let sh = ss.getSheetByName(SHEET);
   if (!sh) {
     sh = ss.insertSheet(SHEET);
