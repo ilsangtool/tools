@@ -3,19 +3,17 @@ let pdf = null, fileName = '', result = null, busy = false, stopFlag = false, oc
 
 const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange', 'optDpi'];
 const DOC_FMTS = ['hwpx', 'docx', 'xlsx', 'txt'];
-const fmt = () => radio('fmt') || 'hwpx';
+const fmt = () => radio('fmt'); // 바꿀 형식은 기억하지 않음: 매번 직접 고름
 const isDoc = f => DOC_FMTS.includes(f);
 const FMT_NAME = { hwpx: '한글', docx: '워드', xlsx: '엑셀', txt: '텍스트', jpg: 'JPG 이미지', png: 'PNG 이미지', long: '긴 이미지', pptx: '파워포인트' };
 function opts(){
   return { fmt: fmt(), tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, dpi: +$('#optDpi').value, range: val('optRange') };
 }
-function saveOpts(){ const o = opts(); delete o.range; store.set(KEY, o); }
+function saveOpts(){ const o = opts(); delete o.range; delete o.fmt; store.set(KEY, o); }
 (() => {
   const o = store.get(KEY); if (!o) return;
   $('#optTables').checked = o.tables !== false; $('#optStrip').checked = o.strip !== false; $('#optBreak').checked = !!o.pagebreak;
   if (o.ocr) $('#optOcr').value = o.ocr; if (o.dpi) $('#optDpi').value = String(o.dpi);
-  const f = { doc: 'hwpx', img: 'jpg', ppt: 'pptx' }[o.fmt] || o.fmt; // 예전 저장값 호환
-  const r = f && document.querySelector(`input[name="fmt"][value="${f}"]`); if (r) r.checked = true;
 })();
 OPT_IDS.forEach(id => $('#' + id).addEventListener('change', saveOpts));
 // 형식에 따라 설정 칸 바꾸기
@@ -27,10 +25,13 @@ const FMT_HINT = {
   long: '쪽을 세로로 이어 붙인 그림 한 장. 쪽이 많으면 폭이 줄어드니 나눠서 만드세요.',
   pptx: '쪽마다 슬라이드 한 장(쪽 그림)으로 넣습니다. 슬라이드 크기는 첫 쪽 비율을 따릅니다.'
 };
+const canConvert = () => !!pdf && !!fmt() && !busy;
 function fmtUi(){
   const f = fmt(), doc = isDoc(f);
   $('#docOpts').classList.toggle('hidden', !doc); $('#ocrBox').classList.toggle('hidden', !doc);
-  $('#dpiBox').classList.toggle('hidden', doc);
+  $('#dpiBox').classList.toggle('hidden', !f || doc);
+  $('#convert').disabled = !canConvert();
+  if (!f) { $('#fmtHint').textContent = '위에서 바꿀 형식을 먼저 고르세요.'; $('#fmtHint').classList.remove('hidden'); $('#convert').textContent = '변환'; return; }
   $('#fmtHint').textContent = FMT_HINT[f] || ''; $('#fmtHint').classList.toggle('hidden', !FMT_HINT[f]);
   $('#convert').textContent = `${FMT_NAME[f]}로 변환`;
 }
@@ -75,9 +76,8 @@ async function openFile(f){
     if (pdf) pdf.destroy();
     pdf = await task.promise;
     $('#fileInfo').innerHTML = `<b>${esc(f.name)}</b> · ${pdf.numPages}쪽 · ${mb(f.size)}`;
-    $('#optRange').placeholder = `전체 (1-${pdf.numPages})`;
-    $('#convert').disabled = false;
-    $('#convert').focus();
+    $('#optRange').placeholder = pdf.numPages > 1 ? `전체 (1-${pdf.numPages})` : '전체 (1쪽)';
+    $('#convert').disabled = !canConvert();
   } catch (e) {
     pdf = null; $('#convert').disabled = true;
     $('#fileInfo').textContent = /Invalid PDF|InvalidPDF/i.test(String(e)) ? '손상됐거나 PDF가 아닌 파일입니다.' : ('열 수 없습니다: ' + (e.message || e));
@@ -147,7 +147,7 @@ async function convert(){
     if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
     else { console.error(e); setStatus('변환 중 문제가 생겼습니다: ' + (e.message || e), null); }
   } finally {
-    busy = false; $('#convert').disabled = !pdf; $('#stop').classList.add('hidden');
+    busy = false; $('#convert').disabled = !canConvert(); $('#stop').classList.add('hidden');
   }
 }
 
@@ -276,7 +276,7 @@ async function convertImages(){
     if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
     else { console.error(e); setStatus('변환 중 문제가 생겼습니다: ' + (e.message || e), null); }
   } finally {
-    busy = false; $('#convert').disabled = !pdf; $('#stop').classList.add('hidden');
+    busy = false; $('#convert').disabled = !canConvert(); $('#stop').classList.add('hidden');
   }
 }
 function showImages(kind, pages){
