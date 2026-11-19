@@ -1,30 +1,38 @@
 const KEY = 'ilsang_pdf2hwp_v1';
 let pdf = null, fileName = '', result = null, busy = false, stopFlag = false, ocr = null;
 
-const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange', 'optImg', 'optDpi'];
-const fmt = () => radio('fmt') || 'doc';
+const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange', 'optDpi'];
+const DOC_FMTS = ['hwpx', 'docx', 'xlsx', 'txt'];
+const fmt = () => radio('fmt') || 'hwpx';
+const isDoc = f => DOC_FMTS.includes(f);
+const FMT_NAME = { hwpx: '한글', docx: '워드', xlsx: '엑셀', txt: '텍스트', jpg: 'JPG 이미지', png: 'PNG 이미지', long: '긴 이미지', pptx: '파워포인트' };
 function opts(){
-  return { fmt: fmt(), tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, img: $('#optImg').value, dpi: +$('#optDpi').value, range: val('optRange') };
+  return { fmt: fmt(), tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, dpi: +$('#optDpi').value, range: val('optRange') };
 }
 function saveOpts(){ const o = opts(); delete o.range; store.set(KEY, o); }
 (() => {
   const o = store.get(KEY); if (!o) return;
   $('#optTables').checked = o.tables !== false; $('#optStrip').checked = o.strip !== false; $('#optBreak').checked = !!o.pagebreak;
-  if (o.ocr) $('#optOcr').value = o.ocr; if (o.img) $('#optImg').value = o.img; if (o.dpi) $('#optDpi').value = String(o.dpi);
-  const r = o.fmt && document.querySelector(`input[name="fmt"][value="${o.fmt}"]`); if (r) r.checked = true;
+  if (o.ocr) $('#optOcr').value = o.ocr; if (o.dpi) $('#optDpi').value = String(o.dpi);
+  const f = { doc: 'hwpx', img: 'jpg', ppt: 'pptx' }[o.fmt] || o.fmt; // 예전 저장값 호환
+  const r = f && document.querySelector(`input[name="fmt"][value="${f}"]`); if (r) r.checked = true;
 })();
 OPT_IDS.forEach(id => $('#' + id).addEventListener('change', saveOpts));
 // 형식에 따라 설정 칸 바꾸기
 const FMT_HINT = {
-  img: '보이는 그대로 그림 파일로 저장합니다. 스캔·디자인 PDF도 모두 됩니다.',
-  ppt: '쪽마다 슬라이드 한 장(쪽 그림)으로 넣습니다. 슬라이드 크기는 첫 쪽 비율을 따릅니다.'
+  xlsx: '표마다 시트 하나(표1, 표2…)와 본문 시트로 나눠 담고, 숫자 칸은 계산할 수 있는 숫자로 넣습니다.',
+  txt: '글자만 뽑습니다. 표는 칸마다 탭으로 나눠 엑셀에 그대로 붙여 넣을 수 있습니다.',
+  jpg: '보이는 그대로 쪽마다 그림 한 장. 스캔·디자인 PDF도 모두 되지만 글자를 고칠 수는 없습니다.',
+  png: '보이는 그대로 쪽마다 그림 한 장. JPG보다 글자 경계가 선명하고 용량이 큽니다.',
+  long: '쪽을 세로로 이어 붙인 그림 한 장. 쪽이 많으면 폭이 줄어드니 나눠서 만드세요.',
+  pptx: '쪽마다 슬라이드 한 장(쪽 그림)으로 넣습니다. 슬라이드 크기는 첫 쪽 비율을 따릅니다.'
 };
 function fmtUi(){
-  const f = fmt();
-  $('#docOpts').classList.toggle('hidden', f !== 'doc'); $('#ocrBox').classList.toggle('hidden', f !== 'doc');
-  $('#imgTypeBox').classList.toggle('hidden', f !== 'img'); $('#dpiBox').classList.toggle('hidden', f === 'doc');
+  const f = fmt(), doc = isDoc(f);
+  $('#docOpts').classList.toggle('hidden', !doc); $('#ocrBox').classList.toggle('hidden', !doc);
+  $('#dpiBox').classList.toggle('hidden', doc);
   $('#fmtHint').textContent = FMT_HINT[f] || ''; $('#fmtHint').classList.toggle('hidden', !FMT_HINT[f]);
-  $('#convert').textContent = { doc: '변환 시작', img: '이미지로 바꾸기', ppt: '파워포인트로 바꾸기' }[f];
+  $('#convert').textContent = `${FMT_NAME[f]}로 변환`;
 }
 $('#fmtGroup').addEventListener('change', () => { fmtUi(); saveOpts(); resetResult(); });
 fmtUi();
@@ -80,7 +88,7 @@ function resetResult(){ result = null; imgResults = []; $('#resultCard').classLi
 
 async function convert(){
   if (!pdf || busy) return;
-  if (fmt() !== 'doc') return convertImages();
+  if (!isDoc(fmt())) return convertImages();
   busy = true; stopFlag = false;
   $('#convert').disabled = true; $('#stop').classList.remove('hidden');
   resetResult();
@@ -131,8 +139,9 @@ async function convert(){
       if (o.pagebreak && i > 0 && bl.length) bl[0].pb = true;
       blocks.push(...bl);
     });
-    result = { blocks, pages, removed, ocrPages, conf: ocrPages ? confSum / ocrPages : 0 };
+    result = { blocks, pages, removed, ocrPages, conf: ocrPages ? confSum / ocrPages : 0, fmt: o.fmt };
     showResult();
+    saveAs(o.fmt);
     setStatus('', null);
   } catch (e) {
     if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
@@ -159,6 +168,8 @@ function showResult(){
   $('#notes').innerHTML = notes.map(t => `<li>${esc(t)}</li>`).join('');
   $('#notes').classList.toggle('hidden', !notes.length);
   $('#resultCard').classList.remove('hidden');
+  $('#savedMsg').innerHTML = `<b>${FMT_NAME[r.fmt]} 파일(${fileName}.${r.fmt})을 저장했습니다.</b> 내려받기가 안 됐으면 아래 버튼을 누르세요. 다른 형식도 다시 변환하지 않고 바로 받을 수 있습니다.`;
+  $('#saveBtns').querySelectorAll('button[data-f]').forEach(b => b.classList.toggle('ghost', b.dataset.f !== r.fmt));
   $('#preview').innerHTML = previewHtml(r.blocks);
   $('#resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -193,7 +204,7 @@ async function convertImages(){
   busy = true; stopFlag = false;
   $('#convert').disabled = true; $('#stop').classList.remove('hidden');
   resetResult();
-  const kind = o.fmt === 'ppt' ? 'ppt' : o.img, pad = String(pdf.numPages).length;
+  const kind = o.fmt === 'pptx' ? 'ppt' : o.fmt, pad = String(pdf.numPages).length;
   const pname = n => `${fileName}_${String(n).padStart(pad, '0')}쪽`;
   try {
     if (kind === 'long') {
@@ -275,15 +286,14 @@ drop.addEventListener('drop', e => openFile(e.dataTransfer.files[0]));
 drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
 $('#convert').addEventListener('click', convert);
 $('#stop').addEventListener('click', () => { stopFlag = true; if (ocr) { ocr.stop(); ocr = null; } setStatus('멈추는 중…', 0); });
-$('#saveHwpx').addEventListener('click', () => result && download(makeHwpx(result.blocks, fileName), fileName + '.hwpx'));
-$('#saveDocx').addEventListener('click', () => result && download(makeDocx(result.blocks, fileName), fileName + '.docx'));
-$('#saveXlsx').addEventListener('click', () => {
+function saveAs(f){
   if (!result) return;
-  const x = makeXlsx(result.blocks, fileName);
-  download(x.blob, fileName + '.xlsx');
-  toast(x.sheets.length > 1 ? `시트 ${x.sheets.length}개 (${x.sheets.join(', ')})` : '엑셀로 저장했습니다');
-});
-$('#saveTxt').addEventListener('click', () => result && download(new Blob(['﻿' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt'));
+  if (f === 'hwpx') download(makeHwpx(result.blocks, fileName), fileName + '.hwpx');
+  else if (f === 'docx') download(makeDocx(result.blocks, fileName), fileName + '.docx');
+  else if (f === 'xlsx') { const x = makeXlsx(result.blocks, fileName); download(x.blob, fileName + '.xlsx'); if (x.sheets.length > 1) toast(`엑셀 시트 ${x.sheets.length}개: ${x.sheets.join(', ')}`); }
+  else if (f === 'txt') download(new Blob(['\ufeff' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt');
+}
+$('#saveBtns').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if (b) saveAs(b.dataset.f); });
 $('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
 
 /* =========================================================

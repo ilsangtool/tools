@@ -28,9 +28,14 @@
 
     <h2 style="margin-top:16px"><span class="num">2</span>바꿀 형식</h2>
     <div class="radio-group fmts" id="fmtGroup" role="radiogroup" aria-label="바꿀 형식">
-      <label><input type="radio" name="fmt" value="doc" checked><span><b>문서</b><small>한글·워드·엑셀·텍스트</small></span></label>
-      <label><input type="radio" name="fmt" value="img"><span><b>이미지</b><small>JPG·PNG, 긴 이미지 한 장</small></span></label>
-      <label><input type="radio" name="fmt" value="ppt"><span><b>파워포인트</b><small>쪽마다 슬라이드 한 장</small></span></label>
+      <label><input type="radio" name="fmt" value="hwpx" checked><span><b>한글</b><small>.hwpx</small></span></label>
+      <label><input type="radio" name="fmt" value="docx"><span><b>워드</b><small>.docx</small></span></label>
+      <label><input type="radio" name="fmt" value="xlsx"><span><b>엑셀</b><small>.xlsx · 표마다 시트</small></span></label>
+      <label><input type="radio" name="fmt" value="txt"><span><b>텍스트</b><small>.txt · 글자만</small></span></label>
+      <label><input type="radio" name="fmt" value="jpg"><span><b>JPG 이미지</b><small>쪽마다 한 장</small></span></label>
+      <label><input type="radio" name="fmt" value="png"><span><b>PNG 이미지</b><small>쪽마다 한 장, 더 선명</small></span></label>
+      <label><input type="radio" name="fmt" value="long"><span><b>긴 이미지</b><small>쪽을 이어 붙인 한 장</small></span></label>
+      <label><input type="radio" name="fmt" value="pptx"><span><b>파워포인트</b><small>.pptx · 쪽마다 슬라이드</small></span></label>
     </div>
 
     <h2 style="margin-top:16px"><span class="num">3</span>변환 설정</h2>
@@ -45,12 +50,6 @@
           <option value="auto" selected>자동 (글자 없는 쪽만)</option>
           <option value="always">항상 (모든 쪽을 그림으로 보고 인식)</option>
           <option value="off">끄기</option>
-        </select></div>
-      <div id="imgTypeBox" class="hidden"><label class="f" for="optImg">이미지 종류</label>
-        <select id="optImg">
-          <option value="jpg" selected>JPG (쪽마다 한 장, 용량 작음)</option>
-          <option value="png">PNG (쪽마다 한 장, 글자 더 선명)</option>
-          <option value="long">긴 이미지 한 장 (JPG, 쪽을 세로로 이어 붙임)</option>
         </select></div>
       <div id="dpiBox" class="hidden"><label class="f" for="optDpi">화질</label>
         <select id="optDpi">
@@ -75,11 +74,12 @@
     <h2><span class="num">4</span>결과</h2>
     <div class="stat" id="stats" style="margin-top:10px"></div>
     <ul class="notes hidden" id="notes"></ul>
-    <div class="actions">
-      <button type="button" id="saveHwpx">한글로 저장 (.hwpx)</button>
-      <button type="button" id="saveDocx" class="ghost">워드로 저장 (.docx)</button>
-      <button type="button" id="saveXlsx" class="ghost">엑셀로 저장 (.xlsx)</button>
-      <button type="button" id="saveTxt" class="ghost">텍스트 (.txt)</button>
+    <p class="hint" id="savedMsg" style="margin:10px 0 0"></p>
+    <div class="actions" id="saveBtns">
+      <button type="button" id="saveHwpx" data-f="hwpx">한글 (.hwpx)</button>
+      <button type="button" id="saveDocx" data-f="docx">워드 (.docx)</button>
+      <button type="button" id="saveXlsx" data-f="xlsx">엑셀 (.xlsx)</button>
+      <button type="button" id="saveTxt" data-f="txt">텍스트 (.txt)</button>
       <button type="button" id="copyTxt" class="ghost">글자 복사</button>
     </div>
     <p class="hint">엑셀은 표마다 시트 하나(표1, 표2…)와 본문 시트로 나눠 담고, 숫자 칸은 계산할 수 있는 숫자로 넣습니다. 옛 형식 <b>.hwp</b>가 필요하면 한글에서 열어 <b>다른 이름으로 저장 → HWP</b>를 고르세요. 미리보기는 대략적인 모양이며, 실제 한글·워드에서는 글꼴에 따라 줄바꿈이 조금 다를 수 있습니다.</p>
