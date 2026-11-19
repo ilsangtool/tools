@@ -23,3 +23,10 @@
   .pwbox{background:#fff;border-radius:var(--r);padding:24px;width:100%;max-width:380px}
   .pwbox p{margin:0 0 8px;font-size:14.5px}
   .pwbox input{margin-bottom:4px}
+  .fmts label{flex:1 1 160px;align-items:flex-start}
+  .fmts label span{display:flex;flex-direction:column;gap:2px}
+  .fmts small{font-size:12.5px;color:var(--sub);font-weight:400}
+  .fmts label:has(input:checked) small{color:var(--accent-ink)}
+  .flist img{width:44px;height:58px;object-fit:contain;border:1px solid var(--line);background:#fff;flex:none}
+  #imgList li{flex-wrap:nowrap}
+  #imgList .nm{flex:1 1 auto}

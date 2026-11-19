@@ -1,13 +1,33 @@
 const KEY = 'ilsang_pdf2hwp_v1';
 let pdf = null, fileName = '', result = null, busy = false, stopFlag = false, ocr = null;
 
-const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange'];
+const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange', 'optImg', 'optDpi'];
+const fmt = () => radio('fmt') || 'doc';
 function opts(){
-  return { tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, range: val('optRange') };
+  return { fmt: fmt(), tables: $('#optTables').checked, strip: $('#optStrip').checked, pagebreak: $('#optBreak').checked, ocr: $('#optOcr').value, img: $('#optImg').value, dpi: +$('#optDpi').value, range: val('optRange') };
 }
 function saveOpts(){ const o = opts(); delete o.range; store.set(KEY, o); }
-(() => { const o = store.get(KEY); if (!o) return; $('#optTables').checked = o.tables !== false; $('#optStrip').checked = o.strip !== false; $('#optBreak').checked = !!o.pagebreak; if (o.ocr) $('#optOcr').value = o.ocr; })();
+(() => {
+  const o = store.get(KEY); if (!o) return;
+  $('#optTables').checked = o.tables !== false; $('#optStrip').checked = o.strip !== false; $('#optBreak').checked = !!o.pagebreak;
+  if (o.ocr) $('#optOcr').value = o.ocr; if (o.img) $('#optImg').value = o.img; if (o.dpi) $('#optDpi').value = String(o.dpi);
+  const r = o.fmt && document.querySelector(`input[name="fmt"][value="${o.fmt}"]`); if (r) r.checked = true;
+})();
 OPT_IDS.forEach(id => $('#' + id).addEventListener('change', saveOpts));
+// 형식에 따라 설정 칸 바꾸기
+const FMT_HINT = {
+  img: '보이는 그대로 그림 파일로 저장합니다. 스캔·디자인 PDF도 모두 됩니다.',
+  ppt: '쪽마다 슬라이드 한 장(쪽 그림)으로 넣습니다. 슬라이드 크기는 첫 쪽 비율을 따릅니다.'
+};
+function fmtUi(){
+  const f = fmt();
+  $('#docOpts').classList.toggle('hidden', f !== 'doc'); $('#ocrBox').classList.toggle('hidden', f !== 'doc');
+  $('#imgTypeBox').classList.toggle('hidden', f !== 'img'); $('#dpiBox').classList.toggle('hidden', f === 'doc');
+  $('#fmtHint').textContent = FMT_HINT[f] || ''; $('#fmtHint').classList.toggle('hidden', !FMT_HINT[f]);
+  $('#convert').textContent = { doc: '변환 시작', img: '이미지로 바꾸기', ppt: '파워포인트로 바꾸기' }[f];
+}
+$('#fmtGroup').addEventListener('change', () => { fmtUi(); saveOpts(); resetResult(); });
+fmtUi();
 
 function setStatus(msg, pct){
   $('#status').textContent = msg || '';
@@ -56,10 +76,11 @@ async function openFile(f){
   }
 }
 
-function resetResult(){ result = null; $('#resultCard').classList.add('hidden'); setStatus('', null); }
+function resetResult(){ result = null; imgResults = []; $('#resultCard').classList.add('hidden'); $('#imgOut').classList.add('hidden'); setStatus('', null); }
 
 async function convert(){
   if (!pdf || busy) return;
+  if (fmt() !== 'doc') return convertImages();
   busy = true; stopFlag = false;
   $('#convert').disabled = true; $('#stop').classList.remove('hidden');
   resetResult();
@@ -164,6 +185,87 @@ function previewHtml(blocks){
   return h || '<p class="hint">변환된 내용이 없습니다.</p>';
 }
 
+/* ---- 이미지·파워포인트 변환 ---- */
+let imgResults = [];
+async function convertImages(){
+  const o = opts(), list = parseRange(o.range, pdf.numPages);
+  if (!list.length) { toast('페이지 범위를 확인해 주세요'); return; }
+  busy = true; stopFlag = false;
+  $('#convert').disabled = true; $('#stop').classList.remove('hidden');
+  resetResult();
+  const kind = o.fmt === 'ppt' ? 'ppt' : o.img, pad = String(pdf.numPages).length;
+  const pname = n => `${fileName}_${String(n).padStart(pad, '0')}쪽`;
+  try {
+    if (kind === 'long') {
+      // 1) 쪽 크기 재기 → 2) 한 장 캔버스 크기 정하기 (휴대폰 한도: 약 1,600만 화소, 세로 32,000px)
+      const sizes = [];
+      for (const n of list) { const pg = await pdf.getPage(n), v = pg.getViewport({ scale: 1 }); sizes.push({ n, w: v.width, h: v.height }); pg.cleanup(); }
+      const maxW = Math.max(...sizes.map(z => z.w));
+      let W = Math.min(1600, Math.round(maxW * o.dpi / 72));
+      const heightAt = w => sizes.reduce((a, z) => a + Math.round(z.h * w / z.w), 0);
+      while (W > 200 && (W * heightAt(W) > 16e6 || heightAt(W) > 32000)) W = Math.floor(W * 0.95);
+      if (W < 600) throw new Error(`쪽이 너무 많아 한 장에 담으면 글자가 읽히지 않습니다. '변환할 쪽'을 ${Math.max(1, Math.floor(list.length * W / 600))}쪽 정도씩 나눠서 만드세요`);
+      const H = heightAt(W), big = document.createElement('canvas'); big.width = W; big.height = H;
+      const ctx = big.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      let y = 0;
+      for (let i = 0; i < sizes.length; i++) {
+        if (stopFlag) throw new Error('STOP');
+        const z = sizes[i]; setStatus(`${z.n}쪽 그리는 중 (${i + 1}/${sizes.length})`, i / sizes.length * 100);
+        const pg = await pdf.getPage(z.n), s = W / z.w, vp = pg.getViewport({ scale: s }), h = Math.round(z.h * s);
+        const cv = document.createElement('canvas'); cv.width = W; cv.height = h;
+        const c2 = cv.getContext('2d'); c2.fillStyle = '#fff'; c2.fillRect(0, 0, W, h);
+        await pg.render({ canvasContext: c2, viewport: vp }).promise;
+        ctx.drawImage(cv, 0, y); y += h; cv.width = cv.height = 0; pg.cleanup();
+        if (i < sizes.length - 1) { ctx.fillStyle = '#d9d9d9'; ctx.fillRect(0, y - 1, W, 1); }
+      }
+      setStatus('그림 파일로 저장하는 중…', 99);
+      const bytes = await canvasBytes(big, 'image/jpeg', 0.88); big.width = big.height = 0;
+      imgResults = [{ name: `${fileName}_${list.length > 1 ? pagesLabel(list).replace(/, /g, '_') + '쪽' : list[0] + '쪽'}_긴이미지.jpg`, bytes, type: 'image/jpeg', note: `${W}×${H}px` }];
+    } else {
+      const slides = [];
+      for (let i = 0; i < list.length; i++) {
+        if (stopFlag) throw new Error('STOP');
+        const n = list[i]; setStatus(`${n}쪽 그리는 중 (${i + 1}/${list.length})`, i / list.length * 100);
+        const pg = await pdf.getPage(n), { cv, w, h } = await renderAtDpi(pg, o.dpi);
+        if (kind === 'ppt') slides.push({ jpg: await canvasBytes(cv, 'image/jpeg', 0.85), w, h });
+        else {
+          const png = kind === 'png', bytes = await canvasBytes(cv, png ? 'image/png' : 'image/jpeg', 0.9);
+          imgResults.push({ name: `${pname(n)}.${png ? 'png' : 'jpg'}`, bytes, type: png ? 'image/png' : 'image/jpeg', note: `${cv.width}×${cv.height}px` });
+        }
+        cv.width = cv.height = 0; pg.cleanup();
+        await new Promise(r => setTimeout(r));
+      }
+      if (kind === 'ppt') {
+        setStatus('파워포인트로 묶는 중…', 99);
+        const blob = makePptx(slides, fileName), bytes = new Uint8Array(await blob.arrayBuffer());
+        imgResults = [{ name: `${fileName}.pptx`, bytes, type: blob.type, note: `슬라이드 ${slides.length}장` }];
+      }
+    }
+    showImages(kind, list.length);
+    setStatus('', null);
+  } catch (e) {
+    imgResults = [];
+    if (e.message === 'STOP') setStatus('변환을 멈췄습니다.', null);
+    else { console.error(e); setStatus('변환 중 문제가 생겼습니다: ' + (e.message || e), null); }
+  } finally {
+    busy = false; $('#convert').disabled = !pdf; $('#stop').classList.add('hidden');
+  }
+}
+function showImages(kind, pages){
+  const tot = imgResults.reduce((a, r) => a + r.bytes.length, 0);
+  $('#imgOutInfo').textContent = kind === 'ppt' ? `${pages}쪽을 슬라이드 ${pages}장으로 만들었습니다 (${mb(tot)}).`
+    : kind === 'long' ? `${pages}쪽을 긴 이미지 한 장으로 이어 붙였습니다 (${mb(tot)}).`
+    : `이미지 ${imgResults.length}장을 만들었습니다 (합계 ${mb(tot)}).`;
+  $('#imgList').innerHTML = imgResults.map((r, i) => `<li>${/^image/.test(r.type) ? `<img alt="" data-i="${i}">` : ''}<span class="nm">${esc(r.name)}<small>${r.note} · ${mb(r.bytes.length)}</small></span><button type="button" class="ghost" data-i="${i}">받기</button></li>`).join('');
+  // 미리보기 그림 (처음 30장까지)
+  $('#imgList').querySelectorAll('img').forEach(im => { const r = imgResults[+im.dataset.i]; if (+im.dataset.i < 30) { im.src = URL.createObjectURL(new Blob([r.bytes], { type: r.type })); im.onload = () => URL.revokeObjectURL(im.src); } else im.remove(); });
+  $('#imgZip').classList.toggle('hidden', imgResults.length < 2);
+  $('#imgOut').classList.remove('hidden'); $('#imgOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (imgResults.length === 1) { const r = imgResults[0]; download(new Blob([r.bytes], { type: r.type }), r.name); }
+}
+$('#imgList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const r = imgResults[+b.dataset.i]; download(new Blob([r.bytes], { type: r.type }), r.name); });
+$('#imgZip').addEventListener('click', () => imgResults.length && download(zipStore(imgResults.map(r => [r.name, r.bytes]), 'application/zip'), `${fileName}_이미지.zip`));
+
 /* ---- 이벤트 ---- */
 const drop = $('#drop');
 $('#file').addEventListener('change', e => { openFile(e.target.files[0]); e.target.value = ''; });
@@ -175,6 +277,12 @@ $('#convert').addEventListener('click', convert);
 $('#stop').addEventListener('click', () => { stopFlag = true; if (ocr) { ocr.stop(); ocr = null; } setStatus('멈추는 중…', 0); });
 $('#saveHwpx').addEventListener('click', () => result && download(makeHwpx(result.blocks, fileName), fileName + '.hwpx'));
 $('#saveDocx').addEventListener('click', () => result && download(makeDocx(result.blocks, fileName), fileName + '.docx'));
+$('#saveXlsx').addEventListener('click', () => {
+  if (!result) return;
+  const x = makeXlsx(result.blocks, fileName);
+  download(x.blob, fileName + '.xlsx');
+  toast(x.sheets.length > 1 ? `시트 ${x.sheets.length}개 (${x.sheets.join(', ')})` : '엑셀로 저장했습니다');
+});
 $('#saveTxt').addEventListener('click', () => result && download(new Blob(['﻿' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt'));
 $('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
 
