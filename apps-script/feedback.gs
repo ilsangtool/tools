@@ -6,9 +6,9 @@
  *  - 일상툴 의견함 화면(관리자)에 목록을 보내고, 확인함 표시·삭제를 처리
  *
  * 설치 (한 번만)
- *  1. 구글 시트를 새로 만들고 이름을 '일상툴 의견함'으로 정함
- *  2. 확장 프로그램 → Apps Script → 이 파일 내용을 모두 붙여 넣음
- *  3. 아래 ADMIN_KEY를 나만 아는 낱말로 바꾼 뒤 저장
+ *  1. script.google.com → 새 프로젝트 (또는 구글 시트의 확장 프로그램 → Apps Script)
+ *  2. 이 파일 내용을 모두 붙여 넣고, 아래 ADMIN_KEY를 나만 아는 낱말로 바꾼 뒤 저장
+ *  3. 함수 목록에서 setup 을 골라 실행 → 권한 허용 (의견함 시트가 만들어짐)
  *  4. 배포 → 새 배포 → 유형: 웹 앱 → 실행 계정: 나 → 액세스 권한: 모든 사용자 → 배포
  *  5. 권한 허용 후 나오는 '웹 앱 URL'(https://script.google.com/macros/s/…/exec)을 일상툴에 연결
  *  코드를 고친 뒤에는 배포 관리 → 수정 → 버전: 새 버전 → 배포 (URL은 그대로)
@@ -18,10 +18,11 @@ const ADMIN_KEY = '여기에-나만-아는-낱말';   // 의견함 화면을 열
 const SHEET = '의견';
 const HEAD = ['ID', '받은 시각', '도구 키', '도구', '느낌', '의견', '기기', '물은 때', '확인'];
 const NAMES = {
-  'pdf-to-hwp': 'PDF 한글 변환·나누기·합치기', 'image-resize': '사진 용량 줄이기', 'id-photo': '증명사진 자르기',
+  'pdf-to-hwp': 'PDF 변환·나누기·합치기', 'image-resize': '사진 용량 줄이기', 'id-photo': '증명사진 자르기',
   'weekly-pay': '주휴수당·월급 계산기', 'dutch-pay': '더치페이 정산', 'date-calc': 'D-day·만 나이 계산기',
   'refund-policy': '환불·교환 규정 생성기', 'noshow-policy': '노쇼 규정 문구 생성기', 'review-policy': '리뷰 운영정책 고지문',
-  'closed-notice': '휴무 안내문 만들기', 'short-video': '숏폼 영상 만들기'
+  'closed-notice': '휴무 안내문 만들기', 'short-video': '숏폼 영상 만들기',
+  'account-book': '장부·회계 프로그램', 'tax-calc': '세무 계산기·신고 일정', 'home-loan': '부동산 대출·자금 계산기'
 };
 const MOOD = { good: '편했어요', ok: '보통이에요', bad: '불편했어요' };
 const WHY = { copy: '결과 복사 뒤', save: '파일 저장 뒤', use: '1분 넘게 쓴 뒤' };

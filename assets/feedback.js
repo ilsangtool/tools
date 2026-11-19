@@ -14,7 +14,8 @@
     'pdf-to-hwp': 'PDF 변환·나누기·합치기', 'image-resize': '사진 용량 줄이기', 'id-photo': '증명사진 자르기',
     'weekly-pay': '주휴수당·월급 계산기', 'dutch-pay': '더치페이 정산', 'date-calc': 'D-day·만 나이 계산기',
     'refund-policy': '환불·교환 규정 생성기', 'noshow-policy': '노쇼 규정 문구 생성기', 'review-policy': '리뷰 운영정책 고지문',
-    'closed-notice': '휴무 안내문 만들기', 'short-video': '숏폼 영상 만들기'
+    'closed-notice': '휴무 안내문 만들기', 'short-video': '숏폼 영상 만들기',
+    'account-book': '장부·회계 프로그램', 'tax-calc': '세무 계산기·신고 일정', 'home-loan': '부동산 대출·자금 계산기'
   };
   // 주소에서 도구 이름 찾기: /tools/weekly-pay/ → weekly-pay
   var parts = location.pathname.split('/').filter(function (p) { return p && p !== 'tools' && p !== 'index.html'; });
