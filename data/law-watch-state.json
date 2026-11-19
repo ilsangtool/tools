@@ -1,16 +1,26 @@
 {
   "seen": [
     "conflict:ltcRatio:2027:0.151,0.139",
+    "n:379cd5c8edc2",
     "n:3df65883a462",
+    "n:6f1d0793f115",
     "n:7bd80bb6ea3e",
+    "n:8324a8a42bf1",
+    "n:b34beb79c06c",
     "n:c94a058a8b75",
     "n:d71199bd1104",
     "n:dddc138ea2d5",
+    "n:f2aa640212bc",
     "n:fff4658b7c16",
+    "news:건강보험료율 결정:2026-11-19",
+    "news:병 복무기간 단축:2026-11-19",
     "news:장기요양보험료율 결정:2026-11-14",
+    "news:장기요양보험료율 결정:2026-11-19",
     "news:전자상거래법 청약철회 개정:2026-11-16",
     "news:최저임금 결정:2026-11-14",
+    "news:최저임금 결정:2026-11-19",
     "news:한국은행 기준금리 결정:2026-11-16",
+    "news:한국은행 기준금리 결정:2026-11-19",
     "note:2ce9a996e119",
     "note:62477e015a51",
     "note:69dc142c0c8c",
@@ -20,7 +30,7 @@
     "offfail:2026-46"
   ],
   "laws": {},
-  "lastRun": "2026-11-16",
+  "lastRun": "2026-11-19",
   "official": {
     "근로기준법": [
       [
@@ -2757,8 +2767,8 @@
     ]
   },
   "status": {
-    "officialOk": 27,
-    "officialError": null,
+    "officialOk": 15,
+    "officialError": "URLError: <urlopen error timed out>",
     "consecutiveFail": 0
   }
 }
