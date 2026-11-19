@@ -2,7 +2,7 @@ const KEY = 'ilsang_pdf2hwp_v1';
 let pdf = null, fileName = '', result = null, busy = false, stopFlag = false, ocr = null;
 
 const OPT_IDS = ['optTables', 'optStrip', 'optBreak', 'optOcr', 'optRange', 'optDpi'];
-const DOC_FMTS = ['hwpx', 'docx', 'xlsx', 'txt'];
+const DOC_FMTS = ['hwpx', 'docx', 'xlsx', 'txt', 'pptx']; // 글자·표를 읽어 고칠 수 있는 파일로 만드는 형식
 const fmt = () => radio('fmt'); // 바꿀 형식은 기억하지 않음: 매번 직접 고름
 const isDoc = f => DOC_FMTS.includes(f);
 const FMT_NAME = { hwpx: '한글', docx: '워드', xlsx: '엑셀', txt: '텍스트', jpg: 'JPG 이미지', png: 'PNG 이미지', long: '긴 이미지', pptx: '파워포인트' };
@@ -18,17 +18,18 @@ function saveOpts(){ const o = opts(); delete o.range; delete o.fmt; store.set(K
 OPT_IDS.forEach(id => $('#' + id).addEventListener('change', saveOpts));
 // 형식에 따라 설정 칸 바꾸기
 const FMT_HINT = {
-  xlsx: '표마다 시트 하나(표1, 표2…)와 본문 시트로 나눠 담고, 숫자 칸은 계산할 수 있는 숫자로 넣습니다.',
+  xlsx: '표마다 시트 하나(표1, 표2…)와 본문 시트. 열 너비·행 높이·글꼴·크기·정렬·용지를 원본과 같게 맞추고, 숫자 칸은 계산할 수 있는 숫자로 넣습니다.',
   txt: '글자만 뽑습니다. 표는 칸마다 탭으로 나눠 엑셀에 그대로 붙여 넣을 수 있습니다.',
   jpg: '보이는 그대로 쪽마다 그림 한 장. 스캔·디자인 PDF도 모두 되지만 글자를 고칠 수는 없습니다.',
   png: '보이는 그대로 쪽마다 그림 한 장. JPG보다 글자 경계가 선명하고 용량이 큽니다.',
   long: '쪽을 세로로 이어 붙인 그림 한 장. 쪽이 많으면 폭이 줄어드니 나눠서 만드세요.',
-  pptx: '쪽마다 슬라이드 한 장(쪽 그림)으로 넣습니다. 슬라이드 크기는 첫 쪽 비율을 따릅니다.'
+  pptx: 'PDF 한 쪽이 슬라이드 한 장. 글은 원래 자리의 글상자로, 표는 파워포인트 표로 넣어 모두 고칠 수 있습니다. 사진·도형은 넣지 않습니다.'
 };
 const canConvert = () => !!pdf && !!fmt() && !busy;
 function fmtUi(){
   const f = fmt(), doc = isDoc(f);
   $('#docOpts').classList.toggle('hidden', !doc); $('#ocrBox').classList.toggle('hidden', !doc);
+  $('#optBreak').closest('label').classList.toggle('hidden', f === 'pptx' || f === 'xlsx');
   $('#dpiBox').classList.toggle('hidden', !f || doc);
   $('#convert').disabled = !canConvert();
   if (!f) { $('#fmtHint').textContent = '위에서 바꿀 형식을 먼저 고르세요.'; $('#fmtHint').classList.remove('hidden'); $('#convert').textContent = '변환'; return; }
@@ -137,6 +138,7 @@ async function convert(){
     const blocks = [];
     pages.forEach((p, i) => {
       const bl = finishPage(p.layout, p, o, bodySz);
+      p.blocks = bl;
       if (o.pagebreak && i > 0 && bl.length) bl[0].pb = true;
       blocks.push(...bl);
     });
@@ -221,7 +223,7 @@ async function convertImages(){
   busy = true; stopFlag = false;
   $('#convert').disabled = true; $('#stop').classList.remove('hidden');
   resetResult();
-  const kind = o.fmt === 'pptx' ? 'ppt' : o.fmt, pad = String(pdf.numPages).length;
+  const kind = o.fmt, pad = String(pdf.numPages).length;
   const pname = n => `${fileName}_${String(n).padStart(pad, '0')}쪽`;
   try {
     if (kind === 'long') {
@@ -250,23 +252,14 @@ async function convertImages(){
       const bytes = await canvasBytes(big, 'image/jpeg', 0.88); big.width = big.height = 0;
       imgResults = [{ name: `${fileName}_${list.length > 1 ? pagesLabel(list).replace(/, /g, '_') + '쪽' : list[0] + '쪽'}_긴이미지.jpg`, bytes, type: 'image/jpeg', note: `${W}×${H}px` }];
     } else {
-      const slides = [];
       for (let i = 0; i < list.length; i++) {
         if (stopFlag) throw new Error('STOP');
         const n = list[i]; setStatus(`${n}쪽 그리는 중 (${i + 1}/${list.length})`, i / list.length * 100);
         const pg = await pdf.getPage(n), { cv, w, h } = await renderAtDpi(pg, o.dpi);
-        if (kind === 'ppt') slides.push({ jpg: await canvasBytes(cv, 'image/jpeg', 0.85), w, h });
-        else {
-          const png = kind === 'png', bytes = await canvasBytes(cv, png ? 'image/png' : 'image/jpeg', 0.9);
-          imgResults.push({ name: `${pname(n)}.${png ? 'png' : 'jpg'}`, bytes, type: png ? 'image/png' : 'image/jpeg', note: `${cv.width}×${cv.height}px` });
-        }
+        const png = kind === 'png', bytes = await canvasBytes(cv, png ? 'image/png' : 'image/jpeg', 0.9);
+        imgResults.push({ name: `${pname(n)}.${png ? 'png' : 'jpg'}`, bytes, type: png ? 'image/png' : 'image/jpeg', note: `${cv.width}×${cv.height}px` });
         cv.width = cv.height = 0; pg.cleanup();
         await new Promise(r => setTimeout(r));
-      }
-      if (kind === 'ppt') {
-        setStatus('파워포인트로 묶는 중…', 99);
-        const blob = makePptx(slides, fileName), bytes = new Uint8Array(await blob.arrayBuffer());
-        imgResults = [{ name: `${fileName}.pptx`, bytes, type: blob.type, note: `슬라이드 ${slides.length}장` }];
       }
     }
     showImages(kind, list.length);
@@ -281,8 +274,7 @@ async function convertImages(){
 }
 function showImages(kind, pages){
   const tot = imgResults.reduce((a, r) => a + r.bytes.length, 0);
-  $('#imgOutInfo').textContent = kind === 'ppt' ? `${pages}쪽을 슬라이드 ${pages}장으로 만들었습니다 (${mb(tot)}).`
-    : kind === 'long' ? `${pages}쪽을 긴 이미지 한 장으로 이어 붙였습니다 (${mb(tot)}).`
+  $('#imgOutInfo').textContent = kind === 'long' ? `${pages}쪽을 긴 이미지 한 장으로 이어 붙였습니다 (${mb(tot)}).`
     : `이미지 ${imgResults.length}장을 만들었습니다 (합계 ${mb(tot)}).`;
   $('#imgList').innerHTML = imgResults.map((r, i) => `<li>${/^image/.test(r.type) ? `<img alt="" data-i="${i}">` : ''}<span class="nm">${esc(r.name)}<small>${r.note} · ${mb(r.bytes.length)}</small></span><button type="button" class="ghost" data-i="${i}">받기</button></li>`).join('');
   // 미리보기 그림 (처음 30장까지)
@@ -306,7 +298,8 @@ function saveAs(f){
   if (!result) return;
   if (f === 'hwpx') download(makeHwpx(result.blocks, fileName, result.page), fileName + '.hwpx');
   else if (f === 'docx') download(makeDocx(result.blocks, fileName, result.page), fileName + '.docx');
-  else if (f === 'xlsx') { const x = makeXlsx(result.blocks, fileName); download(x.blob, fileName + '.xlsx'); if (x.sheets.length > 1) toast(`엑셀 시트 ${x.sheets.length}개: ${x.sheets.join(', ')}`); }
+  else if (f === 'pptx') download(makePptx(result.pages.map(p => ({ W: p.W, H: p.H, blocks: p.blocks })), fileName, result.page && result.page.lineH), fileName + '.pptx');
+  else if (f === 'xlsx') { const x = makeXlsx(result.blocks, fileName, result.page); download(x.blob, fileName + '.xlsx'); if (x.sheets.length > 1) toast(`엑셀 시트 ${x.sheets.length}개: ${x.sheets.join(', ')}`); }
   else if (f === 'txt') download(new Blob(['\ufeff' + docPlainText(result.blocks)], { type: 'text/plain;charset=utf-8' }), fileName + '.txt');
 }
 $('#saveAgain').addEventListener('click', () => result && saveAs(result.fmt));

@@ -312,10 +312,11 @@ function finishPage(pl, page, opt, bodySz){
         const cen = col.filter(c => c.paras.every(p => p.align === 'C')).length;
         if (col.length >= 2 && cen / col.length >= 0.5) col.forEach(c => c.paras.forEach(p => { if (p.align === 'L') p.align = 'C'; }));
       }
-      blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1, x1: t.x1 - area.x1 });
+      blocks.push({ type: 'table', cols: t.xs.slice(1).map((x, k) => x - t.xs[k]), rows: t.ys.slice(1).map((y, k) => y - t.ys[k]), cells, yT: t.y1, yB: t.y2, x1: t.x1 - area.x1 });
       lastY = t.y2;
     }
   }
+  blocks.forEach(b => { b.ax1 = area.x1; b.ax2 = area.x2; }); // 쪽 안의 위치(파워포인트용)
   return blocks;
 }
 
