@@ -13,16 +13,21 @@ function makeXlsx(blocks, title, page){
   // 글꼴·셀 모양 목록 (같은 모양은 한 번만)
   const fonts = ['<font><sz val="11"/><name val="맑은 고딕"/><family val="2"/></font>'], fontKey = { '11||0': 0 };
   const fontId = (sz, ff, b) => { const k = `${sz}|${ff}|${b ? 1 : 0}`; if (fontKey[k] == null) { fontKey[k] = fonts.length; fonts.push(`<font>${b ? '<b/>' : ''}<sz val="${sz}"/><name val="${xesc(ff || '맑은 고딕')}"/><family val="${/바탕|명조|궁서/.test(ff || '') ? 1 : 2}"/><charset val="129"/></font>`); } return fontKey[k]; };
+  // 테두리: 왼·오른·위·아래 조합마다 하나씩
+  const borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>'], bdKey = { '0000': 0 };
+  const side = (n, on) => on ? `<${n} style="thin"><color rgb="FF000000"/></${n}>` : `<${n}/>`;
+  const bd = (l, r, t, b) => { const k = `${+!!l}${+!!r}${+!!t}${+!!b}`; if (bdKey[k] == null) { bdKey[k] = borders.length; borders.push(`<border>${side('left', l)}${side('right', r)}${side('top', t)}${side('bottom', b)}<diagonal/></border>`); } return bdKey[k]; };
   const xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'], xfKey = { '': 0 };
-  const xfId = (fid, h, v, border, pct) => {
-    const k = `${fid}|${h}|${v}|${border}|${pct}`;
-    if (xfKey[k] == null) { xfKey[k] = xfs.length; xfs.push(`<xf numFmtId="${pct ? 164 : 0}" fontId="${fid}" fillId="0" borderId="${border ? 1 : 0}" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"${pct ? ' applyNumberFormat="1"' : ''}><alignment horizontal="${h}" vertical="${v}" wrapText="1"/></xf>`); }
+  const xfId = (fid, h, v, border, pct, indent) => {
+    const k = `${fid}|${h}|${v}|${border}|${pct}|${indent || 0}`;
+    if (xfKey[k] == null) { xfKey[k] = xfs.length; xfs.push(`<xf numFmtId="${pct ? 164 : 0}" fontId="${fid}" fillId="0" borderId="${border === true ? bd(1, 1, 1, 1) : border || 0}" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"${pct ? ' applyNumberFormat="1"' : ''}><alignment horizontal="${h}" vertical="${v}"${indent ? ` indent="${indent}"` : ''} wrapText="1"/></xf>`); }
     return xfKey[k];
   };
   const styleOf = (paras, va, border, text) => {
     const r0 = (paras[0] && paras[0].runs.find(r => r.t.trim())) || {};
     const sz = Math.round((r0.sz || 10) * 2) / 2, b = paras.length && paras.every(p => p.runs.every(r => !r.t.trim() || r.b));
-    return xfId(fontId(sz, r0.ff, b), alignXl[(paras[0] && paras[0].align) || 'L'], va === 'T' ? 'top' : va === 'B' ? 'bottom' : 'center', border, /%$/.test(text.trim()));
+    const p0 = paras[0] || {}, ind = p0.align === 'R' && p0.mr ? Math.min(15, Math.round(ptPx(p0.mr) / 10)) : 0; // 오른쪽 여백은 들여쓰기 칸수로
+    return xfId(fontId(sz, r0.ff, b), alignXl[p0.align || 'L'], va === 'T' ? 'top' : va === 'B' ? 'bottom' : 'center', border, /%$/.test(text.trim()), ind);
   };
   const cellXml = (ref, text, s) => {
     const n = asNum(text);
@@ -52,16 +57,46 @@ function makeXlsx(blocks, title, page){
   const sheets = [];
   const tables = blocks.filter(b => b.type === 'table');
   tables.forEach((t, k) => {
-    const grid = t.rows.map(() => []), merges = [];
-    t.cells.forEach(c => { grid[c.r][c.c] = c; if (c.rs > 1 || c.cs > 1) merges.push(`${colName(c.c)}${c.r + 1}:${colName(c.c + c.cs - 1)}${c.r + c.rs}`); });
-    const owner = t.rows.map(() => t.cols.map(() => null));
-    t.cells.forEach(c => { for (let r = c.r; r < c.r + c.rs; r++) for (let q = c.c; q < c.c + c.cs; q++) owner[r][q] = c; });
-    const border = xfId(0, 'left', 'center', true, false);
-    const rows = t.rows.map((h, r) => `<row r="${r + 1}" ht="${h.toFixed(2)}" customHeight="1">` + t.cols.map((_, q) => {
-      const ref = colName(q) + (r + 1), c = grid[r][q];
-      if (!c) { const o = owner[r][q]; return `<c r="${ref}" s="${o ? styleOf(o.paras, o.va, true, '') : border}"/>`; } // 합친 칸의 나머지도 테두리 유지
-      const text = c.paras.map(paraText).join('\n');
-      return richCell(ref, c.paras, text, styleOf(c.paras, c.va, true, text));
+    // 원래 행 경계(y)에 더해, 한 칸 안에서 정렬이 다른 줄이나 크게 띄운 줄이 있으면 그 사이도 엑셀 행으로 나눔
+    // → 줄마다 정렬·세로 위치를 원본대로 두고, 칸 안쪽 경계선은 감춰 원래 칸 하나처럼 보이게
+    const ys = [t.yT]; t.rows.forEach(h => ys.push(ys[ys.length - 1] + h));
+    const cuts = new Set(ys.map(y => +y.toFixed(1)));
+    const splitOf = c => {
+      const ps = c.paras.filter(p => p.yT != null).sort((a, b) => a.yT - b.yT);
+      if (ps.length < 2) return null;
+      const mixed = new Set(ps.map(p => p.align === 'J' ? 'L' : p.align)).size > 1;
+      const gappy = ps.some((p, i) => i && (p.sb || 0) >= (p.sz || 10));
+      return mixed || gappy ? ps : null;
+    };
+    const bands = new Map();
+    t.cells.forEach(c => {
+      const ps = splitOf(c); if (!ps) return;
+      const top = ys[c.r], bot = ys[c.r + c.rs], b = [top];
+      for (let i = 1; i < ps.length; i++) { const y = +((ps[i - 1].yB + ps[i].yT) / 2).toFixed(1); if (y > b[b.length - 1] + 1 && y < bot - 1) { b.push(y); cuts.add(y); } }
+      b.push(bot);
+      if (b.length - 1 === ps.length) bands.set(c, { b, ps });
+    });
+    const Y = [...cuts].sort((a, b) => a - b), at = y => Y.findIndex(v => Math.abs(v - y) < 0.06);
+    const R = Y.length - 1, C = t.cols.length;
+    const grid = Array.from({ length: R }, () => Array(C).fill(null)), merges = [];
+    const place = (r0, r1, c0, c1, paras, va, edge) => { // r1·c1은 포함
+      if (r1 < r0) r1 = r0;
+      const reg = { r0, r1, c0, c1, paras, va, edge };
+      for (let r = r0; r <= r1; r++) for (let q = c0; q <= c1; q++) grid[r][q] = reg;
+      if (r1 > r0 || c1 > c0) merges.push(`${colName(c0)}${r0 + 1}:${colName(c1)}${r1 + 1}`);
+    };
+    t.cells.forEach(c => {
+      const c0 = c.c, c1 = c.c + c.cs - 1, sp = bands.get(c);
+      if (!sp) { place(at(ys[c.r]), at(ys[c.r + c.rs]) - 1, c0, c1, c.paras, c.va, { T: 1, B: 1 }); return; }
+      sp.ps.forEach((p, i) => place(at(sp.b[i]), at(sp.b[i + 1]) - 1, c0, c1, [{ ...p, sb: 0 }], 'C', { T: i === 0, B: i === sp.ps.length - 1 }));
+    });
+    const rows = Y.slice(1).map((y, r) => `<row r="${r + 1}" ht="${(y - Y[r]).toFixed(2)}" customHeight="1">` + t.cols.map((_, q) => {
+      const ref = colName(q) + (r + 1), g = grid[r][q];
+      if (!g) return `<c r="${ref}" s="${xfId(0, 'left', 'center', bd(1, 1, 1, 1), false)}"/>`;
+      const b = bd(q === g.c0, q === g.c1, r === g.r0 && g.edge.T, r === g.r1 && g.edge.B);
+      const text = g.paras.map(paraText).join('\n');
+      const st = styleOf(g.paras, g.va, b, text);
+      return r === g.r0 && q === g.c0 ? richCell(ref, g.paras, text, st) : `<c r="${ref}" s="${st}"/>`;
     }).join('') + '</row>').join('');
     const cols = t.cols.map((w, q) => `<col min="${q + 1}" max="${q + 1}" width="${colW(w).toFixed(2)}" customWidth="1"/>`).join('');
     sheets.push({ name: `표${k + 1}`, xml: sheetXml(cols, rows, merges) });
@@ -86,7 +121,7 @@ function makeXlsx(blocks, title, page){
     '<numFmts count="1"><numFmt numFmtId="164" formatCode="0.##%"/></numFmts>' +
     `<fonts count="${fonts.length}">${fonts.join('')}</fonts>` +
     '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' +
-    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border></borders>' +
+    `<borders count="${borders.length}">${borders.join('')}</borders>` +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
     `<cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs>` +
     '<cellStyles count="1"><cellStyle name="표준" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
