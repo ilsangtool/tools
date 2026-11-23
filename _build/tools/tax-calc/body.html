@@ -93,7 +93,8 @@
           <div><label class="f" for="vSp">7월에 예정부과로 이미 낸 세액</label><input type="text" id="vSp" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="vat">계산하기</button>
+      <section class="card res hidden" data-res="vat">
         <h2>계산 결과</h2>
         <div class="stat" id="vStat"></div>
         <table class="t" id="vTbl"></table>
@@ -148,7 +149,8 @@
           <div><label class="f" for="iMid">11월 중간예납 낸 세액</label><input type="text" id="iMid" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="inc">계산하기</button>
+      <section class="card res hidden" data-res="inc">
         <h2>계산 결과</h2>
         <div class="stat" id="iStat"></div>
         <table class="t" id="iTbl"></table>
@@ -192,7 +194,8 @@
         <label class="chk hidden" id="wExpBox"><input type="checkbox" id="wExp" checked><span>필요경비 60% 인정 (강연료·원고료·심사료 등 일시적 인적용역)</span></label>
         <label class="chk hidden" id="wEiBox"><input type="checkbox" id="wEi" checked><span>일용직 고용보험 0.9%도 뺌</span></label>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="wh">계산하기</button>
+      <section class="card res hidden" data-res="wh">
         <h2>계산 결과</h2>
         <div class="stat" id="wStat"></div>
         <table class="t" id="wTbl"></table>
@@ -220,7 +223,8 @@
           <div><label class="f" for="cSme">기업 규모</label><select id="cSme"><option value="sme">중소기업 (최저한세 7%)</option><option value="mid">중소기업 아님 (최저한세 10~17%)</option></select></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="corp">계산하기</button>
+      <section class="card res hidden" data-res="corp">
         <h2>계산 결과</h2>
         <div class="stat" id="cStat"></div>
         <table class="t" id="cTbl"></table>
@@ -243,7 +247,8 @@
         <label class="f">기준 연도</label>
         <div class="radio-group" id="sYears"></div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="ins">계산하기</button>
+      <section class="card res hidden" data-res="ins">
         <h2>계산 결과</h2>
         <div class="stat" id="sStat"></div>
         <table class="t" id="sTbl"></table>
@@ -263,7 +268,8 @@
         </div>
         <label class="chk"><input type="checkbox" id="dPro"><span>의사·변호사·세무사 등 전문직 사업자</span></label>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="duty">판정하기</button>
+      <section class="card res hidden" data-res="duty">
         <h2>판정 결과</h2>
         <div id="dOut"></div>
       </section>

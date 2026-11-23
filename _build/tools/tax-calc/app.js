@@ -272,8 +272,13 @@ function setup(){
 setup(); loadState();
 bindTabs();
 $('#tabs').onTab = t => { history.replaceState(null, '', '#' + t); };
-$('#main').addEventListener('input', ev => { if (ev.target.classList.contains('m')) moneyInput(ev.target); all(); });
-$('#main').addEventListener('change', all);
+/* 계산하기 버튼을 눌러야 결과가 보임. 누른 뒤 입력을 바꾸면 결과를 숨기고 다시 누르게 함 */
+const stale = ev => { const pane = ev.target.closest('[data-pane]'); if (!pane || ev.target.closest('.res')) return; const t = pane.dataset.pane, r = $(`[data-res="${t}"]`), b = $(`button.calc[data-calc="${t}"]`);
+  if (r && !r.classList.contains('hidden')) { r.classList.add('hidden'); if (b) b.textContent = b.dataset.label; } };
+$$('button.calc').forEach(b => b.dataset.label = b.textContent);
+document.addEventListener('click', ev => { const b = ev.target.closest('button.calc'); if (!b) return; all(); const r = $(`[data-res="${b.dataset.calc}"]`); r.classList.remove('hidden'); b.textContent = '다시 ' + b.dataset.label; r.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('#main').addEventListener('input', ev => { if (ev.target.classList.contains('m')) moneyInput(ev.target); stale(ev); all(); });
+$('#main').addEventListener('change', ev => { stale(ev); all(); });
 $('#iWh3').onclick = () => { $('#iWh').value = fmt(f10(N(val('iRev')) * 0.03)); all(); };
 $('#icsBtn').onclick = icsOut;
 $('#calCopy').onclick = () => copy($('#calYear').value + '년 세무 일정\n' + schedule(+$('#calYear').value, whoSel()).map(x => `${kDate(x.d)} ${x.t}`).join('\n'));

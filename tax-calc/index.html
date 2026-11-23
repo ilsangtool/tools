@@ -211,6 +211,8 @@
   .hols summary{cursor:pointer;color:var(--sub);font-weight:600}
   .hols ul{columns:2;margin:8px 0 0;padding-left:18px;color:var(--ink2)}
   @media(max-width:600px){.hols ul{columns:1}}
+
+  button.calc{display:block;width:100%;min-height:52px;margin:4px 0 16px;font-size:16px;font-weight:700}
 </style>
 </head>
 <body>
@@ -322,7 +324,8 @@
           <div><label class="f" for="vSp">7월에 예정부과로 이미 낸 세액</label><input type="text" id="vSp" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="vat">계산하기</button>
+      <section class="card res hidden" data-res="vat">
         <h2>계산 결과</h2>
         <div class="stat" id="vStat"></div>
         <table class="t" id="vTbl"></table>
@@ -377,7 +380,8 @@
           <div><label class="f" for="iMid">11월 중간예납 낸 세액</label><input type="text" id="iMid" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="inc">계산하기</button>
+      <section class="card res hidden" data-res="inc">
         <h2>계산 결과</h2>
         <div class="stat" id="iStat"></div>
         <table class="t" id="iTbl"></table>
@@ -421,7 +425,8 @@
         <label class="chk hidden" id="wExpBox"><input type="checkbox" id="wExp" checked><span>필요경비 60% 인정 (강연료·원고료·심사료 등 일시적 인적용역)</span></label>
         <label class="chk hidden" id="wEiBox"><input type="checkbox" id="wEi" checked><span>일용직 고용보험 0.9%도 뺌</span></label>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="wh">계산하기</button>
+      <section class="card res hidden" data-res="wh">
         <h2>계산 결과</h2>
         <div class="stat" id="wStat"></div>
         <table class="t" id="wTbl"></table>
@@ -449,7 +454,8 @@
           <div><label class="f" for="cSme">기업 규모</label><select id="cSme"><option value="sme">중소기업 (최저한세 7%)</option><option value="mid">중소기업 아님 (최저한세 10~17%)</option></select></div>
         </div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="corp">계산하기</button>
+      <section class="card res hidden" data-res="corp">
         <h2>계산 결과</h2>
         <div class="stat" id="cStat"></div>
         <table class="t" id="cTbl"></table>
@@ -472,7 +478,8 @@
         <label class="f">기준 연도</label>
         <div class="radio-group" id="sYears"></div>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="ins">계산하기</button>
+      <section class="card res hidden" data-res="ins">
         <h2>계산 결과</h2>
         <div class="stat" id="sStat"></div>
         <table class="t" id="sTbl"></table>
@@ -492,7 +499,8 @@
         </div>
         <label class="chk"><input type="checkbox" id="dPro"><span>의사·변호사·세무사 등 전문직 사업자</span></label>
       </section>
-      <section class="card">
+      <button type="button" class="calc" data-calc="duty">판정하기</button>
+      <section class="card res hidden" data-res="duty">
         <h2>판정 결과</h2>
         <div id="dOut"></div>
       </section>
@@ -1090,8 +1098,13 @@ function setup(){
 setup(); loadState();
 bindTabs();
 $('#tabs').onTab = t => { history.replaceState(null, '', '#' + t); };
-$('#main').addEventListener('input', ev => { if (ev.target.classList.contains('m')) moneyInput(ev.target); all(); });
-$('#main').addEventListener('change', all);
+/* 계산하기 버튼을 눌러야 결과가 보임. 누른 뒤 입력을 바꾸면 결과를 숨기고 다시 누르게 함 */
+const stale = ev => { const pane = ev.target.closest('[data-pane]'); if (!pane || ev.target.closest('.res')) return; const t = pane.dataset.pane, r = $(`[data-res="${t}"]`), b = $(`button.calc[data-calc="${t}"]`);
+  if (r && !r.classList.contains('hidden')) { r.classList.add('hidden'); if (b) b.textContent = b.dataset.label; } };
+$$('button.calc').forEach(b => b.dataset.label = b.textContent);
+document.addEventListener('click', ev => { const b = ev.target.closest('button.calc'); if (!b) return; all(); const r = $(`[data-res="${b.dataset.calc}"]`); r.classList.remove('hidden'); b.textContent = '다시 ' + b.dataset.label; r.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('#main').addEventListener('input', ev => { if (ev.target.classList.contains('m')) moneyInput(ev.target); stale(ev); all(); });
+$('#main').addEventListener('change', ev => { stale(ev); all(); });
 $('#iWh3').onclick = () => { $('#iWh').value = fmt(f10(N(val('iRev')) * 0.03)); all(); };
 $('#icsBtn').onclick = icsOut;
 $('#calCopy').onclick = () => copy($('#calYear').value + '년 세무 일정\n' + schedule(+$('#calYear').value, whoSel()).map(x => `${kDate(x.d)} ${x.t}`).join('\n'));
