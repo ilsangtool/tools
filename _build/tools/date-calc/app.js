@@ -40,6 +40,7 @@ function anniv(){
 
 function add(){
   const b = parseDate($('#adBase').value) || T0, n = parseInt(val('adN'), 10) || 0, u = $('#adUnit').value;
+  if (val('adN') === '') { $('#adOut').innerHTML = '<small>더할 값을 넣으세요 (빼려면 −)</small>'; out.add = ''; return; }
   const r = u === 'd' ? addDays(b, n) : u === 'w' ? addDays(b, n * 7) : addMonths(b, u === 'm' ? n : n * 12);
   const ul = { d:'일', w:'주', m:'개월', y:'년' }[u];
   $('#adOut').innerHTML = `${kDate(r, true)}<small>${kDate(b, true)}${n >= 0 ? '부터 ' + n0(n) + ul + ' 뒤' : '부터 ' + n0(-n) + ul + ' 전'} · 오늘 기준 ${dd(dayDiff(T0, r))}</small>`;
@@ -84,7 +85,7 @@ const RUN = { dday, anniv, add, army, age };
 function save(){ const s = { tab: cur, arType: $('#arType').selectedIndex }; $$('input[type=date], input[type=number], select').forEach(e => s[e.id] = e.value); $$('input[type=checkbox]').forEach(e => s[e.id] = e.checked); store.set(KEY, s); }
 function load(){
   const s = store.get(KEY);
-  if (!s) { $('#ddTarget').value = ymd(addDays(T0, 100)); $('#adBase').value = ymd(T0); return; }
+  if (!s) { $('#adBase').value = ymd(T0); return; } // 목표일·더할 값은 빈칸으로 시작
   $$('input[type=date], input[type=number], select').forEach(e => { if (s[e.id] != null) e.value = s[e.id]; });
   $$('input[type=checkbox]').forEach(e => { if (s[e.id] != null) e.checked = s[e.id]; });
   if (s.arType != null) $('#arType').selectedIndex = s.arType;

@@ -2,7 +2,8 @@
 const KEY = 'ilsang_taxcalc_v1';
 const N = s => { const v = String(s == null ? '' : s).replace(/[^\d.-]/g, ''); return v && v !== '-' ? Math.round(+v) || 0 : 0; };
 const fmt = n => (Math.round(n) || 0).toLocaleString('ko-KR');
-const f10 = n => Math.floor(n / 10) * 10;
+const flr = x => Math.floor(x + 1e-7); // 원 단위 절사 (소수 오차 보정)
+const f10 = n => Math.floor(n / 10 + 1e-7) * 10; // 소수 오차(25199.9999…) 때문에 10원 덜 나오지 않게
 const pct = r => (Math.round(r * 100000) / 1000) + '%';
 function progressive(base, br){ let tax = 0, prev = 0; for (const [cap, r] of br) { const top = cap == null ? Infinity : cap; if (base > prev) tax += (Math.min(base, top) - prev) * r; prev = top; if (base <= top) break; } return tax; }
 function bracketOf(base, br){ let prev = 0; for (const [cap, r] of br) { if (cap == null || base <= cap) return { r, from: prev, cap }; prev = cap; } return {}; }
@@ -122,8 +123,8 @@ function calcInc(){
   }
   const other = N(val('iOther')), total = Math.max(0, bizInc) + other;
   const dep = Math.max(1, +val('iDep') || 1), ded = IT.basicDeduct * dep + N(val('iDed'));
-  const base = Math.max(0, total - ded), calc = Math.floor(progressive(base, IT.brackets)), bk = bracketOf(base, IT.brackets);
-  const bookCr = $('#iBook').checked && total > 0 ? Math.min(IT.bookCreditCap, Math.floor(calc * IT.bookCreditRate * Math.max(0, bizInc) / total)) : 0;
+  const base = Math.max(0, total - ded), calc = flr(progressive(base, IT.brackets)), bk = bracketOf(base, IT.brackets);
+  const bookCr = $('#iBook').checked && total > 0 ? Math.min(IT.bookCreditCap, flr(calc * IT.bookCreditRate * Math.max(0, bizInc) / total)) : 0;
   const std = $('#iStd').checked ? IT.stdCredit : 0;
   const cr = Math.min(calc, bookCr + std + N(val('iCr')));
   const dec = calc - cr, wh = N(val('iWh')), mid = N(val('iMid')), pay = dec - wh - mid, local = f10(dec * IT.localRate);
@@ -195,8 +196,8 @@ function calcCorp(){
   const y = radio('cy') || '2026', CT = ruleAt(RULES.corpTax, y + '-01-01');
   const net = N(val('cNet')), adj = N(val('cAdj')), loss = N(val('cLoss')), cr = N(val('cCr')), pre = N(val('cPre'));
   const inc = net + adj, lossUsed = Math.min(Math.max(0, inc), loss), base = Math.max(0, inc - lossUsed);
-  const calc = Math.floor(progressive(base, CT.brackets));
-  const minRate = $('#cSme').value === 'sme' ? 0.07 : 0.10, minTax = Math.floor(base * minRate);
+  const calc = flr(progressive(base, CT.brackets));
+  const minRate = $('#cSme').value === 'sme' ? 0.07 : 0.10, minTax = flr(base * minRate);
   const after = Math.max(calc - cr, Math.min(calc, cr ? minTax : 0));
   const pay = after - pre;
   const brs = CT.brackets.map(([c, r], i, a) => `${i ? fmt(a[i - 1][0] / 1e8) + '억 초과 ' : ''}${c ? fmt(c / 1e8) + '억 이하' : ''} ${pct(r)}`).join(' · ');

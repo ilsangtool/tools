@@ -20,10 +20,17 @@
   .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .sched{max-height:520px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r-s)}
   .sched thead th{position:sticky;top:0;background:#fff}
-  table.t.loans td{padding:6px 4px;vertical-align:middle}
-  table.t.loans input,table.t.loans select{min-height:38px;padding:6px 8px;font-size:14px}
-  table.t.loans input.n{text-align:right;min-width:96px}
-  table.t.loans tr.sel td{background:var(--accent-soft)}
+  .loan-list{display:grid;gap:12px;margin:8px 0 4px}
+  .loan{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 12px;background:#fff}
+  .loan.sel{border-color:var(--accent-line);box-shadow:0 0 0 2px var(--accent-soft)}
+  .loan-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+  .loan-h b{font-family:var(--serif);font-size:16px;font-weight:600}
+  .loan-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px}
+  .loan-g .f{margin-top:8px}
+  .loan-g input.n{text-align:right}
+  .loan-g .quick button{min-height:32px;padding:4px 10px}
+  .loan-c{grid-column:1/-1;display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
+  @media(max-width:600px){.loan-g{grid-template-columns:1fr}}
   table.t tr.sum td{font-weight:700;border-top:1px solid var(--ink)}
   table.t tr.best td{background:var(--ok-soft)}
   table.t td small{color:var(--faint)}

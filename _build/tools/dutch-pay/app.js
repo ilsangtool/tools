@@ -11,7 +11,7 @@ function simple(){
   const T = +val('sTotal') || 0, n = Math.max(1, +val('sN') || 1), u = +radio('unit'), up = radio('round') === 'up';
   let per = T / n; per = up ? Math.ceil(per / u) * u : Math.floor(per / u) * u;
   const payerShare = T - per * (n - 1);
-  $('#sStat').innerHTML = !T ? '<div><small>1인당</small><b>—</b></div>' :
+  $('#sStat').innerHTML = !T || !+val('sN') ? `<div><small>1인당</small><b style="font-size:16px">${!T ? '총 금액' : '인원'}을 넣어 주세요</b></div>` :
     `<div class="main"><small>1인당 보낼 금액</small><b>${won(per)}</b></div>` +
     (up ? `<div><small>모두 보내면 남는 돈</small><b>${won(per * n - T)}</b></div>`
         : `<div><small>결제한 사람 부담</small><b>${won(payerShare)}</b></div>`);
@@ -141,7 +141,7 @@ $$('input[name=unit], input[name=round]').forEach(r => r.addEventListener('chang
 $('#sCopy').addEventListener('click', () => copy(simple.text));
 
 const ss = store.get(KEY + '_s');
-if (ss) { $('#sTotal').value = ss.T || ''; $('#sN').value = ss.n || 4; $$('input[name=unit]').forEach(r => r.checked = +r.value === ss.u); $$('input[name=round]').forEach(r => r.checked = r.value === ss.r); }
+if (ss) { $('#sTotal').value = ss.T || ''; $('#sN').value = ss.n || ''; $$('input[name=unit]').forEach(r => r.checked = +r.value === ss.u); $$('input[name=round]').forEach(r => r.checked = r.value === ss.r); }
 simple();
 
 const shared = fromHash();

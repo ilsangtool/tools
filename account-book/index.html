@@ -703,7 +703,7 @@ const KEY = 'ilsang_acctbook_v1';
 const N = s => { const v = String(s == null ? '' : s).replace(/[^\d.-]/g, ''); return v && v !== '-' ? Math.round(+v) || 0 : 0; };
 const fmt = n => (Math.round(n) || 0).toLocaleString('ko-KR');
 const fmtS = n => (n < 0 ? '-' : '') + fmt(Math.abs(n));
-const f10 = n => Math.floor(n / 10) * 10;
+const f10 = n => Math.floor(n / 10 + 1e-7) * 10; // 소수 오차(25199.9999…) 때문에 10원 덜 나오지 않게
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const ym = d => d.slice(0, 7);
 const lastDay = (y, m) => new Date(y, m, 0).getDate();
@@ -1206,7 +1206,7 @@ function payCalc(month){
 }
 function renderEmps(){
   const tb = $('#empTbl tbody');
-  tb.innerHTML = (B.emps || []).map(p => `<tr data-id="${p.id}"><td><input type="text" data-k="name" value="${esc(p.name || '')}" placeholder="이름"></td><td><input type="text" class="n" data-k="pay" inputmode="numeric" value="${p.pay ? fmt(p.pay) : ''}" placeholder="2,500,000"></td><td><input type="text" class="n" data-k="nontax" inputmode="numeric" value="${p.nontax ? fmt(p.nontax) : ''}" placeholder="200,000"></td><td><input type="text" class="n" data-k="dep" inputmode="numeric" value="${p.dep || 1}" style="min-width:56px"></td><td><input type="text" class="n" data-k="kids" inputmode="numeric" value="${p.kids || 0}" style="min-width:48px"></td><td><select data-k="ratio">${[80, 100, 120].map(r => `<option value="${r}"${(p.ratio || 100) === r ? ' selected' : ''}>${r}%</option>`).join('')}</select></td><td><select data-k="ins"><option value="1"${p.ins !== false ? ' selected' : ''}>가입</option><option value="0"${p.ins === false ? ' selected' : ''}>미가입</option></select></td><td><button type="button" class="ghost sm" data-rm="${p.id}">삭제</button></td></tr>`).join('') || '<tr><td colspan="8" class="empty">직원을 추가하세요</td></tr>';
+  tb.innerHTML = (B.emps || []).map(p => `<tr data-id="${p.id}"><td><input type="text" data-k="name" value="${esc(p.name || '')}" placeholder="이름"></td><td><input type="text" class="n" data-k="pay" inputmode="numeric" value="${p.pay ? fmt(p.pay) : ''}" placeholder="예: 2,500,000"></td><td><input type="text" class="n" data-k="nontax" inputmode="numeric" value="${p.nontax ? fmt(p.nontax) : ''}" placeholder="예: 200,000 (식대)"></td><td><input type="text" class="n" data-k="dep" inputmode="numeric" value="${p.dep || 1}" style="min-width:56px"></td><td><input type="text" class="n" data-k="kids" inputmode="numeric" value="${p.kids || 0}" style="min-width:48px"></td><td><select data-k="ratio">${[80, 100, 120].map(r => `<option value="${r}"${(p.ratio || 100) === r ? ' selected' : ''}>${r}%</option>`).join('')}</select></td><td><select data-k="ins"><option value="1"${p.ins !== false ? ' selected' : ''}>가입</option><option value="0"${p.ins === false ? ' selected' : ''}>미가입</option></select></td><td><button type="button" class="ghost sm" data-rm="${p.id}">삭제</button></td></tr>`).join('') || '<tr><td colspan="8" class="empty">직원을 추가하세요</td></tr>';
 }
 $('#empTbl').addEventListener('input', ev => {
   const tr = ev.target.closest('tr'), p = tr && B.emps.find(x => x.id === tr.dataset.id); if (!p) return;
@@ -1527,7 +1527,7 @@ $('#fMonth').addEventListener('change', renderList); $('#fQ').addEventListener('
 $('#vPeriod').addEventListener('change', renderVat);
 $('#pOpen').addEventListener('change', renderPartners);
 $('#payMonth').addEventListener('change', () => { const m = $('#payMonth').value; if (m) $('#payDate').value = m + '-' + String(lastDay(+m.slice(0, 4), +m.slice(5))).padStart(2, '0'); renderPay(); });
-$('#empAdd').onclick = () => { B.emps.push({ id: uid(), name: '', pay: 0, nontax: 200000, dep: 1, kids: 0, ratio: 100, ins: true }); save(); renderEmps(); renderPay(); const i = $$('#empTbl tbody input[data-k=name]').pop(); if (i) i.focus(); };
+$('#empAdd').onclick = () => { B.emps.push({ id: uid(), name: '', pay: 0, nontax: 0, dep: 1, kids: 0, ratio: 100, ins: true }); save(); renderEmps(); renderPay(); const i = $$('#empTbl tbody input[data-k=name]').pop(); if (i) i.focus(); };
 $('#bkPaste').addEventListener('input', bkParse);
 ['cDate', 'cDesc', 'cOut', 'cIn'].forEach(id => $('#' + id).addEventListener('change', () => bkBuild()));
 
