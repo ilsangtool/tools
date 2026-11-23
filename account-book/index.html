@@ -783,10 +783,10 @@ function optGroups(list, sel){
   return ['A', 'L', 'Q', 'R', 'E'].filter(t => g[t]).map(t => `<optgroup label="${TNAME[t]}">${opt(g[t], sel)}</optgroup>`).join('');
 }
 
-/* ---- 거래 입력 폼: 구분별 계정⁠·⁠결제수단 ---- */
-const KIND = { sale: '매출', buy: '매입⁠·⁠비용', in: '받은 돈', out: '보낸 돈', move: '현금↔통장', manual: '분개', ob: '기초', pay: '급여', vatclose: '부가세 정리' };
-const EVID_SALE = { tax: '세금계산서 발행', card: '카드 매출', cash: '현금영수증 발행', bill: '계산서 발행 (면세)', simple: '영수증⁠·⁠현금 (정규증빙 외)', none: '증빙 없음' };
-const EVID_BUY = { tax: '세금계산서', card: '신용⁠·⁠체크카드', cash: '현금영수증 (지출증빙)', bill: '계산서 (면세)', simple: '간이영수증', none: '증빙 없음' };
+/* ---- 거래 입력 폼: 구분별 계정·결제수단 ---- */
+const KIND = { sale: '매출', buy: '매입·비용', in: '받은 돈', out: '보낸 돈', move: '현금↔통장', manual: '분개', ob: '기초', pay: '급여', vatclose: '부가세 정리' };
+const EVID_SALE = { tax: '세금계산서 발행', card: '카드 매출', cash: '현금영수증 발행', bill: '계산서 발행 (면세)', simple: '영수증·현금 (정규증빙 외)', none: '증빙 없음' };
+const EVID_BUY = { tax: '세금계산서', card: '신용·체크카드', cash: '현금영수증 (지출증빙)', bill: '계산서 (면세)', simple: '간이영수증', none: '증빙 없음' };
 function cashAccs(){ return accs().filter(CASHLIKE); }
 function accChoices(kind){
   const A = accs();
@@ -877,7 +877,7 @@ function toEntry(src){
     const ded = tax > 0 && ['tax', 'card', 'cash'].includes(src.evid) && src.acc !== '813';
     const lines = ded ? [{ a: src.acc, d: supply, c: 0 }, { a: '135', d: tax, c: 0 }, { a: mAcc, d: 0, c: total }] : [{ a: src.acc, d: total, c: 0 }, { a: mAcc, d: 0, c: total }];
     return { lines, supply: ded ? supply : total, vatAmt: tax, ded,
-      note: tax && !ded ? (src.acc === '813' ? '접대비(기업업무추진비)는 매입세액을 공제하지 않아 부가세까지 비용으로 넣습니다.' : '간이영수증⁠·⁠증빙 없음은 매입세액 공제가 안 되어 부가세까지 비용으로 넣습니다.') : '' };
+      note: tax && !ded ? (src.acc === '813' ? '접대비(기업업무추진비)는 매입세액을 공제하지 않아 부가세까지 비용으로 넣습니다.' : '간이영수증·증빙 없음은 매입세액 공제가 안 되어 부가세까지 비용으로 넣습니다.') : '' };
   }
   if (src.kind === 'in') return { lines: [{ a: mAcc, d: amt, c: 0 }, { a: src.acc, d: 0, c: amt }] };
   if (src.kind === 'out') return { lines: [{ a: src.acc, d: amt, c: 0 }, { a: mAcc, d: 0, c: amt }] };
@@ -979,7 +979,7 @@ function cashNow(){ const m = sums('', ymd(today())); return cashAccs().reduce((
 function renderKPI(){
   const t = ymd(today()), from = t.slice(0, 8) + '01', p = pl(from, t);
   const exp = p.cogs + p.sga + p.nonopE + p.tax;
-  $('#kpi').innerHTML = `<div><small>이번 달 매출</small><b>${fmt(p.sales + p.nonopR)}</b></div><div><small>이번 달 비용</small><b>${fmt(exp)}</b></div><div><small>이번 달 이익</small><b class="${p.net < 0 ? 'neg' : ''}">${fmtS(p.net)}</b></div><div><small>현금⁠·⁠통장 잔액</small><b class="${cashNow() < 0 ? 'neg' : ''}">${fmtS(cashNow())}</b></div>`;
+  $('#kpi').innerHTML = `<div><small>이번 달 매출</small><b>${fmt(p.sales + p.nonopR)}</b></div><div><small>이번 달 비용</small><b>${fmt(exp)}</b></div><div><small>이번 달 이익</small><b class="${p.net < 0 ? 'neg' : ''}">${fmtS(p.net)}</b></div><div><small>현금·통장 잔액</small><b class="${cashNow() < 0 ? 'neg' : ''}">${fmtS(cashNow())}</b></div>`;
 }
 function renderBooks(){
   $('#bookSel').innerHTML = Object.values(S.books).map(b => `<option value="${b.id}"${b.id === S.cur ? ' selected' : ''}>${esc(b.name)}</option>`).join('');
@@ -1011,7 +1011,7 @@ $('#eList').addEventListener('click', ev => {
   if (b.dataset.del) { if (b.dataset.armed) delEntry(b.dataset.del); else { b.dataset.armed = 1; b.textContent = '정말?'; setTimeout(() => { b.dataset.armed = ''; b.textContent = '삭제'; }, 2500); } }
 });
 
-/* ---- 분개장⁠·⁠원장 ---- */
+/* ---- 분개장·원장 ---- */
 let ledMode = 'journal', lastTable = { title: '', rows: [] };
 function setLedAcc(){
   const list = ledMode === 'cash' ? cashAccs() : accs(), cur = $('#lAcc').value;
@@ -1101,7 +1101,7 @@ function renderFS(){
     fsTable = { title: `손익계산서 (${from || '처음'}~${to})`, head: ['과목', '금액'], rows: L.map(r => [r[1], r[2]]) };
   } else if (fsMode === 'bs') {
     const r = bsRows(to);
-    out.innerHTML = `<p class="hint">${to} 현재 · 단위: 원 (재무상태표는 끝 날짜 기준입니다)</p>${r.ok ? '' : `<div class="notice">자산(${fmt(r.TA)})과 부채⁠·⁠자본(${fmt(r.TLQ)})이 맞지 않습니다. 분개 차⁠·⁠대변이 어긋난 거래가 있는지 확인하세요.</div>`}<div class="tbl-wrap"><table class="t">${rowsHtml(r.L)}</table></div>`;
+    out.innerHTML = `<p class="hint">${to} 현재 · 단위: 원 (재무상태표는 끝 날짜 기준입니다)</p>${r.ok ? '' : `<div class="notice">자산(${fmt(r.TA)})과 부채·자본(${fmt(r.TLQ)})이 맞지 않습니다. 분개 차·대변이 어긋난 거래가 있는지 확인하세요.</div>`}<div class="tbl-wrap"><table class="t">${rowsHtml(r.L)}</table></div>`;
     fsTable = { title: `재무상태표 (${to})`, head: ['과목', '금액'], rows: r.L.map(x => [x[1], x[2]]) };
   } else if (fsMode === 'tb') {
     const m = sums(from, to), pre = from ? sums('', addDay(from, -1)) : {};
@@ -1175,13 +1175,13 @@ function renderVat(){
   const [from, to] = ($('#vPeriod').value || '|').split('|'), R = vatCalc(from, to), out = $('#vatOut');
   if (B.tax === 'exempt') { out.innerHTML = '<div class="notice">면세사업자는 부가세 신고 대신 매년 2월 10일까지 <b>사업장현황신고</b>를 합니다. 아래는 같은 기간 매출(수입금액) 합계입니다.</div>' + `<div class="stat"><div class="main"><small>수입금액</small><b>${fmt(pl(from, to).sales)}원</b></div></div>`; vatTable = { title: '수입금액', head: ['항목', '금액'], rows: [['수입금액', pl(from, to).sales]] }; return; }
   const V = ruleAt(RULES.vat, to);
-  const LBL = { tax: '세금계산서', card: '신용카드⁠·⁠카드 매출', cash: '현금영수증', simple: '기타 (정규증빙 외)', none: '기타', free: '면세⁠·⁠영세 (세액 없음)', bill: '계산서' };
+  const LBL = { tax: '세금계산서', card: '신용카드·카드 매출', cash: '현금영수증', simple: '기타 (정규증빙 외)', none: '기타', free: '면세·영세 (세액 없음)', bill: '계산서' };
   const rowsOut = Object.entries(R.out), rowsIn = Object.entries(R.inp), csv = [];
   const tr = (k, x) => `<tr><td>${LBL[k] || k}</td><td class="n">${x.n}</td><td class="n">${fmt(x.sup)}</td><td class="n">${fmt(x.tax)}</td></tr>`;
   rowsOut.forEach(([k, x]) => csv.push(['매출', LBL[k], x.n, x.sup, x.tax])); rowsIn.forEach(([k, x]) => csv.push(['매입(공제)', LBL[k], x.n, x.sup, x.tax]));
   if (B.tax === 'simple') {
     const sales = R.salesTotal + Object.values(R.out).reduce((s, x) => s + x.tax, 0);
-    out.innerHTML = `<div class="notice">간이과세자는 장부에 부가세를 나누지 않았으므로, 아래 공급대가(부가세 포함 매출)를 세무 계산기의 간이과세 계산에 넣으세요. 연 매출 ${fmt(V.simpleExempt)}원 미만이면 납부 의무가 면제됩니다.</div><div class="stat"><div class="main"><small>공급대가 (매출 합계)</small><b>${fmt(sales)}원</b></div><div><small>매입 합계 (세금계산서 등)</small><b>${fmt(R.buyTotal)}원</b></div><div><small>카드⁠·⁠현금영수증 매출</small><b>${fmt(R.cardSales)}원</b></div></div>`;
+    out.innerHTML = `<div class="notice">간이과세자는 장부에 부가세를 나누지 않았으므로, 아래 공급대가(부가세 포함 매출)를 세무 계산기의 간이과세 계산에 넣으세요. 연 매출 ${fmt(V.simpleExempt)}원 미만이면 납부 의무가 면제됩니다.</div><div class="stat"><div class="main"><small>공급대가 (매출 합계)</small><b>${fmt(sales)}원</b></div><div><small>매입 합계 (세금계산서 등)</small><b>${fmt(R.buyTotal)}원</b></div><div><small>카드·현금영수증 매출</small><b>${fmt(R.cardSales)}원</b></div></div>`;
     $('#vatToTax').href = `../tax-calc/#vat?type=simple&sales=${sales}&buy=${R.buyTotal}&card=${R.cardSales}`;
     vatTable = { title: '간이과세 집계', head: ['구분', '증빙', '건수', '공급가액', '세액'], rows: csv };
     return;
@@ -1191,9 +1191,9 @@ function renderVat(){
   out.innerHTML = `<div class="stat"><div><small>매출세액</small><b>${fmt(R.outTax)}</b></div><div><small>매입세액 (공제)</small><b>${fmt(R.inTax)}</b></div><div><small>카드매출 세액공제 (어림)</small><b>${fmt(Math.min(credit, Math.max(0, R.outTax - R.inTax)))}</b></div><div class="main"><small>${pay < 0 ? '환급 예상' : '납부 예상'}</small><b>${fmt(Math.abs(pay))}원</b></div></div>
   <h3 class="h3">매출</h3><div class="tbl-wrap"><table class="t"><thead><tr><th>증빙</th><th class="n">건수</th><th class="n">공급가액</th><th class="n">세액</th></tr></thead><tbody>${rowsOut.map(([k, x]) => tr(k, x)).join('') || '<tr><td colspan="4" class="empty">매출 기록 없음</td></tr>'}</tbody></table></div>
   <h3 class="h3">매입 (공제받는 것)</h3><div class="tbl-wrap"><table class="t"><thead><tr><th>증빙</th><th class="n">건수</th><th class="n">공급가액</th><th class="n">세액</th></tr></thead><tbody>${rowsIn.map(([k, x]) => tr(k, x)).join('') || '<tr><td colspan="4" class="empty">공제 매입 없음</td></tr>'}</tbody></table></div>
-  ${R.nonDed ? `<p class="hint">공제받지 못하는 매입 ${R.nonDed}건 (세액 ${fmt(R.nonDedTax)}원 · 간이영수증⁠·⁠증빙 없음⁠·⁠접대비)은 비용에 포함했습니다.</p>` : ''}
+  ${R.nonDed ? `<p class="hint">공제받지 못하는 매입 ${R.nonDed}건 (세액 ${fmt(R.nonDedTax)}원 · 간이영수증·증빙 없음·접대비)은 비용에 포함했습니다.</p>` : ''}
   ${R.other.out || R.other.in ? `<p class="hint">직접 분개로 넣은 부가세 매출세액 ${fmt(R.other.out)}원 · 매입세액 ${fmt(R.other.in)}원도 합계에 넣었습니다.</p>` : ''}
-  <p class="hint">카드매출 세액공제는 개인사업자(직전 연도 공급가액 ${fmt(V.cardSalesLimit / 1e8)}억원 이하) 기준 ${(V.cardCredit * 100).toFixed(1)}%, 연 ${fmt(V.cardCreditCap / 1e4)}만원 한도로 어림했습니다. 예정고지⁠·⁠전자신고 세액공제 등은 빠져 있습니다.</p>
+  <p class="hint">카드매출 세액공제는 개인사업자(직전 연도 공급가액 ${fmt(V.cardSalesLimit / 1e8)}억원 이하) 기준 ${(V.cardCredit * 100).toFixed(1)}%, 연 ${fmt(V.cardCreditCap / 1e4)}만원 한도로 어림했습니다. 예정고지·전자신고 세액공제 등은 빠져 있습니다.</p>
   <div class="actions"><button type="button" class="ghost" id="vatClose">이 기간 부가세 정리 분개 만들기</button></div>`;
   $('#vatToTax').href = `../tax-calc/#vat?type=general&out=${R.outTax}&in=${R.inTax}&card=${R.cardSales}&biz=${B.type}`;
   $('#vatClose').onclick = () => {
@@ -1342,7 +1342,7 @@ $('#bkPost').onclick = () => {
   save(); toast(`${n}건을 기록했습니다`); $('#bkPaste').value = ''; bkParse(); renderList();
 };
 
-/* ---- 설정⁠·⁠기초잔액⁠·⁠계정 ---- */
+/* ---- 설정·기초잔액·계정 ---- */
 function renderSetup(){
   $('#sName').value = B.name; $('#sType').value = B.type; $$('input[name=tax]').forEach(r => r.checked = r.value === B.tax);
   const ob = B.ob || { date: ymd(today()).slice(0, 4) + '-01-01', lines: [{ a: '101', v: 0 }, { a: '103', v: 0 }], eq: B.type === 'corp' ? '375' : '331' };
@@ -1421,7 +1421,7 @@ $('#payPost').onclick = () => {
   if ($('#payEr').checked && t.T.er) lines.push({ a: '811', d: t.T.er, c: 0 }, { a: '254', d: 0, c: t.T.er });
   const old = B.payPosted[t.month]; B.entries = B.entries.filter(e => e.id !== old);
   const id = uid(); B.entries.push({ id, date, kind: 'pay', memo: t.month + ' 급여 (' + t.L.length + '명)', partner: '', lines });
-  B.payPosted[t.month] = id; save(); renderPay(); toast('급여를 기록했습니다. 4대보험⁠·⁠원천세 낼 때 [보낸 돈 → 예수금]으로 넣으세요');
+  B.payPosted[t.month] = id; save(); renderPay(); toast('급여를 기록했습니다. 4대보험·원천세 낼 때 [보낸 돈 → 예수금]으로 넣으세요');
 };
 $('#allCsv').onclick = () => { lastTable = null; ledMode = 'journal'; const f = $('#lFrom').value, t = $('#lTo').value; $('#lFrom').value = ''; $('#lTo').value = ''; renderLedger(); csvOut(lastTable, B.name + '_전체분개'); $('#lFrom').value = f; $('#lTo').value = t; ledMode = $('#ledTabs .on').dataset.tab; renderLedger(); };
 $('#bkSave').onclick = () => {
@@ -1440,7 +1440,7 @@ $('#bkFile').onchange = async ev => {
   } catch (_) { toast('장부 백업 파일이 아닙니다'); }
   ev.target.value = '';
 };
-/* ---- 장부 전환⁠·⁠탭 ---- */
+/* ---- 장부 전환·탭 ---- */
 function switchBook(id){
   S.cur = id; B = S.books[id];
   ['accounts', 'entries', 'tpls', 'emps'].forEach(k => B[k] = B[k] || []); B.payTax = B.payTax || {}; B.payPosted = B.payPosted || {};
@@ -1448,7 +1448,7 @@ function switchBook(id){
   if (!$('#bookMgr').classList.contains('hidden')) renderBookList();
 }
 $('#bookSel').addEventListener('change', () => switchBook($('#bookSel').value));
-/* ---- 장부 추가⁠·⁠삭제⁠·⁠이름 바꾸기⁠·⁠이월 ---- */
+/* ---- 장부 추가·삭제·이름 바꾸기·이월 ---- */
 let confirmId = null, lastDeleted = null, undoTimer = null;
 const bookStat = b => { const e = (b.entries || []).filter(x => x.kind !== 'ob'); return { n: e.length, last: e.reduce((m, x) => x.date > m ? x.date : m, '') }; };
 function renderBookList(){
@@ -1459,9 +1459,9 @@ function renderBookList(){
     return `<tr class="${cur ? 'cur' : ''}" data-id="${b.id}"><td><input type="text" data-act="name" value="${esc(b.name)}" aria-label="장부 이름" style="min-width:130px">${cur ? ' <span class="chip s">지금 장부</span>' : ''}</td><td class="n">${st.n}건</td><td class="hide-m">${st.last || '–'}</td><td class="ops">${cur ? '' : '<button type="button" class="ghost sm" data-act="open">열기</button>'}<button type="button" class="ghost sm" data-act="ask">삭제</button></td></tr>`;
   }).join('') + '</tbody>';
   const fromName = B.name;
-  $('#nbCarryInfo').textContent = `‘${fromName}’의 기준일 잔액(현금⁠·통장⁠·외상⁠·대출⁠·자본)을 새 장부의 기초 잔액으로 넣고, 그동안의 이익은 ${B.type === 'corp' ? '이월이익잉여금' : '자본금'}에 더합니다. 계정과목⁠·⁠직원⁠·⁠정기 거래도 복사합니다.`;
+  $('#nbCarryInfo').textContent = `‘${fromName}’의 기준일 잔액(현금·통장·외상·대출·자본)을 새 장부의 기초 잔액으로 넣고, 그동안의 이익은 ${B.type === 'corp' ? '이월이익잉여금' : '자본금'}에 더합니다. 계정과목·직원·정기 거래도 복사합니다.`;
 }
-function toggleMgr(open){ const o = open != null ? open : $('#bookMgr').classList.contains('hidden'); $('#bookMgr').classList.toggle('hidden', !o); $('#bookMgrBtn').setAttribute('aria-expanded', o); $('#bookMgrBtn').textContent = o ? '닫기' : '장부 추가⁠·⁠삭제'; if (o) { confirmId = null; renderBookList(); } }
+function toggleMgr(open){ const o = open != null ? open : $('#bookMgr').classList.contains('hidden'); $('#bookMgr').classList.toggle('hidden', !o); $('#bookMgrBtn').setAttribute('aria-expanded', o); $('#bookMgrBtn').textContent = o ? '닫기' : '장부 추가·삭제'; if (o) { confirmId = null; renderBookList(); } }
 $('#bookMgrBtn').onclick = () => toggleMgr();
 $('#nbClose').onclick = () => toggleMgr(false);
 $('#bookDel').onclick = () => { toggleMgr(true); confirmId = B.id; renderBookList(); $('#bookMgr').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
@@ -1498,7 +1498,7 @@ $('#nbFrom').addEventListener('change', () => {
   if (c && !$('#nbDate').value) { const y = today().getFullYear(); $('#nbDate').placeholder = `${y - 1}-12-31`; }
   if ($('#nbFrom').value !== 'empty') { if (!$('#nbType').value) $('#nbType').value = B.type; if (!$('#nbTax').value) $('#nbTax').value = B.tax; }
 });
-// 기준일까지의 계정⁠·⁠거래처별 잔액으로 기초 잔액 줄 만들기
+// 기준일까지의 계정·거래처별 잔액으로 기초 잔액 줄 만들기
 function carryLines(src, date){
   const accOf = code => BASE.concat(src.accounts || []).find(a => a.code === code) || { t: 'E' };
   const m = {};
@@ -1555,7 +1555,7 @@ $('#mAdd').onclick = () => addMLine();
 $('#eTpl').onclick = () => {
   const src = formSrc(); if (src.kind === 'manual') return toast('직접 분개는 정기 거래로 저장할 수 없습니다');
   const r = toEntry(src); if (r.err) return toast(r.err);
-  B.tpls.push({ id: uid(), day: +(src.date || ymd(today())).slice(8) || 1, src: Object.assign({}, src, { date: '' }) }); save(); toast('정기 거래로 저장했습니다 ([정기⁠·⁠통장 입력] 탭)');
+  B.tpls.push({ id: uid(), day: +(src.date || ymd(today())).slice(8) || 1, src: Object.assign({}, src, { date: '' }) }); save(); toast('정기 거래로 저장했습니다 ([정기·통장 입력] 탭)');
 };
 $('#fMonth').addEventListener('change', renderList); $('#fQ').addEventListener('input', renderList);
 ['lFrom', 'lTo', 'lAcc'].forEach(id => $('#' + id).addEventListener('change', renderLedger));

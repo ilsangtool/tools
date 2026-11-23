@@ -42,6 +42,7 @@
         <p class="hint">금리 유형을 고르지 않으면 가장 보수적인 변동금리로 계산합니다. 기존 대출은 여기에 연간 원리금을 직접 넣거나, 「대출 계산기」 탭에 넣고 DSR을 체크하세요.</p>
       </details>
       <p class="hint" id="otherInfo"></p>
+      <button type="button" class="calc" id="sharedCalc">대출 한도 계산하기</button>
     </section>
 
     <!-- 대출 한도 -->
@@ -65,6 +66,7 @@
         <label class="f" for="want">받고 싶은 대출 금액</label>
         <input type="text" id="want" class="m" inputmode="numeric" placeholder="예: 400,000,000"><div class="kor" id="wantKor"></div>
         <div class="quick" id="wantQuick"></div>
+        <button type="button" class="calc" data-calc="want">필요 연봉 계산하기</button>
         <div class="stat" id="iStat"></div>
         <table class="t" id="iTbl"></table>
       </section>
@@ -73,6 +75,7 @@
         <label class="f" for="cash">쓸 수 있는 현금 (자기자금)</label>
         <input type="text" id="cash" class="m" inputmode="numeric" placeholder="예: 300,000,000"><div class="kor" id="cashKor"></div>
         <label class="chk"><input type="checkbox" id="cashCost" checked><span>취득세·중개보수 등 부대비용도 현금에서 낸다고 보고 계산</span></label>
+        <button type="button" class="calc" data-calc="cash">살 수 있는 집값 찾기</button>
         <div class="stat" id="aStat"></div>
         <p class="hint" id="aNote"></p>
       </section>
@@ -87,6 +90,7 @@
         <div class="loan-list" id="loanTbl"></div>
         <div class="actions"><button type="button" id="loanAdd">+ 대출 하나 더 넣기</button></div>
         <label class="chk"><input type="checkbox" id="jeonseDsr"><span>전세대출 이자도 DSR에 넣기 (수도권·규제지역 1주택자가 받은 전세대출)</span></label>
+        <button type="button" class="calc" data-calc="loans">합계·상환표 계산하기</button>
         <div class="stat" id="sumStat"></div>
       </section>
       <section class="card" id="schedCard">
@@ -112,6 +116,7 @@
         <label class="chk"><input type="checkbox" id="firstCut"><span>생애최초 취득세 감면 (본인·배우자 무주택, 12억 이하)</span></label>
         <label class="chk"><input type="checkbox" id="vat"><span>중개보수에 부가세 10% 더하기 (일반과세 중개사무소)</span></label>
         <div class="row"><div><label class="f" for="loanAmt">대출 금액 <small>(인지세용, 비우면 한도 결과)</small></label><input type="text" id="loanAmt" class="m" inputmode="numeric" placeholder="예: 400,000,000"></div><div><label class="f" for="brokerRate">중개보수 협의 요율 (%) <small>(비우면 상한)</small></label><input type="number" id="brokerRate" step="0.01" inputmode="decimal" placeholder="예: 0.4"></div></div>
+        <button type="button" class="calc" data-calc="cost">취득 비용 계산하기</button>
       </section>
       <section class="card">
         <h2>취득 비용</h2>
@@ -135,6 +140,7 @@
           <div><label class="f" for="dep1">바꿀 보증금</label><input type="text" id="dep1" class="m" inputmode="numeric" placeholder="예: 100,000,000"></div>
           <div><label class="f" for="rent0">지금 월세 <small>(있으면)</small></label><input type="text" id="rent0" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
+        <button type="button" class="calc" data-calc="rent">전월세 전환 계산하기</button>
         <div class="stat" id="rStat"></div>
         <table class="t" id="rTbl"></table>
       </section>

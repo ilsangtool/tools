@@ -2112,7 +2112,7 @@ $('#saveAgain').addEventListener('click', () => result && saveAs(result.fmt));
 $('#copyTxt').addEventListener('click', () => result && copy(docPlainText(result.blocks)));
 
 /* =========================================================
-   PDF 나누기⁠·⁠합치기 (pdf-lib, 이 기기 안에서)
+   PDF 나누기·합치기 (pdf-lib, 이 기기 안에서)
    ========================================================= */
 bindTabs($('#modes'));
 let pdfLibP = null;
@@ -2145,7 +2145,7 @@ async function loadForEdit(f){
   const L = await loadPdfLib(), bytes = new Uint8Array(await f.arrayBuffer());
   let doc;
   try { doc = await PdfUnlock.load(L, bytes, t => askPw(f.name, t)); }
-  catch (e) { console.error(e); throw new Error(e.message === 'UNSUPPORTED' ? '표준이 아닌 보안 방식(인증서⁠·⁠DRM)이라 풀 수 없습니다' : '손상됐거나 PDF가 아닌 파일입니다'); }
+  catch (e) { console.error(e); throw new Error(e.message === 'UNSUPPORTED' ? '표준이 아닌 보안 방식(인증서·DRM)이라 풀 수 없습니다' : '손상됐거나 PDF가 아닌 파일입니다'); }
   if (!doc) throw new Error('암호를 넣지 않아 열지 않았습니다');
   return doc;
 }

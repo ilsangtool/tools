@@ -75,3 +75,8 @@
   @media(max-width:600px){.seg{grid-template-columns:1fr 1fr}.result .stat .main b{font-size:26px}.tabwrap .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}.tabwrap .tabs button{flex-shrink:0}}
   select:has(option[value=""]:checked){color:#a89c94}
   select option{color:var(--ink)}
+
+  /* 계산하기 버튼과 빠진 칸 표시 */
+  button.calc{display:block;width:100%;min-height:52px;margin-top:18px;font-size:16px;font-weight:700}
+  .need{border-color:var(--bad)!important;box-shadow:0 0 0 3px rgba(176,48,48,.14)}
+  #owner.need{outline:2px solid var(--bad);outline-offset:4px;border-radius:10px;box-shadow:none}

@@ -1075,7 +1075,7 @@ function setup(){
   const cy = $('#calYear').value;
   $('#calYear').innerHTML = Array.from({ length: 12 }, (_, i) => y - 1 + i).map(v => `<option value="${v}"${String(v) === (cy || String(y)) ? ' selected' : ''}>${v}년</option>`).join('');
   $('#iYear').innerHTML = [y - 1, y].map(v => `<option value="${v}"${v === (today().getMonth() < 5 ? y - 1 : y) ? ' selected' : ''}>${v}년 소득 (${v + 1}년 5월 신고)</option>`).join('');
-  $('#cYears').innerHTML = [['2025', '2025년 이전 시작 (9⁠·19⁠·21⁠·24%)'], ['2026', '2026년 이후 시작 (10⁠·20⁠·22⁠·25%)']].map(([v, n]) => `<label><input type="radio" name="cy" value="${v}"${v === '2026' ? ' checked' : ''}><span>${n}</span></label>`).join('');
+  $('#cYears').innerHTML = [['2025', '2025년 이전 시작 (9·19·21·24%)'], ['2026', '2026년 이후 시작 (10·20·22·25%)']].map(([v, n]) => `<label><input type="radio" name="cy" value="${v}"${v === '2026' ? ' checked' : ''}><span>${n}</span></label>`).join('');
   const ys = [...new Set(RULES.insurance.map(x => +x.from.slice(0, 4)))].filter(v => v >= y && v <= y + 1);
   $('#sYears').innerHTML = (ys.length ? ys : [y]).map(v => `<label><input type="radio" name="sy" value="${v}"${v === y ? ' checked' : ''}><span>${v}년 요율${v > y ? ' (예정)' : ''}</span></label>`).join('');
   $('#dGrp').innerHTML = ruleAt(RULES.bookDuty, ymd(today())).groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');

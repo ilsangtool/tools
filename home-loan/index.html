@@ -262,6 +262,11 @@
   @media(max-width:600px){.seg{grid-template-columns:1fr 1fr}.result .stat .main b{font-size:26px}.tabwrap .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}.tabwrap .tabs button{flex-shrink:0}}
   select:has(option[value=""]:checked){color:#a89c94}
   select option{color:var(--ink)}
+
+  /* 계산하기 버튼과 빠진 칸 표시 */
+  button.calc{display:block;width:100%;min-height:52px;margin-top:18px;font-size:16px;font-weight:700}
+  .need{border-color:var(--bad)!important;box-shadow:0 0 0 3px rgba(176,48,48,.14)}
+  #owner.need{outline:2px solid var(--bad);outline-offset:4px;border-radius:10px;box-shadow:none}
 </style>
 </head>
 <body>
@@ -322,6 +327,7 @@
         <p class="hint">금리 유형을 고르지 않으면 가장 보수적인 변동금리로 계산합니다. 기존 대출은 여기에 연간 원리금을 직접 넣거나, 「대출 계산기」 탭에 넣고 DSR을 체크하세요.</p>
       </details>
       <p class="hint" id="otherInfo"></p>
+      <button type="button" class="calc" id="sharedCalc">대출 한도 계산하기</button>
     </section>
 
     <!-- 대출 한도 -->
@@ -345,6 +351,7 @@
         <label class="f" for="want">받고 싶은 대출 금액</label>
         <input type="text" id="want" class="m" inputmode="numeric" placeholder="예: 400,000,000"><div class="kor" id="wantKor"></div>
         <div class="quick" id="wantQuick"></div>
+        <button type="button" class="calc" data-calc="want">필요 연봉 계산하기</button>
         <div class="stat" id="iStat"></div>
         <table class="t" id="iTbl"></table>
       </section>
@@ -353,6 +360,7 @@
         <label class="f" for="cash">쓸 수 있는 현금 (자기자금)</label>
         <input type="text" id="cash" class="m" inputmode="numeric" placeholder="예: 300,000,000"><div class="kor" id="cashKor"></div>
         <label class="chk"><input type="checkbox" id="cashCost" checked><span>취득세·중개보수 등 부대비용도 현금에서 낸다고 보고 계산</span></label>
+        <button type="button" class="calc" data-calc="cash">살 수 있는 집값 찾기</button>
         <div class="stat" id="aStat"></div>
         <p class="hint" id="aNote"></p>
       </section>
@@ -367,6 +375,7 @@
         <div class="loan-list" id="loanTbl"></div>
         <div class="actions"><button type="button" id="loanAdd">+ 대출 하나 더 넣기</button></div>
         <label class="chk"><input type="checkbox" id="jeonseDsr"><span>전세대출 이자도 DSR에 넣기 (수도권·규제지역 1주택자가 받은 전세대출)</span></label>
+        <button type="button" class="calc" data-calc="loans">합계·상환표 계산하기</button>
         <div class="stat" id="sumStat"></div>
       </section>
       <section class="card" id="schedCard">
@@ -392,6 +401,7 @@
         <label class="chk"><input type="checkbox" id="firstCut"><span>생애최초 취득세 감면 (본인·배우자 무주택, 12억 이하)</span></label>
         <label class="chk"><input type="checkbox" id="vat"><span>중개보수에 부가세 10% 더하기 (일반과세 중개사무소)</span></label>
         <div class="row"><div><label class="f" for="loanAmt">대출 금액 <small>(인지세용, 비우면 한도 결과)</small></label><input type="text" id="loanAmt" class="m" inputmode="numeric" placeholder="예: 400,000,000"></div><div><label class="f" for="brokerRate">중개보수 협의 요율 (%) <small>(비우면 상한)</small></label><input type="number" id="brokerRate" step="0.01" inputmode="decimal" placeholder="예: 0.4"></div></div>
+        <button type="button" class="calc" data-calc="cost">취득 비용 계산하기</button>
       </section>
       <section class="card">
         <h2>취득 비용</h2>
@@ -415,6 +425,7 @@
           <div><label class="f" for="dep1">바꿀 보증금</label><input type="text" id="dep1" class="m" inputmode="numeric" placeholder="예: 100,000,000"></div>
           <div><label class="f" for="rent0">지금 월세 <small>(있으면)</small></label><input type="text" id="rent0" class="m" inputmode="numeric" placeholder="0"></div>
         </div>
+        <button type="button" class="calc" data-calc="rent">전월세 전환 계산하기</button>
         <div class="stat" id="rStat"></div>
         <table class="t" id="rTbl"></table>
       </section>
@@ -686,11 +697,11 @@ const OWN = { first: '생애최초', none: '무주택', oneSell: '처분조건�
 let lastLimit = null;
 function renderLimit(){
   const I = inputs(), r = limitCalc(I); lastLimit = r;
-  $('#regionTag').innerHTML = `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
+  $('#regionTag').innerHTML = !$('#region').value ? '' : `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
   $('#lMiss').classList.toggle('on', I.miss.length > 0);
   $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
   if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
-  const items = [['LTV ' + pct(r.ltvRate), r.ltv], metroLike(I.z) ? ['수도권⁠·⁠규제 총액', r.cap] : null, ['DSR ' + pct(r.dsrLim) + (r.dsrApplies ? '' : ' (미적용)'), r.dsrApplies ? r.dsrMax : null], ['DTI ' + pct(r.dtiLim), r.dtiMax]].filter(x => x && x[1] != null);
+  const items = [['LTV ' + pct(r.ltvRate), r.ltv], metroLike(I.z) ? ['수도권·규제 총액', r.cap] : null, ['DSR ' + pct(r.dsrLim) + (r.dsrApplies ? '' : ' (미적용)'), r.dsrApplies ? r.dsrMax : null], ['DTI ' + pct(r.dtiLim), r.dtiMax]].filter(x => x && x[1] != null);
   const mx = Math.max(...items.map(x => x[1]), 1), lowV = Math.min(...items.map(x => x[1]));
   const bind = items.find(x => x[1] === lowV)[0].split(' ')[0];
   const monthly = I.method === 'equal' ? r.final / (I.term * 12) + r.final * I.rate / 12 : I.method === 'grad' ? gradFirst(r.final, I.rate, I.term * 12, I.grow) : pmt(r.final, I.rate, I.term * 12);
@@ -699,8 +710,8 @@ function renderLimit(){
   const D = M(), dsrPay = yearPay(r.final, I.rate + r.st.rate, I.term, I.method) + r.ex.pay;
   $('#lTbl').innerHTML = rows([
     ['LTV 한도 <small>(' + fmt(I.price) + ' × ' + pct(r.ltvRate) + ', ' + ZN[I.z] + ' · ' + OWN[I.owner] + ')</small>', r.ltv],
-    metroLike(I.z) ? ['수도권⁠·⁠규제지역 주담대 총액 한도 <small>(시가 15억 이하 6억 · 25억 이하 4억 · 초과 2억)</small>', r.cap] : '-',
-    ['스트레스 금리 <small>(' + (metroLike(I.z) ? '수도권⁠·⁠규제' : '지방') + ' ' + pct(r.st.base) + ' × 반영 ' + Math.round(r.st.ratio * 100) + '%)</small>', pct(r.st.rate)],
+    metroLike(I.z) ? ['수도권·규제지역 주담대 총액 한도 <small>(시가 15억 이하 6억 · 25억 이하 4억 · 초과 2억)</small>', r.cap] : '-',
+    ['스트레스 금리 <small>(' + (metroLike(I.z) ? '수도권·규제' : '지방') + ' ' + pct(r.st.base) + ' × 반영 ' + Math.round(r.st.ratio * 100) + '%)</small>', pct(r.st.rate)],
     ['DSR 계산 금리 <small>(실제 ' + pct(I.rate) + ' + 스트레스)</small>', pct(I.rate + r.st.rate)],
     ['기존 대출 연간 원리금 <small>(' + (r.ex.rows.map(x => x[0]).join(', ') || '없음') + ')</small>', r.ex.pay],
     ['DSR 한도 <small>(연소득 × ' + pct(r.dsrLim) + ' − 기존 원리금, ' + I.term + '년)</small>', r.dsrApplies ? r.dsrMax : '총대출 1억 이하라 미적용'],
@@ -709,11 +720,11 @@ function renderLimit(){
     ['이 금액일 때 DSR', pct(I.income ? dsrPay / I.income : 0)]
   ]);
   const notes = [];
-  if (I.owner === 'multi' && metroLike(I.z)) notes.push('수도권⁠·⁠규제지역에서 집을 더 사는 다주택자는 주택구입 목적 주담대가 막혀 있습니다(LTV 0%).');
+  if (I.owner === 'multi' && metroLike(I.z)) notes.push('수도권·규제지역에서 집을 더 사는 다주택자는 주택구입 목적 주담대가 막혀 있습니다(LTV 0%).');
   if (I.owner === 'oneSell') notes.push('처분조건부 1주택자는 기존 주택을 정해진 기간(보통 6개월) 안에 팔아야 합니다.');
-  if (I.owner === 'first') notes.push('생애최초 LTV 우대는 세대 전원 무주택이 조건이며, 수도권⁠·⁠규제지역은 6개월 안에 전입해야 합니다.');
+  if (I.owner === 'first') notes.push('생애최초 LTV 우대는 세대 전원 무주택이 조건이며, 수도권·규제지역은 6개월 안에 전입해야 합니다.');
   if (I.method === 'grad') notes.push('체증식은 첫해 상환액이 적고 해마다 늘어납니다. DSR은 은행 관행대로 원리금균등 기준으로 계산했으며, 실제 심사 방식은 금융회사마다 다를 수 있습니다.');
-  if (I.termCut) notes.push(`수도권⁠·⁠규제지역 주담대 만기는 최대 ${D.maxTermMetro}년이라 ${D.maxTermMetro}년으로 계산했습니다.`);
+  if (I.termCut) notes.push(`수도권·규제지역 주담대 만기는 최대 ${D.maxTermMetro}년이라 ${D.maxTermMetro}년으로 계산했습니다.`);
   if (I.z === 'reg') notes.push('규제지역에서는 전세대출이 있는 사람이 3억 넘는 아파트를 사기 어렵고, 1억 넘는 신용대출을 받은 뒤 1년 동안은 규제지역 주택 구입이 제한됩니다.');
   if (!metroLike(I.z) && M().stress.localMortgage < M().stress.other) notes.push(`지방 주담대 스트레스 금리는 ${pct(M().stress.localMortgage)}(유예)입니다. 유예가 끝나면 ${pct(M().stress.other)}로 오릅니다.`);
   notes.push('정책대출(디딤돌·보금자리론)은 소득·집값 요건과 한도가 따로 있으며 DSR 대신 DTI(60%)를 적용합니다.');
@@ -724,13 +735,13 @@ function renderLimit(){
 const rows = L => L.map(r => r === '-' ? '' : `<tr class="${r[2] || ''}"><td>${r[0]}</td><td class="n">${typeof r[1] === 'number' ? fmt(r[1]) + '원' : r[1]}</td></tr>`).join('');
 const statBox = L => L.map(([l, v, c]) => `<div class="${c || ''}"><small>${l}</small><b>${v}</b></div>`).join('');
 
-/* ---- 필요 연봉⁠·⁠살 수 있는 집값 ---- */
+/* ---- 필요 연봉·살 수 있는 집값 ---- */
 function renderIncome(){
   const I = inputs(), D = M(), want = N(val('want'));
   const st = stressOf(I.z, I.rtype, I.fyears, I.term), ex = existing(I.z);
   if (lastLimit) $('#wantQuick').innerHTML = [['LTV 최대', lastLimit.ltv], metroLike(I.z) ? ['총액 한도', Math.min(lastLimit.ltv, lastLimit.cap)] : null].filter(Boolean).map(([n, v]) => `<button type="button" class="ghost" data-v="${v}">${n} ${wk(v)}</button>`).join('');
-  const need0 = I.miss.filter(x => !['주택 가격', '주택 보유 (생애최초⁠·⁠무주택 등)', '연소득'].includes(x));
-  if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">위 「내 조건 입력」에서 ${need0.join('·')}을(를) 넣으세요</td></tr>` : ''; } else {
+  const need0 = I.miss.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].includes(x));
+  if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">「내 조건 입력」에서 채울 칸: ${need0.join(', ')}</td></tr>` : ''; } else {
     const payS = yearPay(want, I.rate + st.rate, I.term, I.method), pay0 = yearPay(want, I.rate, I.term, I.method);
     const need = lim => (payS + ex.pay) / lim, needDti = (pay0 + ex.interest) / D.dti[I.z];
     const main = Math.max(need(D.dsr[I.sector]), (want + ex.bal > D.dsr.threshold) ? 0 : 0, needDti);
@@ -742,7 +753,7 @@ function renderIncome(){
       ['DTI ' + pct(D.dti[I.z]) + ' 기준 필요 연봉 <small>(스트레스 없음)</small>', Math.ceil(needDti / 1e5) * 1e5],
       ['계산 조건 <small>(' + pct(I.rate) + ' + 스트레스 ' + pct(st.rate) + ', ' + I.term + '년, ' + $('#method').selectedOptions[0].text + ')</small>', ''],
       ex.pay ? ['기존 대출 연간 원리금 포함', ex.pay] : '-',
-      !ltvOk ? ['<span class="bad">주의: 이 금액은 지금 집값의 LTV⁠·⁠총액 한도를 넘습니다</span>', ''] : '-',
+      !ltvOk ? ['<span class="bad">주의: 이 금액은 지금 집값의 LTV·총액 한도를 넘습니다</span>', ''] : '-',
       want + ex.bal <= D.dsr.threshold ? ['총대출이 1억 이하라 실제로는 DSR이 적용되지 않습니다', ''] : '-'
     ]);
   }
@@ -794,7 +805,7 @@ function renderLoans(){
   const list = S.loans.map((l, i) => [l, i + 1]).filter(([l]) => (!q || (l.name + (KIND[l.kind] || '')).toLowerCase().includes(q)) && (!kd || l.kind === kd));
   const hid = S.loans.length - list.length;
   $('#loanTbl').innerHTML = list.map(([l, n]) => loanRow(l, n)).join('') +
-    (hid ? `<p class="hint">찾기⁠·⁠종류 조건 때문에 대출 ${hid}개가 숨겨져 있습니다. <button type="button" class="ghost sm" id="lReset">모두 보기</button></p>` : '');
+    (hid ? `<p class="hint">찾기·종류 조건 때문에 대출 ${hid}개가 숨겨져 있습니다. <button type="button" class="ghost sm" id="lReset">모두 보기</button></p>` : '');
   const T = S.loans.filter(ready).reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 });
   $('#sumStat').innerHTML = statBox([['대출 잔액 합계', wk(T.b)], ['이번 달 상환액 합계', fmt(T.m) + '원', 'main'], ['남은 이자 합계', wk(T.i)]]);
   renderSched();
@@ -802,8 +813,8 @@ function renderLoans(){
 function renderSched(){
   const L = S.loans.find(l => l.id === selId) || S.loans[0];
   const ok = !!(L && ready(L));
-  $$('#schedCard .period, #schedCard .actions').forEach(e => e.classList.toggle('hidden', !ok)); // 상환표가 생기기 전엔 보기⁠·⁠저장 숨김
-  if (!ok) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액⁠·금리⁠·기간(월)⁠·상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
+  $$('#schedCard .period, #schedCard .actions').forEach(e => e.classList.toggle('hidden', !ok)); // 상환표가 생기기 전엔 보기·저장 숨김
+  if (!ok) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액·금리·기간(월)·상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
   $('#schedCard').classList.remove('hidden'); selId = L.id;
   const s = schedule(L), tot = s.reduce((t, x) => [t[0] + x[1], t[1] + x[2]], [0, 0]);
   $('#schedName').textContent = `${L.name} · ${KIND[L.kind] || ''} ${wk(L.amount)} · 연 ${L.rate}% · ${L.months}개월 · ${MET[L.method]}${L.grace ? ` · 거치 ${L.grace}개월` : ''}`;
@@ -864,7 +875,7 @@ function acqCost(price, loan){
 }
 function renderCost(){
   const price = N(val('price')), cm = [!price && '주택 가격', !$('#region').value && '주택 소재지', !$('#houses').value && '주택 수', !$('#area').value && '전용면적'].filter(Boolean);
-  if (cm.length) { $('#cStat').innerHTML = `<div><small>안내</small><b style="font-size:16px">${cm.join('·')}을(를) 고르면 계산됩니다</b></div>`; $('#cTbl').innerHTML = ''; return; }
+  if (cm.length) { $('#cStat').innerHTML = `<div><small>안내</small><b style="font-size:16px">채울 칸: ${cm.join(', ')}</b></div>`; $('#cTbl').innerHTML = ''; return; }
   const loan = val('loanAmt') !== '' ? N(val('loanAmt')) : (lastLimit ? lastLimit.final : 0), c = acqCost(price, loan);
   $('#loanAmt').placeholder = lastLimit ? '한도 결과 ' + fmt(lastLimit.final) : '예: 400,000,000';
   $('#cStat').innerHTML = statBox([['부대비용 합계', wk(c.total), 'main'], ['취득세 등 세금', wk(c.tax - c.cut + c.edu + c.farm)], ['중개보수', wk(c.broker)]]);
@@ -887,7 +898,7 @@ function renderRent(){
   const legal = Math.min(R.convMax, base + R.convAdd), rate = val('conv') !== '' ? +val('conv') / 100 : legal;
   $('#convInfo').textContent = `법정 전환율 상한 = min(연 ${pct(R.convMax)}, 기준금리 ${pct(base)} + ${pct(R.convAdd)}) = ${pct(legal)}. 기준금리는 ${ruleAt(RULES.baseRate, ymd(today())).source || ''}`;
   const d0 = N(val('dep0')), d1 = N(val('dep1')), r0 = N(val('rent0'));
-  if (!d0) { $('#rStat').innerHTML = ''; $('#rTbl').innerHTML = ''; return; }
+  if (!d0) { $('#rStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">지금 보증금과 바꿀 보증금을 넣고 계산하기를 누르세요</b></div>'; $('#rTbl').innerHTML = ''; return; }
   const diff = d0 - d1, rent = r0 + Math.round(diff * rate / 12);
   const lease = tierFee(d0 + r0 * (d0 < 5e7 ? 70 : 100), R.brokerLease);
   $('#rStat').innerHTML = statBox([[diff >= 0 ? '바뀐 월세' : '줄어드는 월세 후', fmt(Math.max(0, rent)) + '원', 'main'], ['보증금 변화', (diff >= 0 ? '−' : '+') + wk(Math.abs(diff))], ['적용 전환율', pct(rate)]]);
@@ -922,12 +933,69 @@ function setTab(t){
   $('#shared').classList.toggle('hidden', !useShared); $('#main').classList.toggle('two', useShared);
   // 넓은 화면: 탭 위치로 / 휴대폰: 고른 탭의 결과(내용)가 바로 보이게 그 위치로 이동
   const tabsH = $('#tabs').offsetHeight + 60, pane = $(`[data-pane="${t}"]`);
-  const target = window.innerWidth >= 960 || !pane ? $('#tabs').getBoundingClientRect().top + window.scrollY - 60 : pane.getBoundingClientRect().top + window.scrollY - tabsH;
+  const goShared = useShared && sharedMissing(t); // 조건이 비어 있으면 휴대폰에서도 「내 조건 입력」부터 보이게
+  const target = window.innerWidth >= 960 || !pane || goShared ? $('#tabs').getBoundingClientRect().top + window.scrollY - 60 : pane.getBoundingClientRect().top + window.scrollY - tabsH;
+  $('#sharedCalc').textContent = { limit: '대출 한도 계산하기', income: '조건 입력 끝 · 연봉·집값 계산으로 ↓', cost: '조건 입력 끝 · 세금·수수료 조건으로 ↓' }[t] || '계산하기';
   if (setTab.ready) window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
   setTab.ready = true;
   updateBar();
 }
 $('#tabs').onTab = setTab;
+/* ---- 계산하기 버튼: 빠진 칸이 있으면 그 칸으로 데려가고, 다 채웠으면 결과로 이동 ---- */
+const FIELD = { '주택 가격': 'price', '주택 보유 (생애최초·무주택 등)': 'owner', '연소득': 'income', '주택 소재지': 'region', '대출 받을 곳': 'sector', '대출 금리': 'rate', '만기': 'term', '상환 방식': 'method', '체증률': 'grow', '고정 기간·변동 주기': 'fyears', '주택 수': 'houses', '전용면적': 'area', '받고 싶은 대출 금액': 'want', '쓸 수 있는 현금': 'cash', '지금 보증금': 'dep0', '바꿀 보증금': 'dep1' };
+const clean = x => x.replace(/\u2060/g, ''); // 가운뎃점 앞뒤 줄바꿈 방지 문자 차이를 무시하고 칸 찾기
+const fid = x => { const k = Object.keys(FIELD).find(k => clean(k) === clean(x)); return k ? $('#' + FIELD[k]) : null; };
+function sharedMissing(t){
+  if (t === 'cost') return !N(val('price')) || !$('#region').value;
+  const m = inputs().miss; return t === 'income' ? m.some(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].includes(x)) : m.length > 0;
+}
+function needFor(t){
+  const m = inputs().miss;
+  if (t === 'limit') return m;
+  if (t === 'want') return (N(val('want')) ? [] : ['받고 싶은 대출 금액']).concat(m.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].map(clean).includes(clean(x))));
+  if (t === 'cash') return m.concat(N(val('cash')) ? [] : ['쓸 수 있는 현금']);
+  if (t === 'cost') return [!N(val('price')) && '주택 가격', !$('#region').value && '주택 소재지', !$('#houses').value && '주택 수', !$('#area').value && '전용면적'].filter(Boolean);
+  if (t === 'rent') return [!N(val('dep0')) && '지금 보증금', val('dep1') === '' && '바꿀 보증금'].filter(Boolean);
+  return [];
+}
+function goField(el){
+  const d = el.closest('details'); if (d) d.open = true;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { const f = el.matches('input,select') ? el : el.querySelector('input,select'); if (f) f.focus({ preventScroll: true }); }, 400);
+}
+function calc(t){
+  $$('.need').forEach(e => e.classList.remove('need'));
+  if (t === 'loans') {
+    renderLoans();
+    const bad = S.loans.find(l => !ready(l));
+    if (bad) {
+      const row = $(`.loan[data-id="${bad.id}"]`); if (!row) { clearLoanFilter(); renderLoans(); }
+      const r = $(`.loan[data-id="${bad.id}"]`), keys = [['amount', !(bad.amount > 0), '대출 금액'], ['months', !(bad.months > 0), '기간'], ['method', !bad.method, '상환 방식'], ['grow', bad.method === 'grad' && !(bad.grow > 0), '체증률']].filter(k => k[1]);
+      keys.forEach(([k]) => { const e = r && r.querySelector(`[data-k="${k}"]`); if (e) e.classList.add('need'); });
+      const first = r && r.querySelector('.need'); if (first) goField(first);
+      toast(`대출 ${S.loans.indexOf(bad) + 1}: ${keys.map(k => k[2]).join(', ')} 칸을 채워 주세요`); return;
+    }
+    selId = selId || S.loans[0].id; renderSched(); $('#schedCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
+  renderAll();
+  const need = needFor(t);
+  if (need.length) {
+    need.forEach(x => { const e = fid(x); if (e) e.classList.add('need'); });
+    const first = fid(need[0]); if (first) goField(first);
+    const nm = need.map(x => x.replace(/\s*\(.*\)$/, '')); toast((nm.length > 3 ? nm.slice(0, 2).join(', ') + ` 등 ${nm.length}칸` : nm.join(', ') + ' 칸') + '을 채워 주세요'); return;
+  }
+  const res = { limit: '#limitCard', want: '#iStat', cash: '#aStat', cost: '#cStat', rent: '#rStat' }[t];
+  $(res).scrollIntoView({ behavior: 'smooth', block: t === 'limit' ? 'start' : 'center' });
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('button.calc'); if (!b) return; if (b.id === 'sharedCalc' && curTab !== 'limit') { // 공통 조건만 확인하고 그 탭의 입력 칸으로 이동
+    $$('.need').forEach(e => e.classList.remove('need'));
+    const m = curTab === 'cost' ? [!N(val('price')) && '주택 가격', !$('#region').value && '주택 소재지'].filter(Boolean) : inputs().miss.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].map(clean).includes(clean(x)));
+    if (m.length) { m.forEach(x => { const e = fid(x); if (e) e.classList.add('need'); }); goField(fid(m[0])); toast(m.map(x => x.replace(/\s*\(.*\)$/, '')).join(', ') + ' 칸을 채워 주세요'); return; }
+    $(`[data-pane="${curTab}"]`).scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
+  calc(b.id === 'sharedCalc' ? 'limit' : b.dataset.calc); });
+const unNeed = ev => { const t = ev.target; t.classList.remove('need'); const g = t.closest('#owner'); if (g) g.classList.remove('need'); };
+$('#main').addEventListener('input', unNeed, true); $('#main').addEventListener('change', unNeed, true);
 let barSeen = false;
 function updateBar(){
   const show = curTab === 'limit' && lastLimit && !barSeen && window.innerWidth < 960;
@@ -947,7 +1015,7 @@ $('#lCopy').onclick = () => copy('주담대 한도 계산\n' + $('#lStat').inner
 $('#cCopy').onclick = () => copy('취득 비용\n' + $('#cTbl').innerText);
 renderLoans(); renderAll(); setTab('limit');
 onRulesLoaded(() => { fillRegions(); renderLoans(); renderAll(); });
-window.addEventListener('pageshow', e => { if (e.persisted || $('#lkind').value || val('lq')) { clearLoanFilter(); renderLoans(); } }); // 뒤로 가기⁠·⁠새로고침으로 되살아난 거르기 값 지우기
+window.addEventListener('pageshow', e => { if (e.persisted || $('#lkind').value || val('lq')) { clearLoanFilter(); renderLoans(); } }); // 뒤로 가기·새로고침으로 되살아난 거르기 값 지우기
 
 })();
 </script>

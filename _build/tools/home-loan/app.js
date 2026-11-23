@@ -127,7 +127,7 @@ const OWN = { first: '생애최초', none: '무주택', oneSell: '처분조건�
 let lastLimit = null;
 function renderLimit(){
   const I = inputs(), r = limitCalc(I); lastLimit = r;
-  $('#regionTag').innerHTML = `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
+  $('#regionTag').innerHTML = !$('#region').value ? '' : `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
   $('#lMiss').classList.toggle('on', I.miss.length > 0);
   $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
   if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
@@ -171,7 +171,7 @@ function renderIncome(){
   const st = stressOf(I.z, I.rtype, I.fyears, I.term), ex = existing(I.z);
   if (lastLimit) $('#wantQuick').innerHTML = [['LTV 최대', lastLimit.ltv], metroLike(I.z) ? ['총액 한도', Math.min(lastLimit.ltv, lastLimit.cap)] : null].filter(Boolean).map(([n, v]) => `<button type="button" class="ghost" data-v="${v}">${n} ${wk(v)}</button>`).join('');
   const need0 = I.miss.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].includes(x));
-  if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">위 「내 조건 입력」에서 ${need0.join('·')}을(를) 넣으세요</td></tr>` : ''; } else {
+  if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">「내 조건 입력」에서 채울 칸: ${need0.join(', ')}</td></tr>` : ''; } else {
     const payS = yearPay(want, I.rate + st.rate, I.term, I.method), pay0 = yearPay(want, I.rate, I.term, I.method);
     const need = lim => (payS + ex.pay) / lim, needDti = (pay0 + ex.interest) / D.dti[I.z];
     const main = Math.max(need(D.dsr[I.sector]), (want + ex.bal > D.dsr.threshold) ? 0 : 0, needDti);
@@ -305,7 +305,7 @@ function acqCost(price, loan){
 }
 function renderCost(){
   const price = N(val('price')), cm = [!price && '주택 가격', !$('#region').value && '주택 소재지', !$('#houses').value && '주택 수', !$('#area').value && '전용면적'].filter(Boolean);
-  if (cm.length) { $('#cStat').innerHTML = `<div><small>안내</small><b style="font-size:16px">${cm.join('·')}을(를) 고르면 계산됩니다</b></div>`; $('#cTbl').innerHTML = ''; return; }
+  if (cm.length) { $('#cStat').innerHTML = `<div><small>안내</small><b style="font-size:16px">채울 칸: ${cm.join(', ')}</b></div>`; $('#cTbl').innerHTML = ''; return; }
   const loan = val('loanAmt') !== '' ? N(val('loanAmt')) : (lastLimit ? lastLimit.final : 0), c = acqCost(price, loan);
   $('#loanAmt').placeholder = lastLimit ? '한도 결과 ' + fmt(lastLimit.final) : '예: 400,000,000';
   $('#cStat').innerHTML = statBox([['부대비용 합계', wk(c.total), 'main'], ['취득세 등 세금', wk(c.tax - c.cut + c.edu + c.farm)], ['중개보수', wk(c.broker)]]);
@@ -328,7 +328,7 @@ function renderRent(){
   const legal = Math.min(R.convMax, base + R.convAdd), rate = val('conv') !== '' ? +val('conv') / 100 : legal;
   $('#convInfo').textContent = `법정 전환율 상한 = min(연 ${pct(R.convMax)}, 기준금리 ${pct(base)} + ${pct(R.convAdd)}) = ${pct(legal)}. 기준금리는 ${ruleAt(RULES.baseRate, ymd(today())).source || ''}`;
   const d0 = N(val('dep0')), d1 = N(val('dep1')), r0 = N(val('rent0'));
-  if (!d0) { $('#rStat').innerHTML = ''; $('#rTbl').innerHTML = ''; return; }
+  if (!d0) { $('#rStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">지금 보증금과 바꿀 보증금을 넣고 계산하기를 누르세요</b></div>'; $('#rTbl').innerHTML = ''; return; }
   const diff = d0 - d1, rent = r0 + Math.round(diff * rate / 12);
   const lease = tierFee(d0 + r0 * (d0 < 5e7 ? 70 : 100), R.brokerLease);
   $('#rStat').innerHTML = statBox([[diff >= 0 ? '바뀐 월세' : '줄어드는 월세 후', fmt(Math.max(0, rent)) + '원', 'main'], ['보증금 변화', (diff >= 0 ? '−' : '+') + wk(Math.abs(diff))], ['적용 전환율', pct(rate)]]);
@@ -363,12 +363,69 @@ function setTab(t){
   $('#shared').classList.toggle('hidden', !useShared); $('#main').classList.toggle('two', useShared);
   // 넓은 화면: 탭 위치로 / 휴대폰: 고른 탭의 결과(내용)가 바로 보이게 그 위치로 이동
   const tabsH = $('#tabs').offsetHeight + 60, pane = $(`[data-pane="${t}"]`);
-  const target = window.innerWidth >= 960 || !pane ? $('#tabs').getBoundingClientRect().top + window.scrollY - 60 : pane.getBoundingClientRect().top + window.scrollY - tabsH;
+  const goShared = useShared && sharedMissing(t); // 조건이 비어 있으면 휴대폰에서도 「내 조건 입력」부터 보이게
+  const target = window.innerWidth >= 960 || !pane || goShared ? $('#tabs').getBoundingClientRect().top + window.scrollY - 60 : pane.getBoundingClientRect().top + window.scrollY - tabsH;
+  $('#sharedCalc').textContent = { limit: '대출 한도 계산하기', income: '조건 입력 끝 · 연봉·집값 계산으로 ↓', cost: '조건 입력 끝 · 세금·수수료 조건으로 ↓' }[t] || '계산하기';
   if (setTab.ready) window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
   setTab.ready = true;
   updateBar();
 }
 $('#tabs').onTab = setTab;
+/* ---- 계산하기 버튼: 빠진 칸이 있으면 그 칸으로 데려가고, 다 채웠으면 결과로 이동 ---- */
+const FIELD = { '주택 가격': 'price', '주택 보유 (생애최초·무주택 등)': 'owner', '연소득': 'income', '주택 소재지': 'region', '대출 받을 곳': 'sector', '대출 금리': 'rate', '만기': 'term', '상환 방식': 'method', '체증률': 'grow', '고정 기간·변동 주기': 'fyears', '주택 수': 'houses', '전용면적': 'area', '받고 싶은 대출 금액': 'want', '쓸 수 있는 현금': 'cash', '지금 보증금': 'dep0', '바꿀 보증금': 'dep1' };
+const clean = x => x.replace(/\u2060/g, ''); // 가운뎃점 앞뒤 줄바꿈 방지 문자 차이를 무시하고 칸 찾기
+const fid = x => { const k = Object.keys(FIELD).find(k => clean(k) === clean(x)); return k ? $('#' + FIELD[k]) : null; };
+function sharedMissing(t){
+  if (t === 'cost') return !N(val('price')) || !$('#region').value;
+  const m = inputs().miss; return t === 'income' ? m.some(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].includes(x)) : m.length > 0;
+}
+function needFor(t){
+  const m = inputs().miss;
+  if (t === 'limit') return m;
+  if (t === 'want') return (N(val('want')) ? [] : ['받고 싶은 대출 금액']).concat(m.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].map(clean).includes(clean(x))));
+  if (t === 'cash') return m.concat(N(val('cash')) ? [] : ['쓸 수 있는 현금']);
+  if (t === 'cost') return [!N(val('price')) && '주택 가격', !$('#region').value && '주택 소재지', !$('#houses').value && '주택 수', !$('#area').value && '전용면적'].filter(Boolean);
+  if (t === 'rent') return [!N(val('dep0')) && '지금 보증금', val('dep1') === '' && '바꿀 보증금'].filter(Boolean);
+  return [];
+}
+function goField(el){
+  const d = el.closest('details'); if (d) d.open = true;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { const f = el.matches('input,select') ? el : el.querySelector('input,select'); if (f) f.focus({ preventScroll: true }); }, 400);
+}
+function calc(t){
+  $$('.need').forEach(e => e.classList.remove('need'));
+  if (t === 'loans') {
+    renderLoans();
+    const bad = S.loans.find(l => !ready(l));
+    if (bad) {
+      const row = $(`.loan[data-id="${bad.id}"]`); if (!row) { clearLoanFilter(); renderLoans(); }
+      const r = $(`.loan[data-id="${bad.id}"]`), keys = [['amount', !(bad.amount > 0), '대출 금액'], ['months', !(bad.months > 0), '기간'], ['method', !bad.method, '상환 방식'], ['grow', bad.method === 'grad' && !(bad.grow > 0), '체증률']].filter(k => k[1]);
+      keys.forEach(([k]) => { const e = r && r.querySelector(`[data-k="${k}"]`); if (e) e.classList.add('need'); });
+      const first = r && r.querySelector('.need'); if (first) goField(first);
+      toast(`대출 ${S.loans.indexOf(bad) + 1}: ${keys.map(k => k[2]).join(', ')} 칸을 채워 주세요`); return;
+    }
+    selId = selId || S.loans[0].id; renderSched(); $('#schedCard').scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
+  renderAll();
+  const need = needFor(t);
+  if (need.length) {
+    need.forEach(x => { const e = fid(x); if (e) e.classList.add('need'); });
+    const first = fid(need[0]); if (first) goField(first);
+    const nm = need.map(x => x.replace(/\s*\(.*\)$/, '')); toast((nm.length > 3 ? nm.slice(0, 2).join(', ') + ` 등 ${nm.length}칸` : nm.join(', ') + ' 칸') + '을 채워 주세요'); return;
+  }
+  const res = { limit: '#limitCard', want: '#iStat', cash: '#aStat', cost: '#cStat', rent: '#rStat' }[t];
+  $(res).scrollIntoView({ behavior: 'smooth', block: t === 'limit' ? 'start' : 'center' });
+}
+document.addEventListener('click', ev => { const b = ev.target.closest('button.calc'); if (!b) return; if (b.id === 'sharedCalc' && curTab !== 'limit') { // 공통 조건만 확인하고 그 탭의 입력 칸으로 이동
+    $$('.need').forEach(e => e.classList.remove('need'));
+    const m = curTab === 'cost' ? [!N(val('price')) && '주택 가격', !$('#region').value && '주택 소재지'].filter(Boolean) : inputs().miss.filter(x => !['주택 가격', '주택 보유 (생애최초·무주택 등)', '연소득'].map(clean).includes(clean(x)));
+    if (m.length) { m.forEach(x => { const e = fid(x); if (e) e.classList.add('need'); }); goField(fid(m[0])); toast(m.map(x => x.replace(/\s*\(.*\)$/, '')).join(', ') + ' 칸을 채워 주세요'); return; }
+    $(`[data-pane="${curTab}"]`).scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
+  }
+  calc(b.id === 'sharedCalc' ? 'limit' : b.dataset.calc); });
+const unNeed = ev => { const t = ev.target; t.classList.remove('need'); const g = t.closest('#owner'); if (g) g.classList.remove('need'); };
+$('#main').addEventListener('input', unNeed, true); $('#main').addEventListener('change', unNeed, true);
 let barSeen = false;
 function updateBar(){
   const show = curTab === 'limit' && lastLimit && !barSeen && window.innerWidth < 960;

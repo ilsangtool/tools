@@ -81,7 +81,13 @@ def keep_dots(page):
     for part in _re.split(r'(<[^>]+>)', page):
         if part.startswith('<'):
             m = _re.match(r'<(/?)(script|style|pre|textarea|title|option|select|label|button)\b', part, _re.I)
-            if m: skip = None if m.group(1) else m.group(2).lower()
+            if m:
+                name = m.group(2).lower()
+                # script·style 안의 문자열에 든 '</button>' 같은 태그로 건너뛰기가 풀리지 않게, 같은 이름의 닫는 태그에서만 끝냄
+                if skip in ('script', 'style'):
+                    if m.group(1) and name == skip: skip = None
+                else:
+                    skip = None if m.group(1) else name
             out.append(part); continue
         if skip or '·' not in part: out.append(part); continue
         # 2~3개를 잇는 짧은 묶음('문자·매장')은 통째로, 4개 이상 긴 나열은 '·' 뒤에서만 줄이 바뀌게 함(낱말 중간이 잘리지 않도록)
