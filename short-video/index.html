@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>숏폼 영상 만들기 (무료) - 쇼츠·릴스 홍보 영상, 세로·가로 선택</title>
-<meta name="description" content="가게 홍보, 행사 안내, 모집 공고, 기관 홍보 숏폼 영상을 무료로 만듭니다. 내용을 쓰면 가격·날짜·시간·위치를 찾아 장면을 짜고, 사진이 없어도 가격표·달력·시계 그림으로 채웁니다. 9:16 세로(쇼츠·릴스), 16:9 가로, 1:1 정사각 선택. 저작권 걱정 없는 배경음 37곡과 색 조합 24가지(직접 고르기 포함).">
+<meta name="description" content="가게·행사·모집·기관 홍보 숏폼 영상을 무료로 만듭니다. 사진이 없어도 장면을 채우고, 쇼츠·릴스 세로, 가로, 정사각 비율과 저작권 걱정 없는 배경음을 고를 수 있습니다.">
 <meta name="keywords" content="숏폼 만들기, 쇼츠 만들기, 릴스 만들기, 홍보 영상 만들기, 가게 홍보 영상, 무료 영상 제작, 행사 안내 영상, 모집 공고 영상">
 <link rel="canonical" href="https://ilsangtool.github.io/tools/short-video/">
 <meta property="og:type" content="website">
@@ -129,6 +129,8 @@
   table.t th,table.t td{border-bottom:1px solid #efe8df;padding:12px 8px;text-align:left;vertical-align:top}
   table.t th{font-weight:600;color:var(--faint);font-size:13px;border-bottom:1px solid var(--ink)}
   table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.t td{overflow-wrap:anywhere}
+  @media(max-width:600px){table.t td.n{white-space:normal;overflow-wrap:anywhere}}
   table.t tr:last-child td{border-bottom:0}
 
   .drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--line2);border-radius:var(--r);padding:40px 16px;text-align:center;cursor:pointer;background:var(--fill);transition:border-color .15s,background-color .15s}
@@ -519,6 +521,26 @@ function onRulesLoaded(fn){
     try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: keep })); } catch(e) {}
     apply(keep);
   }).catch(() => {}), 2500);
+})();
+
+/* 결과 상자 맞춤: 큰 금액은 글자를 줄여 상자 안에, 안내 문장은 줄바꿈 (휴대폰에서 상자 밖으로 넘치지 않게) */
+(function(){
+  const NUMLIKE = /^[\s\d,.\-−+%()억만천원년월일시간개명건회주×÷:~·⁠]*$/;
+  function fit(b){
+    if (!b.isConnected || !b.clientWidth) return;
+    b.style.fontSize = ''; b.style.whiteSpace = '';
+    if (b.scrollWidth <= b.clientWidth + 1) return;
+    if (!NUMLIKE.test(b.textContent)) { b.style.whiteSpace = 'normal'; return; } // 문장은 줄바꿈
+    let fs = parseFloat(getComputedStyle(b).fontSize);
+    while (b.scrollWidth > b.clientWidth + 1 && fs > 13) { fs -= 1; b.style.fontSize = fs + 'px'; }
+    if (b.scrollWidth > b.clientWidth + 1) { b.style.whiteSpace = 'normal'; b.style.overflowWrap = 'anywhere'; } // 그래도 넘치면 쉼표에서 줄바꿈
+  }
+  let pend = false;
+  const run = () => { pend = false; document.querySelectorAll('.stat b, .big').forEach(fit); };
+  const kick = () => { if (!pend) { pend = true; requestAnimationFrame(run); } };
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, characterData: true });
+  window.addEventListener('resize', kick);
+  kick();
 })();
 
 // 배경음: FreePD.com 공개 음원(CC0 1.0, 저작권 표시 의무 없음). 70초 이내로 자르고 음량을 맞춰 short-video/music/에 둠

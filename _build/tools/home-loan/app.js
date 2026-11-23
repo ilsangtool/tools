@@ -33,7 +33,7 @@ function yearPay(P, ry, years, method, prinYears){
 }
 const ready = l => l.amount > 0 && l.months > 0 && !!l.method && (l.method !== 'grad' || l.grow > 0);
 function schedule(L){ // 월별 상환표
-  const n = Math.max(1, Math.round(L.months)), g = Math.min(Math.max(0, Math.round(L.grace || 0)), n - 1), r = L.rate / 100 / 12, out = [];
+  const n = Math.min(600, Math.max(1, Math.round(L.months))), g = Math.min(Math.max(0, Math.round(L.grace || 0)), n - 1), r = L.rate / 100 / 12, out = [];
   let b = L.amount; const rest = n - g, annu = L.method === 'annuity' ? pmt(b, L.rate / 100, rest) : 0, eqp = b / rest, gr = (L.grow || 0) / 100, g0 = L.method === 'grad' ? gradFirst(b, L.rate / 100, rest, gr) : 0;
   for (let k = 1; k <= n; k++) {
     const it = b * r; let pr = 0;
@@ -211,12 +211,19 @@ function loanRow(l, n){
     <div><label class="f">이름 <span class="opt">선택</span></label><input type="text" data-k="name" value="${esc(l.name)}" placeholder="예: 주담대"></div>
     <div><label class="f">종류</label><select data-k="kind">${opt(KIND, l.kind, '종류 선택')}</select></div>
     <div><label class="f">대출 금액 (원)</label><input type="text" class="n" data-k="amount" inputmode="numeric" value="${l.amount ? fmt(l.amount) : ''}" placeholder="예: 300,000,000"><div class="kor">${l.amount ? wk(l.amount) : ''}</div></div>
-    <div><label class="f">금리 (연 %)</label><input type="number" class="n" data-k="rate" step="0.01" inputmode="decimal" value="${l.rate || ''}" placeholder="예: 4.2"></div>
-    <div><label class="f">기간 (개월)</label><input type="number" class="n" data-k="months" inputmode="numeric" value="${l.months || ''}" placeholder="예: 360 (30년)"><div class="quick">${[[120, '10년'], [240, '20년'], [360, '30년'], [480, '40년']].map(([m, t]) => `<button type="button" class="ghost" data-months="${m}">${t}</button>`).join('')}</div></div>
+    <div><label class="f">금리 (연 %)</label><input type="number" class="n" data-k="rate" step="0.01" min="0" max="100" inputmode="decimal" value="${l.rate || ''}" placeholder="예: 4.2"></div>
+    <div><label class="f">기간 (개월)</label><input type="number" class="n" data-k="months" inputmode="numeric" min="1" max="600" value="${l.months || ''}" placeholder="예: 360 (30년)"><div class="quick">${[[120, '10년'], [240, '20년'], [360, '30년'], [480, '40년']].map(([m, t]) => `<button type="button" class="ghost" data-months="${m}">${t}</button>`).join('')}</div></div>
     <div><label class="f">상환 방식</label><select data-k="method">${opt(MET, l.method, '상환 방식 선택')}</select>${l.method === 'grad' ? `<input type="number" data-k="grow" step="0.1" value="${l.grow || ''}" placeholder="체증률(연 %) 예: 2" style="margin-top:6px">` : ''}</div>
     <div><label class="f">거치 기간 (개월) <span class="opt">선택</span></label><input type="number" class="n" data-k="grace" inputmode="numeric" value="${l.grace || ''}" placeholder="없으면 비움"></div>
     <div class="loan-c"><label class="chk"><input type="checkbox" data-k="fixed"${l.fixed ? ' checked' : ''}><span>고정금리</span></label><label class="chk"><input type="checkbox" data-k="dsr"${l.dsr ? ' checked' : ''}><span>DSR 계산에 넣기</span></label></div>
   </div></div>`;
+}
+// 숫자 칸 한도: 벗어나면 칸 값을 한도로 고치고 알려 줌 (아주 큰 기간을 넣으면 상환표가 끝없이 길어져 화면이 멈추는 것을 막음)
+function clampIn(t, lo, hi, int){
+  let v = +t.value || 0; if (int) v = Math.round(v);
+  const c = Math.min(hi, Math.max(lo, v));
+  if (t.value !== '' && c !== v) { t.value = c; toast(`${lo}~${hi.toLocaleString()} 사이로 넣어 주세요`); }
+  return c;
 }
 const blankLoan = () => ({ id: uid(), name: '', kind: '', amount: 0, rate: 0, months: 0, method: '', grace: 0, dsr: false, fixed: false });
 function renderLoans(){
@@ -231,7 +238,9 @@ function renderLoans(){
 }
 function renderSched(){
   const L = S.loans.find(l => l.id === selId) || S.loans[0];
-  if (!L || !ready(L)) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액·금리·기간(월)·상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
+  const ok = !!(L && ready(L));
+  $$('#schedCard .period, #schedCard .actions').forEach(e => e.classList.toggle('hidden', !ok)); // 상환표가 생기기 전엔 보기·저장 숨김
+  if (!ok) { $('#schedCard').classList.toggle('hidden', !L); if (L) { $('#schedName').textContent = ''; $('#schedStat').innerHTML = '<div><small>안내</small><b style="font-size:16px">금액·금리·기간(월)·상환 방식' + (L.method === 'grad' ? '·체증률' : '') + '을 넣으면 상환표가 나옵니다</b></div>'; $('#cmpTbl').innerHTML = $('#schedTbl').innerHTML = ''; } return; }
   $('#schedCard').classList.remove('hidden'); selId = L.id;
   const s = schedule(L), tot = s.reduce((t, x) => [t[0] + x[1], t[1] + x[2]], [0, 0]);
   $('#schedName').textContent = `${L.name} · ${KIND[L.kind] || ''} ${wk(L.amount)} · 연 ${L.rate}% · ${L.months}개월 · ${MET[L.method]}${L.grace ? ` · 거치 ${L.grace}개월` : ''}`;
@@ -248,9 +257,9 @@ function renderSched(){
 $('#loanTbl').addEventListener('input', ev => {
   const tr = ev.target.closest('.loan'), l = tr && S.loans.find(x => x.id === tr.dataset.id); if (!l) return;
   const k = ev.target.dataset.k, t = ev.target;
-  if (k === 'name') l.name = t.value; else if (k === 'amount') { moneyInput(t); l.amount = N(t.value); const kr = t.parentNode.querySelector('.kor'); if (kr) kr.textContent = l.amount ? wk(l.amount) : ''; }
-  else if (k === 'rate') l.rate = +t.value || 0; else if (k === 'months') l.months = Math.max(0, +t.value || 0); else if (k === 'grace') l.grace = Math.max(0, +t.value || 0);
-  else if (k === 'grow') l.grow = +t.value || 0; else if (k === 'kind') l[k] = t.value; else if (k === 'method') { l.method = t.value; saveS(); renderLoans(); renderLimit(); return; } else if (k === 'dsr' || k === 'fixed') l[k] = t.checked;
+  if (k === 'name') l.name = t.value; else if (k === 'amount') { moneyInput(t); l.amount = Math.min(1e12, N(t.value)); const kr = t.parentNode.querySelector('.kor'); if (kr) kr.textContent = l.amount ? wk(l.amount) : ''; }
+  else if (k === 'rate') l.rate = clampIn(t, 0, 100); else if (k === 'months') l.months = clampIn(t, 0, 600, true); else if (k === 'grace') l.grace = clampIn(t, 0, Math.max(0, (l.months || 600) - 1), true);
+  else if (k === 'grow') l.grow = clampIn(t, 0, 20); else if (k === 'kind') l[k] = t.value; else if (k === 'method') { l.method = t.value; saveS(); renderLoans(); renderLimit(); return; } else if (k === 'dsr' || k === 'fixed') l[k] = t.checked;
   selId = l.id; saveS(); $$('#loanTbl .loan').forEach(x => x.classList.toggle('sel', x.dataset.id === selId)); renderSched(); renderSum(); renderLimit(); renderIncome();
 });
 function renderSum(){ const T = S.loans.filter(ready).reduce((t, l) => { const s = schedule(l); t.m += s[Math.min(l.grace || 0, s.length - 1)][3]; t.i += s.reduce((a, x) => a + x[2], 0); t.b += l.amount; return t; }, { m: 0, i: 0, b: 0 }); $('#sumStat').innerHTML = statBox([['대출 잔액 합계', wk(T.b)], ['이번 달 상환액 합계', fmt(T.m) + '원', 'main'], ['남은 이자 합계', wk(T.i)]]); }
@@ -264,7 +273,7 @@ $('#loanTbl').addEventListener('click', ev => {
 });
 $('#loanAdd').onclick = () => { const l = blankLoan(); S.loans.push(l); selId = l.id; saveS(); renderLoans(); const el = $(`#loanTbl .loan[data-id="${l.id}"]`); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.querySelector('[data-k=kind]').focus({ preventScroll: true }); } };
 $('#schedCsv').onclick = () => {
-  const L = S.loans.find(l => l.id === selId); if (!L) return;
+  const L = S.loans.find(l => l.id === selId); if (!L || !ready(L)) return;
   const body = [['회차', '원금', '이자', '납입액', '잔액']].concat(schedule(L).map(x => x.map(Math.round))).map(r => r.join(',')).join('\r\n');
   download(new Blob(['﻿' + body], { type: 'text/csv;charset=utf-8' }), `상환표_${L.name}.csv`);
 };

@@ -87,3 +87,23 @@ function onRulesLoaded(fn){
     apply(keep);
   }).catch(() => {}), 2500);
 })();
+
+/* 결과 상자 맞춤: 큰 금액은 글자를 줄여 상자 안에, 안내 문장은 줄바꿈 (휴대폰에서 상자 밖으로 넘치지 않게) */
+(function(){
+  const NUMLIKE = /^[\s\d,.\-−+%()억만천원년월일시간개명건회주×÷:~·⁠]*$/;
+  function fit(b){
+    if (!b.isConnected || !b.clientWidth) return;
+    b.style.fontSize = ''; b.style.whiteSpace = '';
+    if (b.scrollWidth <= b.clientWidth + 1) return;
+    if (!NUMLIKE.test(b.textContent)) { b.style.whiteSpace = 'normal'; return; } // 문장은 줄바꿈
+    let fs = parseFloat(getComputedStyle(b).fontSize);
+    while (b.scrollWidth > b.clientWidth + 1 && fs > 13) { fs -= 1; b.style.fontSize = fs + 'px'; }
+    if (b.scrollWidth > b.clientWidth + 1) { b.style.whiteSpace = 'normal'; b.style.overflowWrap = 'anywhere'; } // 그래도 넘치면 쉼표에서 줄바꿈
+  }
+  let pend = false;
+  const run = () => { pend = false; document.querySelectorAll('.stat b, .big').forEach(fit); };
+  const kick = () => { if (!pend) { pend = true; requestAnimationFrame(run); } };
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, characterData: true });
+  window.addEventListener('resize', kick);
+  kick();
+})();

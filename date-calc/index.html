@@ -128,6 +128,8 @@
   table.t th,table.t td{border-bottom:1px solid #efe8df;padding:12px 8px;text-align:left;vertical-align:top}
   table.t th{font-weight:600;color:var(--faint);font-size:13px;border-bottom:1px solid var(--ink)}
   table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.t td{overflow-wrap:anywhere}
+  @media(max-width:600px){table.t td.n{white-space:normal;overflow-wrap:anywhere}}
   table.t tr:last-child td{border-bottom:0}
 
   .drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--line2);border-radius:var(--r);padding:40px 16px;text-align:center;cursor:pointer;background:var(--fill);transition:border-color .15s,background-color .15s}
@@ -379,6 +381,26 @@ function onRulesLoaded(fn){
   }).catch(() => {}), 2500);
 })();
 
+/* 결과 상자 맞춤: 큰 금액은 글자를 줄여 상자 안에, 안내 문장은 줄바꿈 (휴대폰에서 상자 밖으로 넘치지 않게) */
+(function(){
+  const NUMLIKE = /^[\s\d,.\-−+%()억만천원년월일시간개명건회주×÷:~·⁠]*$/;
+  function fit(b){
+    if (!b.isConnected || !b.clientWidth) return;
+    b.style.fontSize = ''; b.style.whiteSpace = '';
+    if (b.scrollWidth <= b.clientWidth + 1) return;
+    if (!NUMLIKE.test(b.textContent)) { b.style.whiteSpace = 'normal'; return; } // 문장은 줄바꿈
+    let fs = parseFloat(getComputedStyle(b).fontSize);
+    while (b.scrollWidth > b.clientWidth + 1 && fs > 13) { fs -= 1; b.style.fontSize = fs + 'px'; }
+    if (b.scrollWidth > b.clientWidth + 1) { b.style.whiteSpace = 'normal'; b.style.overflowWrap = 'anywhere'; } // 그래도 넘치면 쉼표에서 줄바꿈
+  }
+  let pend = false;
+  const run = () => { pend = false; document.querySelectorAll('.stat b, .big').forEach(fit); };
+  const kick = () => { if (!pend) { pend = true; requestAnimationFrame(run); } };
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, characterData: true });
+  window.addEventListener('resize', kick);
+  kick();
+})();
+
 const KEY = 'ilsang_datecalc_v1';
 const T0 = today();
 function addMonths(d, n){
@@ -423,6 +445,7 @@ function add(){
   const b = parseDate($('#adBase').value) || T0, n = parseInt(val('adN'), 10) || 0, u = $('#adUnit').value;
   if (val('adN') === '') { $('#adOut').innerHTML = '<small>더할 값을 넣으세요 (빼려면 −)</small>'; out.add = ''; return; }
   const r = u === 'd' ? addDays(b, n) : u === 'w' ? addDays(b, n * 7) : addMonths(b, u === 'm' ? n : n * 12);
+  if (isNaN(r) || r.getFullYear() < 1 || r.getFullYear() > 9999) { $('#adOut').innerHTML = '<small>결과가 1년~9999년 사이를 벗어납니다. 더 작은 값을 넣으세요.</small>'; out.add = ''; return; }
   const ul = { d:'일', w:'주', m:'개월', y:'년' }[u];
   $('#adOut').innerHTML = `${kDate(r, true)}<small>${kDate(b, true)}${n >= 0 ? '부터 ' + n0(n) + ul + ' 뒤' : '부터 ' + n0(-n) + ul + ' 전'} · 오늘 기준 ${dd(dayDiff(T0, r))}</small>`;
   out.add = `${kDate(b, true)} ${n >= 0 ? '+' : ''}${n}${ul} = ${kDate(r, true)}`;

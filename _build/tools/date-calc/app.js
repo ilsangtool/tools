@@ -42,6 +42,7 @@ function add(){
   const b = parseDate($('#adBase').value) || T0, n = parseInt(val('adN'), 10) || 0, u = $('#adUnit').value;
   if (val('adN') === '') { $('#adOut').innerHTML = '<small>더할 값을 넣으세요 (빼려면 −)</small>'; out.add = ''; return; }
   const r = u === 'd' ? addDays(b, n) : u === 'w' ? addDays(b, n * 7) : addMonths(b, u === 'm' ? n : n * 12);
+  if (isNaN(r) || r.getFullYear() < 1 || r.getFullYear() > 9999) { $('#adOut').innerHTML = '<small>결과가 1년~9999년 사이를 벗어납니다. 더 작은 값을 넣으세요.</small>'; out.add = ''; return; }
   const ul = { d:'일', w:'주', m:'개월', y:'년' }[u];
   $('#adOut').innerHTML = `${kDate(r, true)}<small>${kDate(b, true)}${n >= 0 ? '부터 ' + n0(n) + ul + ' 뒤' : '부터 ' + n0(-n) + ul + ' 전'} · 오늘 기준 ${dd(dayDiff(T0, r))}</small>`;
   out.add = `${kDate(b, true)} ${n >= 0 ? '+' : ''}${n}${ul} = ${kDate(r, true)}`;

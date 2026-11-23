@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>세무 계산기 모음 · 신고 일정 | 부가세·종합소득세·원천세·법인세·4대보험</title>
-<meta name="description" content="개인사업자·법인·프리랜서용 무료 세무 계산기. 일반·간이과세자 부가세 납부세액(카드매출 세액공제 포함), 종합소득세(장부·단순경비율·기준경비율), 사업소득 3.3%·기타소득 8.8%·일용근로 원천세, 2026년 법인세율(10·20·22·25%), 4대보험 근로자·사업주 부담, 간편장부·복식부기·성실신고 대상 판정, 휴일 반영 세무 신고 달력(.ics 저장).">
+<meta name="description" content="개인사업자·법인·프리랜서용 무료 세무 계산기. 부가세, 종합소득세, 3.3%·8.8% 원천세, 2026년 법인세, 4대보험, 장부 의무 판정과 휴일을 반영한 세무 신고 달력.">
 <meta name="keywords" content="세금 계산기, 부가세 계산기, 간이과세자 부가세 계산, 종합소득세 계산기, 단순경비율 계산, 3.3% 계산기, 기타소득 8.8% 계산, 일용직 원천세 계산, 법인세 계산기 2026, 4대보험 사업주 부담, 세무 일정, 세금 신고 기간, 복식부기 의무자 기준, 성실신고 대상, 간이세액표 계산기, 근로소득세 계산, 갑근세 계산기">
 <link rel="canonical" href="https://ilsangtool.github.io/tools/tax-calc/">
 <meta property="og:type" content="website">
@@ -128,6 +128,8 @@
   table.t th,table.t td{border-bottom:1px solid #efe8df;padding:12px 8px;text-align:left;vertical-align:top}
   table.t th{font-weight:600;color:var(--faint);font-size:13px;border-bottom:1px solid var(--ink)}
   table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.t td{overflow-wrap:anywhere}
+  @media(max-width:600px){table.t td.n{white-space:normal;overflow-wrap:anywhere}}
   table.t tr:last-child td{border-bottom:0}
 
   .drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--line2);border-radius:var(--r);padding:40px 16px;text-align:center;cursor:pointer;background:var(--fill);transition:border-color .15s,background-color .15s}
@@ -596,6 +598,26 @@ function onRulesLoaded(fn){
     try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: keep })); } catch(e) {}
     apply(keep);
   }).catch(() => {}), 2500);
+})();
+
+/* 결과 상자 맞춤: 큰 금액은 글자를 줄여 상자 안에, 안내 문장은 줄바꿈 (휴대폰에서 상자 밖으로 넘치지 않게) */
+(function(){
+  const NUMLIKE = /^[\s\d,.\-−+%()억만천원년월일시간개명건회주×÷:~·⁠]*$/;
+  function fit(b){
+    if (!b.isConnected || !b.clientWidth) return;
+    b.style.fontSize = ''; b.style.whiteSpace = '';
+    if (b.scrollWidth <= b.clientWidth + 1) return;
+    if (!NUMLIKE.test(b.textContent)) { b.style.whiteSpace = 'normal'; return; } // 문장은 줄바꿈
+    let fs = parseFloat(getComputedStyle(b).fontSize);
+    while (b.scrollWidth > b.clientWidth + 1 && fs > 13) { fs -= 1; b.style.fontSize = fs + 'px'; }
+    if (b.scrollWidth > b.clientWidth + 1) { b.style.whiteSpace = 'normal'; b.style.overflowWrap = 'anywhere'; } // 그래도 넘치면 쉼표에서 줄바꿈
+  }
+  let pend = false;
+  const run = () => { pend = false; document.querySelectorAll('.stat b, .big').forEach(fit); };
+  const kick = () => { if (!pend) { pend = true; requestAnimationFrame(run); } };
+  new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, characterData: true });
+  window.addEventListener('resize', kick);
+  kick();
 })();
 
 /* ---- 한국 공휴일 (연도 제한 없음) ----
