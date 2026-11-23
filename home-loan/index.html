@@ -698,7 +698,7 @@ let lastLimit = null;
 function renderLimit(){
   const I = inputs(), r = limitCalc(I); lastLimit = r;
   $('#regionTag').innerHTML = !$('#region').value ? '' : `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
-  $('#termTag').innerHTML = I.termCut ? `<b>${M().maxTermMetro}년 적용</b> 수도권·규제지역 주담대는 만기가 최대 ${M().maxTermMetro}년입니다` : '';
+  $('#termTag').innerHTML = I.termCut ? `<b>${M().maxTermMetro}년 적용</b> ${I.z === 'metro' ? '수도권은 비규제 지역도' : '수도권·규제지역은'} 주담대 만기가 최대 ${M().maxTermMetro}년입니다 (2025.6.28 시행)` : '';
   $('#lMiss').classList.toggle('on', I.miss.length > 0);
   $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
   if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
@@ -725,7 +725,7 @@ function renderLimit(){
   if (I.owner === 'oneSell') notes.push('처분조건부 1주택자는 기존 주택을 정해진 기간(보통 6개월) 안에 팔아야 합니다.');
   if (I.owner === 'first') notes.push('생애최초 LTV 우대는 세대 전원 무주택이 조건이며, 수도권·규제지역은 6개월 안에 전입해야 합니다.');
   if (I.method === 'grad') notes.push('체증식은 첫해 상환액이 적고 해마다 늘어납니다. DSR은 은행 관행대로 원리금균등 기준으로 계산했으며, 실제 심사 방식은 금융회사마다 다를 수 있습니다.');
-  if (I.termCut) notes.push(`수도권·규제지역 주담대 만기는 최대 ${D.maxTermMetro}년이라 ${D.maxTermMetro}년으로 계산했습니다.`);
+  if (I.termCut) notes.push(`수도권(비규제 지역 포함)·규제지역 주담대 만기는 최대 ${D.maxTermMetro}년이라 ${D.maxTermMetro}년으로 계산했습니다 (2025.6.28 시행).`);
   if (I.z === 'reg') notes.push('규제지역에서는 전세대출이 있는 사람이 3억 넘는 아파트를 사기 어렵고, 1억 넘는 신용대출을 받은 뒤 1년 동안은 규제지역 주택 구입이 제한됩니다.');
   if (!metroLike(I.z) && M().stress.localMortgage < M().stress.other) notes.push(`지방 주담대 스트레스 금리는 ${pct(M().stress.localMortgage)}(유예)입니다. 유예가 끝나면 ${pct(M().stress.other)}로 오릅니다.`);
   notes.push('정책대출(디딤돌·보금자리론)은 소득·집값 요건과 한도가 따로 있으며 DSR 대신 DTI(60%)를 적용합니다.');
@@ -752,7 +752,7 @@ function renderIncome(){
       ['은행 DSR 40% 기준 필요 연봉', Math.ceil(need(D.dsr.bank) / 1e5) * 1e5],
       ['2금융 DSR 50% 기준 필요 연봉', Math.ceil(need(D.dsr.nonbank) / 1e5) * 1e5],
       ['DTI ' + pct(D.dti[I.z]) + ' 기준 필요 연봉 <small>(스트레스 없음)</small>', Math.ceil(needDti / 1e5) * 1e5],
-      ['계산 조건 <small>(' + pct(I.rate) + ' + 스트레스 ' + pct(st.rate) + ', ' + I.term + '년' + (I.termCut ? ' (' + $('#term').value + '년 선택 → 수도권·규제지역 최대 ' + I.term + '년)' : '') + ', ' + $('#method').selectedOptions[0].text + ')</small>', ''],
+      ['계산 조건 <small>(' + pct(I.rate) + ' + 스트레스 ' + pct(st.rate) + ', ' + I.term + '년' + (I.termCut ? ' (' + $('#term').value + '년 선택 → ' + (I.z === 'metro' ? '수도권 비규제도' : '수도권·규제지역') + ' 최대 ' + I.term + '년)' : '') + ', ' + $('#method').selectedOptions[0].text + ')</small>', ''],
       ex.pay ? ['기존 대출 연간 원리금 포함', ex.pay] : '-',
       !ltvOk ? ['<span class="bad">주의: 이 금액은 지금 집값의 LTV·총액 한도를 넘습니다</span>', ''] : '-',
       want + ex.bal <= D.dsr.threshold ? ['총대출이 1억 이하라 실제로는 DSR이 적용되지 않습니다', ''] : '-'
