@@ -128,6 +128,7 @@ let lastLimit = null;
 function renderLimit(){
   const I = inputs(), r = limitCalc(I); lastLimit = r;
   $('#regionTag').innerHTML = !$('#region').value ? '' : `<b class="${I.z === 'reg' ? '' : 'ok'}">${ZN[I.z]}</b>${radio('owner') ? ' LTV ' + pct(r.ltvRate) + ' · ' : ' '}${metroLike(I.z) ? '총액 한도 적용 · 6개월 안 전입' : '총액 한도 없음'}`;
+  $('#termTag').innerHTML = I.termCut ? `<b>${M().maxTermMetro}년 적용</b> 수도권·규제지역 주담대는 만기가 최대 ${M().maxTermMetro}년입니다` : '';
   $('#lMiss').classList.toggle('on', I.miss.length > 0);
   $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
   if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
@@ -181,7 +182,7 @@ function renderIncome(){
       ['은행 DSR 40% 기준 필요 연봉', Math.ceil(need(D.dsr.bank) / 1e5) * 1e5],
       ['2금융 DSR 50% 기준 필요 연봉', Math.ceil(need(D.dsr.nonbank) / 1e5) * 1e5],
       ['DTI ' + pct(D.dti[I.z]) + ' 기준 필요 연봉 <small>(스트레스 없음)</small>', Math.ceil(needDti / 1e5) * 1e5],
-      ['계산 조건 <small>(' + pct(I.rate) + ' + 스트레스 ' + pct(st.rate) + ', ' + I.term + '년, ' + $('#method').selectedOptions[0].text + ')</small>', ''],
+      ['계산 조건 <small>(' + pct(I.rate) + ' + 스트레스 ' + pct(st.rate) + ', ' + I.term + '년' + (I.termCut ? ' (' + $('#term').value + '년 선택 → 수도권·규제지역 최대 ' + I.term + '년)' : '') + ', ' + $('#method').selectedOptions[0].text + ')</small>', ''],
       ex.pay ? ['기존 대출 연간 원리금 포함', ex.pay] : '-',
       !ltvOk ? ['<span class="bad">주의: 이 금액은 지금 집값의 LTV·총액 한도를 넘습니다</span>', ''] : '-',
       want + ex.bal <= D.dsr.threshold ? ['총대출이 1억 이하라 실제로는 DSR이 적용되지 않습니다', ''] : '-'
