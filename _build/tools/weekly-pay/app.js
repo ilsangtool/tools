@@ -1,4 +1,5 @@
 const KEY = 'ilsang_weeklypay_v1';
+store.del(KEY); // 예전에 기기에 남겨 둔 입력 지우기 (이제는 이 탭에서만 유지)
 // 최저시급·보험료율은 RULES(data/rules.json)에서 연도별로 읽음
 let MIN = {};
 const RATE = y => { const r = ruleAt(RULES.insurance, y + '-01-01'); return { np: r.np, hi: r.hi, ltc: r.ltcRatio, ei: r.ei }; };
@@ -23,9 +24,9 @@ $('#days').innerHTML = ORDER.map(d =>
 const f10 = n => Math.floor(n / 10 + 1e-7) * 10; // 소수 오차(25199.9999…) 때문에 10원 덜 나오지 않게
 const h = n => (Math.round(n * 100) / 100).toLocaleString('ko-KR') + '시간';
 
-function save(){ const s = { year: radio('year'), wage: val('wage'), five: $('#five').checked, tax: radio('tax'), q: val('qHours') }; ORDER.forEach(d => s['d'+d] = val('d'+d)); store.set(KEY, s); }
+function save(){ const s = { year: radio('year'), wage: val('wage'), five: $('#five').checked, tax: radio('tax'), q: val('qHours') }; ORDER.forEach(d => s['d'+d] = val('d'+d)); sstore.set(KEY, s); }
 function load(){
-  const s = store.get(KEY);
+  const s = sstore.get(KEY);
   if (s && s.year && MIN[s.year]) $$('input[name=year]').forEach(r => r.checked = r.value === s.year);
   const y = radio('year');
   $('#wage').value = s && s.wage || '';

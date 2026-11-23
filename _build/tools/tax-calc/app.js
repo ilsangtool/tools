@@ -1,5 +1,6 @@
 /* ===== 세무 계산기·신고 일정 ===== */
 const KEY = 'ilsang_taxcalc_v1';
+store.del(KEY); // 예전에 기기에 남겨 둔 입력 지우기 (이제는 이 탭에서만 유지)
 const N = s => { const v = String(s == null ? '' : s).replace(/[^\d.-]/g, ''); return v && v !== '-' ? Math.round(+v) || 0 : 0; };
 const fmt = n => (Math.round(n) || 0).toLocaleString('ko-KR');
 const flr = x => Math.floor(x + 1e-7); // 원 단위 절사 (소수 오차 보정)
@@ -248,10 +249,10 @@ const CHK = ['vE', 'iDouble', 'iStd', 'iBook', 'wExp', 'wEi', 'dPro'];
 const RAD = ['vType', 'vBiz', 'iWay', 'wType', 'wDir', 'wRatio', 'cy', 'sy'];
 function saveState(){
   const s = { who: whoSel() }; IDS.forEach(i => s[i] = $('#' + i).value); CHK.forEach(i => s[i] = $('#' + i).checked); RAD.forEach(n => s[n] = radio(n));
-  s.iYear = $('#iYear').value; store.set(KEY, s);
+  s.iYear = $('#iYear').value; sstore.set(KEY, s);
 }
 function loadState(){
-  const s = store.get(KEY); if (!s) return;
+  const s = sstore.get(KEY); if (!s) return;
   IDS.forEach(i => { if (s[i] != null && s[i] !== '') $('#' + i).value = s[i]; }); CHK.forEach(i => { if (s[i] != null) $('#' + i).checked = s[i]; });
   RAD.forEach(n => { if (s[n]) $$(`input[name="${n}"]`).forEach(r => r.checked = r.value === s[n]); });
   if (s.who) $$('#who input').forEach(i => i.checked = s.who.includes(i.value));

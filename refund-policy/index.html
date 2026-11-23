@@ -343,6 +343,12 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
   del(k){ try { localStorage.removeItem(k); } catch(_) {} }
 };
+// 계산기 입력은 이 탭에서만 유지(새로고침은 그대로, 다시 접속하면 빈칸) — 같은 기기를 다른 사람이 써도 소득·금액이 보이지 않게
+const sstore = {
+  get(k){ try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch(_) { return null; } },
+  set(k, v){ try { sessionStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+  del(k){ try { sessionStorage.removeItem(k); } catch(_) {} }
+};
 function bindTabs(root){
   (root || document).querySelectorAll('.tabs').forEach(tb => {
     tb.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {

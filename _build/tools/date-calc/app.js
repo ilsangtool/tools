@@ -1,4 +1,5 @@
 const KEY = 'ilsang_datecalc_v1';
+store.del(KEY); // 예전에 기기에 남겨 둔 입력 지우기 (이제는 이 탭에서만 유지)
 const T0 = today();
 function addMonths(d, n){
   const y = d.getFullYear(), m = d.getMonth() + n, day = d.getDate();
@@ -49,6 +50,7 @@ function add(){
 }
 
 function army(){
+  if ($('#arType').selectedIndex < 0) $('#arType').selectedIndex = 0; // 저장값이 목록에 없으면 첫 항목으로
   const s = parseDate($('#arIn').value), months = +$('#arType').value, label = $('#arType').selectedOptions[0].text.split(' (')[0];
   if (!s) { $('#arOut').innerHTML = '<small>입대일을 고르세요</small>'; $('#arStat').innerHTML = ''; $('#arBar').style.width = 0; return; }
   const end = addDays(addMonths(s, months), -1);
@@ -83,9 +85,9 @@ function age(){
 }
 
 const RUN = { dday, anniv, add, army, age };
-function save(){ const s = { tab: cur, arType: $('#arType').selectedIndex }; $$('input[type=date], input[type=number], select').forEach(e => s[e.id] = e.value); $$('input[type=checkbox]').forEach(e => s[e.id] = e.checked); store.set(KEY, s); }
+function save(){ const s = { tab: cur, arType: $('#arType').selectedIndex }; $$('input[type=date], input[type=number], select').forEach(e => s[e.id] = e.value); $$('input[type=checkbox]').forEach(e => s[e.id] = e.checked); sstore.set(KEY, s); }
 function load(){
-  const s = store.get(KEY);
+  const s = sstore.get(KEY);
   if (!s) { $('#adBase').value = ymd(T0); return; } // 목표일·더할 값은 빈칸으로 시작
   $$('input[type=date], input[type=number], select').forEach(e => { if (s[e.id] != null) e.value = s[e.id]; });
   $$('input[type=checkbox]').forEach(e => { if (s[e.id] != null) e.checked = s[e.id]; });

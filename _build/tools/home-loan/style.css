@@ -80,3 +80,4 @@
   button.calc{display:block;width:100%;min-height:52px;margin-top:18px;font-size:16px;font-weight:700}
   .need{border-color:var(--bad)!important;box-shadow:0 0 0 3px rgba(176,48,48,.14)}
   #owner.need{outline:2px solid var(--bad);outline-offset:4px;border-radius:10px;box-shadow:none}
+  .plus-h{font-size:16px;margin:24px 0 8px;padding-top:16px;border-top:1px solid var(--line)}

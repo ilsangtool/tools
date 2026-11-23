@@ -1,4 +1,5 @@
 const KEY = 'ilsang_dutch_v1';
+store.del(KEY); store.del(KEY+'_s'); store.del(KEY+'_tab'); // 예전에 기기에 남겨 둔 입력 지우기 (이제는 이 탭에서만 유지)
 let S = null, nid = 1;
 const newId = () => 'p' + (Date.now().toString(36)) + (nid++);
 function fresh(){
@@ -16,7 +17,7 @@ function simple(){
     (up ? `<div><small>모두 보내면 남는 돈</small><b>${won(per * n - T)}</b></div>`
         : `<div><small>결제한 사람 부담</small><b>${won(payerShare)}</b></div>`);
   simple.text = `[N빵 정산]\n총 ${won(T)} ÷ ${n}명\n1인당 ${won(per)}씩 보내 주세요!`;
-  store.set(KEY + '_s', { T: val('sTotal'), n: val('sN'), u, r: radio('round') });
+  sstore.set(KEY + '_s', { T: val('sTotal'), n: val('sN'), u, r: radio('round') });
 }
 
 /* ---------- 여러 차수 ---------- */
@@ -77,7 +78,7 @@ function multi(){
   tx.forEach(([a, b, x]) => lines.push(`${pname(a)} → ${pname(b)} ${won(x)}`));
   if (S.acct) lines.push('', '계좌: ' + S.acct);
   multi.text = lines.join('\n');
-  store.set(KEY, S);
+  sstore.set(KEY, S);
 }
 function renderAll(){ renderPeople(); renderItems(); $('#acct').value = S.acct || ''; multi(); }
 
@@ -135,18 +136,18 @@ function fromHash(){
 
 /* ---------- 시작 ---------- */
 bindTabs();
-$('#modeTabs').onTab = t => store.set(KEY + '_tab', t);
+$('#modeTabs').onTab = t => sstore.set(KEY + '_tab', t);
 ['sTotal', 'sN'].forEach(id => $('#' + id).addEventListener('input', simple));
 $$('input[name=unit], input[name=round]').forEach(r => r.addEventListener('change', simple));
 $('#sCopy').addEventListener('click', () => copy(simple.text));
 
-const ss = store.get(KEY + '_s');
+const ss = sstore.get(KEY + '_s');
 if (ss) { $('#sTotal').value = ss.T || ''; $('#sN').value = ss.n || ''; $$('input[name=unit]').forEach(r => r.checked = +r.value === ss.u); $$('input[name=round]').forEach(r => r.checked = r.value === ss.r); }
 simple();
 
 const shared = fromHash();
-S = shared || store.get(KEY) || fresh();
+S = shared || sstore.get(KEY) || fresh();
 renderAll();
-const tab = shared ? 'multi' : store.get(KEY + '_tab');
+const tab = shared ? 'multi' : sstore.get(KEY + '_tab');
 if (shared) $('#sharedNote').classList.remove('hidden');
 if (tab === 'multi') $('#modeTabs [data-tab=multi]').click();

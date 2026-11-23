@@ -71,6 +71,9 @@ function stressOf(z, rtype, fyears, term){
 
 /* ---- 기존 대출 (대출 계산기에서 DSR 체크) ---- */
 let S = store.get(KEY) || {};
+const SS = sstore.get(KEY) || {}; // 입력 칸·함께 받을 대출은 이 탭에서만 유지
+S = { loans: S.loans, form: SS.form, plus: SS.plus };
+store.set(KEY, { loans: S.loans || [] }); // 예전에 기기에 저장된 입력 칸 값 지우기
 S.loans = S.loans || [];
 // 아무것도 넣지 않은 빈 대출은 정리 (하나도 안 남으면 renderLoans가 빈 칸 하나를 다시 만듦)
 S.loans = S.loans.filter(l => l.name || l.kind || l.amount || l.rate || l.months || l.method);
@@ -211,7 +214,7 @@ function renderPlus(I, r){
   const warn = [];
   if (P.credNew > I.income) warn.push('신용대출은 연소득 이내로 제한됩니다 (2025.6.28 시행). 넣은 신용대출 합계가 연소득을 넘습니다.');
   if (r.final === 0) warn.push('추가 대출의 원리금만으로 DSR 한도가 차서 주택담보대출을 받을 수 없습니다.');
-  $('#plusSum').innerHTML = `<div class="stat">${statBox([['총 대출 (합산)', wk(tot), 'main'], ['월 상환액 합계 (첫 달)', fmt(totM) + '원'], ['합산 DSR', pct(I.income ? dsrPay / I.income : 0)]])}</div>
+  $('#plusSum').innerHTML = `<h3 class="plus-h">함께 받을 대출 합산</h3><div class="stat">${statBox([['총 대출 (합산)', wk(tot), 'main'], ['월 상환액 합계 (첫 달)', fmt(totM) + '원'], ['합산 DSR', pct(I.income ? dsrPay / I.income : 0)]])}</div>
   <div class="t-scroll"><table class="t">` + rows([
     ['주택담보대출 <small>(위 한도, ' + pct(I.rate) + ', ' + I.term + '년)</small>', r.final],
     ...P.list.map(x => [x.name + ' <small>(' + pct(x.l.rate / 100) + ', ' + x.l.years + '년, ' + PMET[x.l.method].split(' ')[0] + ')</small>', x.l.amount]),
@@ -271,7 +274,7 @@ const KIND = { mortgage: '주택담보대출', credit: '신용대출', minus: '�
 const MET = { annuity: '원리금균등', equal: '원금균등', grad: '체증식', bullet: '만기일시' };
 let selId = S.loans[0] && S.loans[0].id;
 $('#lkind').innerHTML += Object.entries(KIND).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
-function saveS(){ store.set(KEY, Object.assign(S, { form: formState() })); }
+function saveS(){ S.form = formState(); store.set(KEY, { loans: S.loans }); sstore.set(KEY, { form: S.form, plus: S.plus || [] }); }
 // 대출 하나 = 이름표가 붙은 입력 카드 (휴대폰에서도 칸이 다 보이게)
 function loanRow(l, n){
   const opt = (o, v, ph) => `<option value="" disabled${v ? '' : ' selected'}>${ph}</option>` + Object.entries(o).map(([k, x]) => `<option value="${k}"${v === k ? ' selected' : ''}>${x}</option>`).join('');
