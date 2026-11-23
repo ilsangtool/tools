@@ -179,7 +179,7 @@ function renderLimit(){
     ['= 대출 가능 금액 (가장 작은 값)', r.final, 'sum'],
     ['이 금액일 때 DSR', pct(I.income ? dsrPay / I.income : 0)],
     room > 1e4 ? ['DSR 여유 <small>(연소득 × ' + pct(r.dsrLim) + ' − 지금 원리금, 연간)</small>', Math.round(room)] : '-',
-    room > 1e4 ? ['여유로 더 빌릴 수 있는 금액 <small>(DSR만 볼 때, 같은 금리·만기 환산 / 신용대출이면 ' + M().creditYears + '년 환산이라 약 ' + wk(Math.floor(room / (1 / M().creditYears + I.rate) / 1e5) * 1e5) + ')</small>', Math.floor(maxBy(room, I.rate + r.st.rate, I.term, I.method) / 1e5) * 1e5] : '-'
+    room > 1e4 ? ['여유로 더 빌릴 수 있는 금액 <small>(DSR만 볼 때, 주담대와 같은 금리·만기 기준 / 신용대출로 받으면 원금을 ' + M().creditYears + '년으로 나눠 보므로 같은 금리여도 약 ' + wk(Math.floor(room / (1 / M().creditYears + I.rate) / 1e5) * 1e5) + ')</small>', Math.floor(maxBy(room, I.rate + r.st.rate, I.term, I.method) / 1e5) * 1e5] : '-'
   ]);
   const notes = [];
   if (I.owner === 'multi' && metroLike(I.z)) notes.push('수도권·규제지역에서 집을 더 사는 다주택자는 주택구입 목적 주담대가 막혀 있습니다(LTV 0%).');
