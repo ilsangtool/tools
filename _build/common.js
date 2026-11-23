@@ -101,7 +101,18 @@ function onRulesLoaded(fn){
     if (b.scrollWidth > b.clientWidth + 1) { b.style.whiteSpace = 'normal'; b.style.overflowWrap = 'anywhere'; } // 그래도 넘치면 쉼표에서 줄바꿈
   }
   let pend = false;
-  const run = () => { pend = false; document.querySelectorAll('.stat b, .big').forEach(fit); };
+  // 숫자 표는 줄바꿈하지 않고, 화면보다 넓으면 표 안에서 옆으로 밀어 보게 (스크롤 상자로 감쌈)
+  const wrapTables = () => document.querySelectorAll('table.t').forEach(t => {
+    if (t.closest('.tbl-wrap, .sched, .t-scroll, .pv')) return;
+    const w = document.createElement('div'); w.className = 't-scroll'; t.parentNode.insertBefore(w, t); w.appendChild(t);
+  });
+  // 표가 화면보다 넓으면 위에 '옆으로 밀어 더 보기 →' 안내 (넓지 않으면 숨김)
+  const hints = () => document.querySelectorAll('.tbl-wrap, .t-scroll, .sched').forEach(w => {
+    const more = w.scrollWidth > w.clientWidth + 4 && w.offsetParent !== null;
+    let h = w.previousElementSibling; if (!h || !h.classList.contains('swipe-hint')) { if (!more) return; h = document.createElement('div'); h.className = 'swipe-hint'; h.textContent = '옆으로 밀어 더 보기 →'; w.parentNode.insertBefore(h, w); }
+    h.hidden = !more;
+  });
+  const run = () => { pend = false; wrapTables(); document.querySelectorAll('.stat b, .big').forEach(fit); hints(); };
   const kick = () => { if (!pend) { pend = true; requestAnimationFrame(run); } };
   new MutationObserver(kick).observe(document.body, { childList: true, subtree: true, characterData: true });
   window.addEventListener('resize', kick);
