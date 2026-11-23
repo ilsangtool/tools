@@ -335,7 +335,7 @@
     <div data-pane="limit">
       <section class="card" id="plusCard">
         <h2>함께 받을 대출 더하기 <small class="sub">선택 · 결과는 아래 한도 카드에 합산</small></h2>
-        <p class="hint">없으면 비워 두세요. 주택담보대출과 같이 받을 신용대출⁠·⁠마이너스통장 등을 넣으세요. 이미 받고 있는 대출은 「대출 계산기」 탭에 넣고 DSR을 체크하면 됩니다.</p>
+        <p class="hint">없으면 비워 두세요. 주택담보대출과 같이 받을 신용대출⁠·⁠마이너스통장⁠·⁠다른 집 담보대출 등을 넣으세요. 이미 받고 있는 대출은 「대출 계산기」 탭에 넣고 DSR을 체크하면 됩니다.</p>
         <div class="loan-list" id="plusList"></div>
         <button type="button" class="ghost" id="plusAdd" style="width:100%;margin-top:10px">+ 대출 추가</button>
       </section>
@@ -681,22 +681,25 @@ function existing(z){
   return { pay: pay + P.pay, interest: interest + P.interest, bal: bal + P.bal, rows: rows.concat(P.rows), plus: P };
 }
 /* ---- 대출 한도 탭: 주담대와 함께 받을 대출 (신용대출 등) ---- */
-const PKIND = { credit: '신용대출', minus: '마이너스통장', etc: '기타 대출 (사업자·자동차 등)' };
+const PKIND = { mortgage: '주택담보대출 (다른 집·추가)', secured: '기타 담보대출 (예적금·토지 등)', credit: '신용대출', minus: '마이너스통장', etc: '기타 대출 (사업자·자동차 등)' };
 const PMET = { bullet: '만기일시 (이자만)', annuity: '원리금균등', equal: '원금균등' };
+const PYEARS = { 1: '1년', 2: '2년', 3: '3년', 5: '5년', 7: '7년', 10: '10년', 15: '15년', 20: '20년', 25: '25년', 30: '30년', 35: '35년', 40: '40년' };
 const pReady = l => l.amount > 0 && l.years > 0 && !!l.method && !!l.kind && l.rate !== '' && l.rate != null;
 function plusPart(z){
   const D = M(); S.plus = S.plus || [];
   const credOld = S.loans.filter(l => l.dsr && (l.kind === 'credit' || l.kind === 'minus')).reduce((s, l) => s + l.amount, 0);
-  const credNew = S.plus.filter(l => pReady(l) && l.kind !== 'etc').reduce((s, l) => s + l.amount, 0);
+  const credNew = S.plus.filter(l => pReady(l) && (l.kind === 'credit' || l.kind === 'minus')).reduce((s, l) => s + l.amount, 0);
   const credSt = metroLike(z) && credOld + credNew > D.stress.creditThreshold ? D.stress.other : 0; // 신용대출 합계 1억 초과면 새 신용대출에 스트레스 금리
   let pay = 0, interest = 0, bal = 0, month = 0; const rows = [], list = [];
   S.plus.filter(pReady).forEach((l, i) => {
     const ry = l.rate / 100, n = Math.round(l.years * 12); let p, note;
     if (l.kind === 'etc') { p = yearPay(l.amount, ry, l.years, l.method); note = '실제 상환액'; }
+    else if (l.kind === 'mortgage') { const st = stressOf(z, 'var', 5, l.years).rate; p = yearPay(l.amount, ry + st, l.years, l.method); note = `실제 상환액 (스트레스 ${pct(st)})`; }
+    else if (l.kind === 'secured') { p = l.amount / D.otherSecuredYears + l.amount * ry; note = `원금 ÷ ${D.otherSecuredYears}년 + 이자`; }
     else { p = l.amount / D.creditYears + l.amount * (ry + credSt); note = `원금 ÷ ${D.creditYears}년 + 이자` + (credSt ? ` (스트레스 ${pct(credSt)})` : ''); }
     const m = l.method === 'bullet' ? l.amount * ry / 12 : l.method === 'equal' ? l.amount / n + l.amount * ry / 12 : pmt(l.amount, ry, n);
     pay += p; interest += l.amount * ry; bal += l.amount; month += m;
-    const name = (PKIND[l.kind] || '대출').replace(/\s*\(.*\)/, '');
+    const name = l.kind === 'mortgage' ? '추가 주택담보대출' : (PKIND[l.kind] || '대출').replace(/\s*\(.*\)/, '');
     rows.push(['함께 받을 ' + name, p, note]); list.push({ l, p, m, note, name });
   });
   return { pay, interest, bal, month, rows, list, credNew, sum: bal };
@@ -748,7 +751,7 @@ function renderLimit(){
   const monthly = I.method === 'equal' ? r.final / (I.term * 12) + r.final * I.rate / 12 : I.method === 'grad' ? gradFirst(r.final, I.rate, I.term * 12, I.grow) : pmt(r.final, I.rate, I.term * 12);
   $('#lStat').innerHTML = statBox([['대출 가능 금액', wk(r.final), 'main'], ['한도를 정한 조건', bind], ['첫 달 상환액 (실제 금리)', fmt(monthly) + '원'], ['필요한 자기자금 (집값 − 대출)', wk(Math.max(0, I.price - r.final))]]);
   $('#lBars').innerHTML = items.map(([n, v]) => `<div class="${v === lowV ? 'min' : ''}"><span>${n}</span><i><span style="width:${Math.min(100, v / mx * 100)}%"></span></i><em>${wk(v)}</em></div>`).join('');
-  const D = M(), dsrPay = yearPay(r.final, I.rate + r.st.rate, I.term, I.method) + r.ex.pay;
+  const D = M(), dsrPay = yearPay(r.final, I.rate + r.st.rate, I.term, I.method) + r.ex.pay, room = r.dsrApplies || r.final + r.ex.bal > D.dsr.threshold ? I.income * r.dsrLim - dsrPay : 0;
   $('#lTbl').innerHTML = rows([
     ['LTV 한도 <small>(' + fmt(I.price) + ' × ' + pct(r.ltvRate) + ', ' + ZN[I.z] + ' · ' + OWN[I.owner] + ')</small>', r.ltv],
     metroLike(I.z) ? ['수도권·규제지역 주담대 총액 한도 <small>(시가 15억 이하 6억 · 25억 이하 4억 · 초과 2억)</small>', r.cap] : '-',
@@ -758,7 +761,9 @@ function renderLimit(){
     ['DSR 한도 <small>(연소득 × ' + pct(r.dsrLim) + ' − 기존 원리금, ' + I.term + '년)</small>', r.dsrApplies ? r.dsrMax : '총대출 1억 이하라 미적용'],
     ['DTI 한도 <small>(연소득 × ' + pct(r.dtiLim) + ', 스트레스 없음)</small>', r.dtiMax],
     ['= 대출 가능 금액 (가장 작은 값)', r.final, 'sum'],
-    ['이 금액일 때 DSR', pct(I.income ? dsrPay / I.income : 0)]
+    ['이 금액일 때 DSR', pct(I.income ? dsrPay / I.income : 0)],
+    room > 1e4 ? ['DSR 여유 <small>(연소득 × ' + pct(r.dsrLim) + ' − 지금 원리금, 연간)</small>', Math.round(room)] : '-',
+    room > 1e4 ? ['여유로 더 빌릴 수 있는 금액 <small>(DSR만 볼 때, 같은 금리·만기 환산 / 신용대출이면 ' + M().creditYears + '년 환산이라 약 ' + wk(Math.floor(room / (1 / M().creditYears + I.rate) / 1e5) * 1e5) + ')</small>', Math.floor(maxBy(room, I.rate + r.st.rate, I.term, I.method) / 1e5) * 1e5] : '-'
   ]);
   const notes = [];
   if (I.owner === 'multi' && metroLike(I.z)) notes.push('수도권·규제지역에서 집을 더 사는 다주택자는 주택구입 목적 주담대가 막혀 있습니다(LTV 0%).');
@@ -782,7 +787,7 @@ function plusRow(l, n){
     <div><label class="f">종류</label><select data-p="kind">${opt(PKIND, l.kind, '종류 선택')}</select></div>
     <div><label class="f">대출 금액 (원)</label><input type="text" class="n" data-p="amount" inputmode="numeric" value="${l.amount ? fmt(l.amount) : ''}" placeholder="예: 50,000,000"><div class="kor">${l.amount ? kor(l.amount) : ''}</div></div>
     <div><label class="f">금리 (연 %)</label><input type="number" class="n" data-p="rate" step="0.01" min="0" max="30" inputmode="decimal" value="${l.rate === '' || l.rate == null ? '' : l.rate}" placeholder="예: 5.5"></div>
-    <div><label class="f">기간</label><select data-p="years">${opt({ 1: '1년', 2: '2년', 3: '3년', 5: '5년', 7: '7년', 10: '10년', 20: '20년', 30: '30년' }, l.years ? String(l.years) : '', '기간 선택')}</select></div>
+    <div><label class="f">기간</label><select data-p="years">${opt(PYEARS, l.years ? String(l.years) : '', '기간 선택')}</select></div>
     <div><label class="f">상환 방식</label><select data-p="method">${opt(PMET, l.method, '상환 방식 선택')}</select></div>
   </div></div>`;
 }
@@ -797,6 +802,7 @@ function renderPlus(I, r){
   const dsrPay = yearPay(r.final, I.rate + r.st.rate, I.term, I.method) + r.ex.pay;
   const warn = [];
   if (P.credNew > I.income) warn.push('신용대출은 연소득 이내로 제한됩니다 (2025.6.28 시행). 넣은 신용대출 합계가 연소득을 넘습니다.');
+  if (P.list.some(x => x.l.kind === 'mortgage')) warn.push('추가 주택담보대출은 이번에 사는 집이 아닌 다른 집을 담보로 하는 경우입니다. 같은 집을 담보로 더 빌리는 금액은 위 LTV·총액 한도 안에서만 가능합니다. 수도권·규제지역 다주택자의 주택구입 목적 주담대는 막혀 있습니다.');
   if (r.final === 0) warn.push('추가 대출의 원리금만으로 DSR 한도가 차서 주택담보대출을 받을 수 없습니다.');
   $('#plusSum').innerHTML = `<h3 class="plus-h">함께 받을 대출 합산</h3><div class="stat">${statBox([['총 대출 (합산)', wk(tot), 'main'], ['월 상환액 합계 (첫 달)', fmt(totM) + '원'], ['합산 DSR', pct(I.income ? dsrPay / I.income : 0)]])}</div>
   <div class="t-scroll"><table class="t">` + rows([
