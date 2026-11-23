@@ -85,11 +85,12 @@ function existing(z){
     if (l.kind === 'credit' || l.kind === 'minus') {
       const st = credTot > D.stress.creditThreshold ? D.stress.other * (l.fixed && l.months >= 60 ? 0 : l.fixed && l.months >= 36 ? 0.6 : 1) : 0;
       p = l.amount / D.creditYears + l.amount * ry; note = `원금 ÷ ${D.creditYears}년 + 이자` + (st ? ` (스트레스 ${pct(st)}는 새 한도 심사 때 반영)` : '');
-    } else if (l.kind === 'jeonse') { p = $('#jeonseDsr') && $('#jeonseDsr').checked ? l.amount * ry : 0; note = p ? '이자만' : '제외'; }
+    } else if (l.kind === 'policy') { p = yearPay(l.amount, ry, l.months / 12, l.method); note = '실제 상환액 (정책대출)'; }
+    else if (l.kind === 'jeonse' || l.kind === 'policyJeonse') { p = $('#jeonseDsr') && $('#jeonseDsr').checked ? l.amount * ry : 0; note = p ? '이자만' : '제외'; }
     else if (l.kind === 'mortgage') { p = yearPay(l.amount, ry, l.months / 12, l.method); note = '실제 상환액'; }
     else if (l.kind === 'secured') { p = l.amount / D.otherSecuredYears + l.amount * ry; note = `원금 ÷ ${D.otherSecuredYears}년 + 이자`; }
     else { p = yearPay(l.amount, ry, l.months / 12, l.method); note = '실제 상환액'; }
-    pay += p; interest += l.amount * ry; bal += l.kind === 'jeonse' && !p ? 0 : l.amount; rows.push([l.name, p, note]);
+    pay += p; interest += l.amount * ry; bal += (l.kind === 'jeonse' || l.kind === 'policyJeonse') && !p ? 0 : l.amount; rows.push([l.name, p, note]);
   });
   const manual = val('other');
   const P = plusPart(z);
@@ -97,7 +98,7 @@ function existing(z){
   return { pay: pay + P.pay, interest: interest + P.interest, bal: bal + P.bal, rows: rows.concat(P.rows), plus: P };
 }
 /* ---- 대출 한도 탭: 주담대와 함께 받을 대출 (신용대출 등) ---- */
-const PKIND = { mortgage: '주택담보대출 (다른 집·추가)', secured: '기타 담보대출 (예적금·토지 등)', credit: '신용대출', minus: '마이너스통장', etc: '기타 대출 (사업자·자동차 등)' };
+const PKIND = { policy: '정책 주담대 (디딤돌·보금자리론 등)', mortgage: '주택담보대출 (다른 집·추가)', secured: '기타 담보대출 (예적금·토지 등)', credit: '신용대출', minus: '마이너스통장', etc: '기타 대출 (사업자·자동차 등)' };
 const PMET = { bullet: '만기일시 (이자만)', annuity: '원리금균등', equal: '원금균등' };
 const PYEARS = { 1: '1년', 2: '2년', 3: '3년', 5: '5년', 7: '7년', 10: '10년', 15: '15년', 20: '20년', 25: '25년', 30: '30년', 35: '35년', 40: '40년' };
 const pReady = l => l.amount > 0 && l.years > 0 && !!l.method && !!l.kind && l.rate !== '' && l.rate != null;
@@ -110,6 +111,7 @@ function plusPart(z){
   S.plus.filter(pReady).forEach((l, i) => {
     const ry = l.rate / 100, n = Math.round(l.years * 12); let p, note;
     if (l.kind === 'etc') { p = yearPay(l.amount, ry, l.years, l.method); note = '실제 상환액'; }
+    else if (l.kind === 'policy') { p = yearPay(l.amount, ry, l.years, l.method); note = '실제 상환액 (정책대출, 스트레스 없음)'; }
     else if (l.kind === 'mortgage') { const st = stressOf(z, 'var', 5, l.years).rate; p = yearPay(l.amount, ry + st, l.years, l.method); note = `실제 상환액 (스트레스 ${pct(st)})`; }
     else if (l.kind === 'secured') { p = l.amount / D.otherSecuredYears + l.amount * ry; note = `원금 ÷ ${D.otherSecuredYears}년 + 이자`; }
     else { p = l.amount / D.creditYears + l.amount * (ry + credSt); note = `원금 ÷ ${D.creditYears}년 + 이자` + (credSt ? ` (스트레스 ${pct(credSt)})` : ''); }
@@ -128,19 +130,38 @@ function maxBy(limitPay, ry, years, method){ // 연 상환액 limitPay 안에서
   let lo = 0, hi = 5e10; for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (yearPay(m, ry, years, method) <= limitPay) lo = m; else hi = m; }
   return Math.floor(lo / 1e5) * 1e5;
 }
+/* ---- 정부 정책대출 (2026.11 기준: 주택도시기금 디딤돌·한국주택금융공사 보금자리론 안내) ----
+   요건이 바뀌면 이 표만 고치면 됨. DSR 대신 DTI 60%, 상품 한도·주택가격·소득 요건을 따로 봄 */
+const POL = {
+  didim: { name: '디딤돌대출', types: { basic: '일반', first: '생애최초', newly: '신혼가구', multi: '2자녀 이상' },
+    inc: { basic: 6e7, first: 7e7, newly: 8.5e7, multi: 7e7 }, price: { basic: 5e8, first: 5e8, newly: 6e8, multi: 6e8 }, cap: { basic: 2e8, first: 2.4e8, newly: 3.2e8, multi: 3.2e8 },
+    homeless: true, maxTerm: 30, extra: '순자산 5.11억원 이하 · 무주택 세대주 · 전용 85㎡ 이하(읍·면 100㎡) · 만 30세 이상 미혼 단독세대주는 3억원·60㎡ 이하 주택' },
+  bogum: { name: '보금자리론', types: { basic: '일반', first: '생애최초', newly: '신혼가구', multi: '다자녀' },
+    inc: { basic: 7e7, first: 7e7, newly: 8.5e7, multi: 1e8 }, price: { basic: 6e8, first: 6e8, newly: 6e8, multi: 6e8 }, cap: { basic: 3.6e8, first: 4.2e8, newly: 3.6e8, multi: 4e8 },
+    homeless: false, maxTerm: 50, extra: '무주택 또는 1주택(기존 집 처분 조건) · 장기 고정금리 · 만기 50년은 만 34세 이하 등 조건' },
+  baby: { name: '신생아 특례 디딤돌', types: { basic: '외벌이', dual: '맞벌이' },
+    inc: { basic: 1.3e8, dual: 2e8 }, price: { basic: 9e8, dual: 9e8 }, cap: { basic: 4e8, dual: 4e8 },
+    homeless: true, maxTerm: 30, extra: '대출 신청일 기준 2년 안에 출산(2023년 이후 출생)한 무주택 세대주 · 순자산 5.11억원 이하 · 전용 85㎡ 이하' }
+};
+function fillPtype(){ const pr = $('#product').value, P = POL[pr], cur = $('#ptype').value;
+  $('#ptypeBox').classList.toggle('hidden', !P); $('#sectorBox').classList.toggle('hidden', !!P);
+  if (!P) return; $('#ptype').innerHTML = Object.entries(P.types).map(([k, n]) => `<option value="${k}">${n}</option>`).join(''); if (P.types[cur]) $('#ptype').value = cur; }
 function inputs(){
   const z = zone(), D = M(); let term = Math.max(1, +val('term') || 30);
-  const termCut = metroLike(z) && term > D.maxTermMetro; if (termCut) term = D.maxTermMetro;
+  const product = $('#product').value || 'bank', P = POL[product];
+  const termCut = !P && metroLike(z) && term > D.maxTermMetro; if (termCut) term = D.maxTermMetro;
+  const polCut = P && term > P.maxTerm; if (polCut) term = P.maxTerm;
   const miss = [];
   if (!N(val('price'))) miss.push('주택 가격'); if (!radio('owner')) miss.push('주택 보유 (생애최초·무주택 등)'); if (!N(val('income'))) miss.push('연소득');
-  if (!$('#region').value) miss.push('주택 소재지'); if (!$('#sector').value) miss.push('대출 받을 곳');
+  if (!$('#region').value) miss.push('주택 소재지'); if (!P && !$('#sector').value) miss.push('대출 받을 곳');
   if (val('rate') === '') miss.push('대출 금리'); if (!$('#term').value) miss.push('만기'); if (!$('#method').value) miss.push('상환 방식');
   if ($('#method').value === 'grad' && val('grow') === '') miss.push('체증률'); if (['mixed', 'periodic'].includes($('#rtype').value) && !$('#fyears').value) miss.push('고정 기간·변동 주기');
   return { price: N(val('price')), z, owner: radio('owner') || 'none', income: N(val('income')), sector: $('#sector').value || 'bank', rate: (+val('rate') || 0) / 100,
-    term, termCut, method: $('#method').value || 'annuity', rtype: $('#rtype').value || 'var', grow: (+val('grow') || 0) / 100, fyears: Math.max(1, +val('fyears') || 5), miss };
+    term, termCut, method: $('#method').value || 'annuity', rtype: $('#rtype').value || 'var', grow: (+val('grow') || 0) / 100, fyears: Math.max(1, +val('fyears') || 5), miss, product, ptype: $('#ptype').value || 'basic', polCut };
 }
 function limitCalc(I, priceOverride){
   const D = M(), price = priceOverride != null ? priceOverride : I.price;
+  if (POL[I.product]) return policyCalc(I, price);
   const ltvRate = D.ltv[I.z][I.owner], ltv = Math.floor(price * ltvRate / 1e5) * 1e5, cap = capOf(price, I.z);
   const st = stressOf(I.z, I.rtype, I.fyears, I.term), ex = existing(I.z);
   const dsrLim = D.dsr[I.sector], dsrMax = maxBy(I.income * dsrLim - ex.pay, I.rate + st.rate, I.term, I.method);
@@ -149,6 +170,19 @@ function limitCalc(I, priceOverride){
   const dsrApplies = pre + ex.bal > D.dsr.threshold;
   const final = Math.max(0, dsrApplies ? Math.max(Math.min(pre, dsrMax), Math.min(pre, Math.max(0, D.dsr.threshold - ex.bal))) : pre);
   return { price, ltvRate, ltv, cap, st, ex, dsrLim, dsrMax, dtiLim, dtiMax, dsrApplies, final };
+}
+function policyCalc(I, price){
+  const D = M(), P = POL[I.product], t = P.types[I.ptype] ? I.ptype : 'basic', ex = existing(I.z);
+  const ltvRate = t === 'first' && !metroLike(I.z) ? 0.8 : 0.7; // 생애최초 80%, 수도권·규제지역은 70%
+  const ltv = Math.floor(price * ltvRate / 1e5) * 1e5, cap = P.cap[t], dtiLim = 0.6;
+  const dtiMax = maxBy(I.income * dtiLim - ex.interest, I.rate, I.term, I.method);
+  const final = Math.max(0, Math.floor(Math.min(ltv, cap, dtiMax) / 1e5) * 1e5);
+  const bad = [];
+  if (I.income > P.inc[t]) bad.push(`연소득 ${wk(I.income)}이 ${P.types[t]} 기준 ${wk(P.inc[t])}을 넘습니다`);
+  if (price > P.price[t]) bad.push(`주택 가격 ${wk(price)}이 ${P.types[t]} 기준 ${wk(P.price[t])}을 넘습니다`);
+  if (P.homeless && ['oneSell', 'multi'].includes(I.owner)) bad.push('무주택 세대주만 받을 수 있습니다');
+  if (!P.homeless && I.owner === 'multi') bad.push('다주택자는 받을 수 없습니다');
+  return { price, ltvRate, ltv, cap, st: { rate: 0, base: 0, ratio: 0 }, ex, dsrLim: D.dsr.bank, dsrMax: Infinity, dtiLim, dtiMax, dsrApplies: false, final: bad.length ? 0 : final, calc: final, policy: { P, t, bad } };
 }
 const ZN = { reg: '규제지역 (투기과열·조정대상)', metro: '수도권 비규제', local: '지방 비규제' };
 const OWN = { first: '생애최초', none: '무주택', oneSell: '처분조건부 1주택', multi: '추가 구입(다주택)' };
@@ -161,6 +195,7 @@ function renderLimit(){
   $('#lMiss').classList.toggle('on', I.miss.length > 0);
   $('#lMiss').innerHTML = I.miss.length ? '<b>「내 조건 입력」에서 아래 항목을 넣으면 한도가 계산됩니다</b><ul>' + I.miss.map(x => `<li>${x}</li>`).join('') + '</ul><button type="button" class="ghost sm goIn" style="margin-top:10px">조건 입력하러 가기</button>' : '';
   if (I.miss.length) { lastLimit = null; $('#lStat').innerHTML = $('#lBars').innerHTML = $('#lTbl').innerHTML = $('#lNotes').innerHTML = ''; updateBar(); return; }
+  if (r.policy) { renderPolicy(I, r); return; }
   const items = [['LTV ' + pct(r.ltvRate), r.ltv], metroLike(I.z) ? ['수도권·규제 총액', r.cap] : null, ['DSR ' + pct(r.dsrLim) + (r.dsrApplies ? '' : ' (미적용)'), r.dsrApplies ? r.dsrMax : null], ['DTI ' + pct(r.dtiLim), r.dtiMax]].filter(x => x && x[1] != null);
   const mx = Math.max(...items.map(x => x[1]), 1), lowV = Math.min(...items.map(x => x[1]));
   const bind = items.find(x => x[1] === lowV)[0].split(' ')[0];
@@ -197,6 +232,34 @@ function renderLimit(){
 const rows = L => L.map(r => r === '-' ? '' : `<tr class="${r[2] || ''}"><td>${r[0]}</td><td class="n">${typeof r[1] === 'number' ? fmt(r[1]) + '원' : r[1]}</td></tr>`).join('');
 const statBox = L => L.map(([l, v, c]) => `<div class="${c || ''}"><small>${l}</small><b>${v}</b></div>`).join('');
 
+function renderPolicy(I, r){
+  const { P, t, bad } = r.policy;
+  const items = [['LTV ' + pct(r.ltvRate), r.ltv], ['상품 한도', r.cap], ['DTI 60%', r.dtiMax]];
+  const mx = Math.max(...items.map(x => x[1]), 1), lowV = Math.min(...items.map(x => x[1])), bind = items.find(x => x[1] === lowV)[0].split(' ')[0];
+  const monthly = I.method === 'equal' ? r.final / (I.term * 12) + r.final * I.rate / 12 : I.method === 'grad' ? gradFirst(r.final, I.rate, I.term * 12, I.grow) : pmt(r.final, I.rate, I.term * 12);
+  $('#lStat').innerHTML = statBox([[P.name + (bad.length ? ' (요건 확인)' : '') + ' 가능 금액', wk(bad.length ? 0 : r.final), 'main'], ['한도를 정한 조건', bad.length ? '자격 요건' : bind], ['첫 달 상환액', fmt(bad.length ? 0 : monthly) + '원'], ['필요한 자기자금 (집값 − 대출)', wk(Math.max(0, I.price - (bad.length ? 0 : r.final)))]]);
+  $('#lBars').innerHTML = items.map(([n, v]) => `<div class="${v === lowV ? 'min' : ''}"><span>${n}</span><i><span style="width:${Math.min(100, v / mx * 100)}%"></span></i><em>${wk(v)}</em></div>`).join('');
+  const dtiPay = yearPay(r.final, I.rate, I.term, I.method) + r.ex.interest;
+  $('#lTbl').innerHTML = rows([
+    ['상품 <small>(' + P.name + ' · ' + P.types[t] + ')</small>', ''],
+    ['자격: 연소득 <small>(부부 합산 ' + wk(P.inc[t]) + ' 이하)</small>', I.income <= P.inc[t] ? '충족' : '<span class="bad">초과</span>'],
+    ['자격: 주택 가격 <small>(' + wk(P.price[t]) + ' 이하)</small>', I.price <= P.price[t] ? '충족' : '<span class="bad">초과</span>'],
+    ['LTV 한도 <small>(' + fmt(I.price) + ' × ' + pct(r.ltvRate) + (t === 'first' ? (metroLike(I.z) ? ', 생애최초도 수도권·규제지역은 70%' : ', 생애최초 80%') : '') + ')</small>', r.ltv],
+    ['상품 최대 한도 <small>(' + P.types[t] + ')</small>', r.cap],
+    ['기존 대출 이자 <small>(DTI 계산용)</small>', r.ex.interest],
+    ['DTI 한도 <small>(연소득 × 60%, 실제 금리 ' + pct(I.rate) + ', ' + I.term + '년)</small>', r.dtiMax],
+    ['= 대출 가능 금액 (가장 작은 값)', bad.length ? '자격 요건 미충족' : r.final, 'sum'],
+    ['이 금액일 때 DTI', pct(I.income ? dtiPay / I.income : 0)]
+  ]);
+  const notes = bad.map(b => `<p class="bad">· ${b}</p>`);
+  notes.push('정책대출은 DSR(스트레스 DSR 포함)을 적용하지 않고 DTI 60%와 상품 한도로 정합니다. 다른 대출을 받을 때는 이 대출의 원리금이 DSR에 들어갑니다.');
+  if (I.polCut) notes.push(`${P.name} 만기는 최장 ${P.maxTerm}년이라 ${P.maxTerm}년으로 계산했습니다.`);
+  notes.push('그 밖의 요건: ' + P.extra + '.');
+  notes.push('금리는 소득·만기·우대 조건에 따라 다르니 주택도시기금(기금e든든)·한국주택금융공사에서 확인한 금리를 넣으세요. 요건은 2026년 11월 기준입니다.');
+  $('#lNotes').innerHTML = notes.map(n => n.startsWith('<p') ? n : `<p>· ${n}</p>`).join('');
+  $('#otherInfo').textContent = r.ex.manual ? '직접 입력한 기존 대출 원리금을 씁니다.' : r.ex.rows.length ? `함께 넣은 대출 ${r.ex.rows.length}건의 이자 ${fmt(r.ex.interest)}원을 DTI에 반영했습니다.` : '';
+  updateBar();
+}
 function plusRow(l, n){
   const opt = (o, v, ph) => `<option value="" disabled${v ? '' : ' selected'}>${ph}</option>` + Object.entries(o).map(([k, x]) => `<option value="${k}"${v === k ? ' selected' : ''}>${x}</option>`).join('');
   return `<div class="loan" data-pid="${l.id}"><div class="loan-h"><b>추가 대출 ${n}</b><button type="button" class="ghost sm" data-pact="del">지우기</button></div><div class="loan-g">
@@ -251,8 +314,20 @@ function renderIncome(){
   if (!want || need0.length) { $('#iStat').innerHTML = ''; $('#iTbl').innerHTML = want ? `<tr><td class="hint">「내 조건 입력」에서 채울 칸: ${need0.join(', ')}</td></tr>` : ''; } else {
     const payS = yearPay(want, I.rate + st.rate, I.term, I.method), pay0 = yearPay(want, I.rate, I.term, I.method);
     const need = lim => (payS + ex.pay) / lim, needDti = (pay0 + ex.interest) / D.dti[I.z];
-    const main = Math.max(need(D.dsr[I.sector]), (want + ex.bal > D.dsr.threshold) ? 0 : 0, needDti);
+    const pol = POL[I.product], needDtiP = (pay0 + ex.interest) / 0.6;
+    const main = pol ? needDtiP : Math.max(need(D.dsr[I.sector]), (want + ex.bal > D.dsr.threshold) ? 0 : 0, needDti);
     const ltvOk = !I.price || want <= Math.min(Math.floor(I.price * D.ltv[I.z][I.owner]), capOf(I.price, I.z));
+    if (pol) {
+      const t = pol.types[I.ptype] ? I.ptype : 'basic', pr = limitCalc(I);
+      $('#iStat').innerHTML = statBox([['필요한 연소득 (DTI 60%)', wk(Math.ceil(main / 1e5) * 1e5), 'main'], ['월 소득으로', wk(Math.ceil(main / 12 / 1e4) * 1e4)], ['연간 원리금 (실제 금리)', wk(pay0)]]);
+      $('#iTbl').innerHTML = rows([
+        ['계산 조건 <small>(' + pol.name + ' · ' + pol.types[t] + ', ' + pct(I.rate) + ', ' + I.term + '년, 스트레스·DSR 미적용)</small>', ''],
+        want > pol.cap[t] ? ['<span class="bad">주의: ' + pol.name + ' ' + pol.types[t] + ' 최대 한도는 ' + wk(pol.cap[t]) + '입니다</span>', ''] : '-',
+        I.price && want > pr.ltv ? ['<span class="bad">주의: 이 금액은 LTV ' + pct(pr.ltvRate) + ' 한도(' + wk(pr.ltv) + ')를 넘습니다</span>', ''] : '-',
+        main > pol.inc[t] ? ['<span class="bad">주의: 필요한 연소득이 상품 소득 기준(' + wk(pol.inc[t]) + ' 이하)을 넘어 이 금액은 받기 어렵습니다</span>', ''] : '-',
+        ex.interest ? ['기존 대출 이자 포함 (DTI)', ex.interest] : '-'
+      ]);
+    } else {
     $('#iStat').innerHTML = statBox([['필요한 연소득', wk(Math.ceil(main / 1e5) * 1e5), 'main'], ['월 소득으로', wk(Math.ceil(main / 12 / 1e4) * 1e4)], ['연간 원리금 (스트레스 반영)', wk(payS)]]);
     $('#iTbl').innerHTML = rows([
       ['은행 DSR 40% 기준 필요 연봉', Math.ceil(need(D.dsr.bank) / 1e5) * 1e5],
@@ -263,6 +338,7 @@ function renderIncome(){
       !ltvOk ? ['<span class="bad">주의: 이 금액은 지금 집값의 LTV·총액 한도를 넘습니다</span>', ''] : '-',
       want + ex.bal <= D.dsr.threshold ? ['총대출이 1억 이하라 실제로는 DSR이 적용되지 않습니다', ''] : '-'
     ]);
+    }
   }
   // 살 수 있는 집값
   const cash = N(val('cash'));
@@ -276,7 +352,7 @@ function renderIncome(){
 }
 
 /* ---- 대출 계산기 ---- */
-const KIND = { mortgage: '주택담보대출', credit: '신용대출', minus: '마이너스통장', jeonse: '전세자금대출', car: '자동차 할부·대출', student: '학자금대출', biz: '사업자대출', secured: '예적금·기타 담보대출', etc: '기타' };
+const KIND = { policy: '정책 주담대 (디딤돌·보금자리론 등)', policyJeonse: '정책 전세대출 (버팀목 등)', mortgage: '주택담보대출', credit: '신용대출', minus: '마이너스통장', jeonse: '전세자금대출', car: '자동차 할부·대출', student: '학자금대출', biz: '사업자대출', secured: '예적금·기타 담보대출', etc: '기타' };
 const MET = { annuity: '원리금균등', equal: '원금균등', grad: '체증식', bullet: '만기일시' };
 let selId = S.loans[0] && S.loans[0].id;
 $('#lkind').innerHTML += Object.entries(KIND).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
@@ -419,7 +495,7 @@ function renderRent(){
 }
 
 /* ---- 공통 ---- */
-function formState(){ const o = {}; ['price', 'region', 'income', 'sector', 'rate', 'term', 'method', 'grow', 'rtype', 'fyears', 'other', 'want', 'cash', 'houses', 'area', 'loanAmt', 'brokerRate', 'base', 'conv', 'dep0', 'dep1', 'rent0'].forEach(i => o[i] = $('#' + i).value); ['owner'].forEach(n => o[n] = radio(n)); ['temp2', 'firstCut', 'vat', 'cashCost', 'jeonseDsr'].forEach(i => o[i] = $('#' + i).checked); return o; }
+function formState(){ const o = {}; ['price', 'region', 'product', 'ptype', 'income', 'sector', 'rate', 'term', 'method', 'grow', 'rtype', 'fyears', 'other', 'want', 'cash', 'houses', 'area', 'loanAmt', 'brokerRate', 'base', 'conv', 'dep0', 'dep1', 'rent0'].forEach(i => o[i] = $('#' + i).value); ['owner'].forEach(n => o[n] = radio(n)); ['temp2', 'firstCut', 'vat', 'cashCost', 'jeonseDsr'].forEach(i => o[i] = $('#' + i).checked); return o; }
 function loadForm(){
   const f = S.form; if (!f) return;
   Object.keys(f).forEach(k => { const el = $('#' + k); if (el && typeof f[k] === 'boolean') el.checked = f[k]; else if (el && f[k] != null) el.value = f[k]; });
@@ -427,12 +503,13 @@ function loadForm(){
 }
 function fillRegions(){ const cur = $('#region').value; $('#region').innerHTML = '<option value="" selected disabled>선택하세요</option>' + regions().map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join(''); if (cur && regions().some(r => r[0] === cur)) $('#region').value = cur; }
 function renderAll(){
+  fillPtype();
   $('#fyBox').classList.toggle('hidden', !['mixed', 'periodic'].includes($('#rtype').value));
   $('#gradBox').classList.toggle('hidden', $('#method').value !== 'grad');
   ['price', 'income', 'want', 'cash'].forEach(i => $('#' + i + 'Kor').textContent = kor(N(val(i))));
   renderLimit(); renderIncome(); renderCost(); renderRent(); saveS();
 }
-fillRegions(); loadForm();
+fillRegions(); fillPtype(); loadForm(); fillPtype(); if (S.form && S.form.ptype && $('#ptype').querySelector(`option[value="${S.form.ptype}"]`)) $('#ptype').value = S.form.ptype;
 bindTabs();
 let curTab = 'limit';
 function setTab(t){

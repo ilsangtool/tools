@@ -24,9 +24,13 @@
       <div class="grp-t">👤 소득</div>
       <div class="row">
         <div><label class="f" for="income">연소득 (세전, 부부 합산 가능)</label><input type="text" id="income" class="m" inputmode="numeric" placeholder="예: 60,000,000"><div class="kor" id="incomeKor"></div></div>
-        <div><label class="f" for="sector">대출 받을 곳</label><select id="sector"><option value="" selected disabled>선택하세요</option><option value="bank">은행 (DSR 40%)</option><option value="nonbank">보험·저축은행·상호금융 (DSR 50%)</option></select></div>
+        <div id="sectorBox"><label class="f" for="sector">대출 받을 곳</label><select id="sector"><option value="" selected disabled>선택하세요</option><option value="bank">은행 (DSR 40%)</option><option value="nonbank">보험·저축은행·상호금융 (DSR 50%)</option></select></div>
       </div>
       <div class="grp-t">💳 대출 조건</div>
+      <div class="row">
+        <div><label class="f" for="product">대출 상품</label><select id="product"><option value="bank" selected>은행·2금융 일반 주담대</option><option value="didim">정부 정책대출 · 디딤돌대출</option><option value="bogum">정부 정책대출 · 보금자리론</option><option value="baby">정부 정책대출 · 신생아 특례 디딤돌</option></select></div>
+        <div id="ptypeBox" class="hidden"><label class="f" for="ptype">정책대출 대상</label><select id="ptype"></select></div>
+      </div>
       <div class="row3">
         <div><label class="f" for="rate">대출 금리 (연 %)</label><input type="number" id="rate" step="0.01" inputmode="decimal" placeholder="예: 4.2"></div>
         <div><label class="f" for="term">만기 (년)</label><select id="term"><option value="" selected disabled>선택하세요</option><option value="5">5년</option><option value="10">10년</option><option value="15">15년</option><option value="20">20년</option><option value="25">25년</option><option value="30">30년</option><option value="35">35년</option><option value="40">40년</option><option value="50">50년</option></select><div class="tagline" id="termTag"></div></div>
